@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -8,7 +8,8 @@ import type { Game } from '@/lib/supabase/types'
 
 export default function EditGameForm({ game }: { game: Game }) {
   const router = useRouter()
-  const supabase = createClient()
+  const supabaseRef = useRef(createClient())
+  const supabase = supabaseRef.current
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -173,9 +174,4 @@ export default function EditGameForm({ game }: { game: Game }) {
           disabled={loading}
           className="w-full bg-navy-500 hover:bg-navy-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
         >
-          {loading ? '更新中...' : '試合を更新する'}
-        </button>
-      </form>
-    </div>
-  )
-}
+          {loading ? '更新中...' : '試合を更新

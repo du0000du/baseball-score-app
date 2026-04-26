@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Game } from '@/lib/supabase/types'
@@ -23,20 +23,21 @@ export default function GamesPage() {
   const [loading, setLoading] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmId, setConfirmId] = useState<string | null>(null)
-  const supabase = createClient()
+  const supabaseRef = useRef(createClient())
+  const supabase = supabaseRef.current
 
-  const fetchGames = async () => {
+  const fetchGames = useCallback(async () => {
     const { data } = await supabase
       .from('games')
       .select('*')
       .order('game_date', { ascending: false })
     setGames(data ?? [])
     setLoading(false)
-  }
+  }, [supabase])
 
   useEffect(() => {
     fetchGames()
-  }, [])
+  }, [fetchGames])
 
   const handleDelete = async (id: string) => {
     setDeletingId(id)
@@ -133,12 +134,4 @@ export default function GamesPage() {
                       削除
                     </button>
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
+        

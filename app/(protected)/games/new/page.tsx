@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 export default function NewGamePage() {
   const router = useRouter()
-  const supabase = createClient()
+  const supabaseRef = useRef(createClient())
+  const supabase = supabaseRef.current
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -182,9 +183,4 @@ export default function NewGamePage() {
           disabled={loading}
           className="w-full bg-navy-500 hover:bg-navy-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
         >
-          {loading ? '登録中...' : '試合を登録する'}
-        </button>
-      </form>
-    </div>
-  )
-}
+          {loading ? '登録中...' : '試合を登録

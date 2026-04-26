@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { calcBattingStats, fmtAvg, fmtDec } from '@/lib/stats'
 import { RESULT_TYPE_LABELS, DIRECTION_LABELS } from '@/lib/supabase/types'
@@ -33,7 +33,8 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 }
 
 export default function StatsPage() {
-  const supabase = createClient()
+  const supabaseRef = useRef(createClient())
+  const supabase = supabaseRef.current
   const currentYear = new Date().getFullYear()
   const [season, setSeason] = useState(currentYear)
   const [games, setGames] = useState<GameWithAtBats[]>([])
@@ -276,10 +277,4 @@ export default function StatsPage() {
                   </table>
                 </div>
               )}
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  )
-}
+            

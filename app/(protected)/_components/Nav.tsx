@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -7,7 +8,8 @@ import { createClient } from '@/lib/supabase/client'
 export default function Nav() {
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = createClient()
+  const supabaseRef = useRef(createClient())
+  const supabase = supabaseRef.current
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -40,10 +42,4 @@ export default function Nav() {
         <button
           onClick={handleSignOut}
           className="text-sm text-blue-100 hover:text-white transition-colors"
-        >
-          ログアウト
-        </button>
-      </div>
-    </nav>
-  )
-}
+   

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -73,7 +73,8 @@ function ResultBadge({ result }: { result: Game['result'] }) {
 export default function AtBatsPage() {
   const params = useParams()
   const gameId = params.id as string
-  const supabase = createClient()
+  const supabaseRef = useRef(createClient())
+  const supabase = supabaseRef.current
 
   const [game, setGame] = useState<Game | null>(null)
   const [atBats, setAtBats] = useState<AtBat[]>([])
@@ -379,9 +380,3 @@ export default function AtBatsPage() {
                 </button>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}

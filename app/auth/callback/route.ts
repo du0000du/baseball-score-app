@@ -5,14 +5,10 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/dashboard'
+  const errorParam = searchParams.get('error')
+  const errorDescription = searchParams.get('error_description')
 
-  if (code) {
-    const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
-    }
-  }
-
-  return NextResponse.redirect(`${origin}/login?error=auth_callback_error`)
-}
+  // Supabase returned an error (e.g. Unable to exchange external code)
+  if (errorParam) {
+    console.error('[auth/callback] OAuth error:', errorParam, errorDescription)
+    c
