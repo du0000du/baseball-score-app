@@ -174,4 +174,9 @@ export default function EditGameForm({ game }: { game: Game }) {
           disabled={loading}
           className="w-full bg-navy-500 hover:bg-navy-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
         >
-          {loading ? '更新中...' : '試合を更新
+          {loading ? '更新中...' : '試合を更新する'}
+        </button>
+      </form>
+    </div>
+  )
+}

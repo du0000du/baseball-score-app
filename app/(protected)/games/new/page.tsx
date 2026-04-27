@@ -183,4 +183,9 @@ export default function NewGamePage() {
           disabled={loading}
           className="w-full bg-navy-500 hover:bg-navy-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
         >
-          {loading ? '登録中...' : '試合を登録
+          {loading ? '登録中...' : '試合を登録する'}
+        </button>
+      </form>
+    </div>
+  )
+}

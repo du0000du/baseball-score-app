@@ -277,4 +277,10 @@ export default function StatsPage() {
                   </table>
                 </div>
               )}
-            
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}

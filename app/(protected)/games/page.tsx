@@ -134,4 +134,12 @@ export default function GamesPage() {
                       削除
                     </button>
                   </div>
-        
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}

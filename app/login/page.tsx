@@ -54,6 +54,7 @@ function LoginForm() {
       {authError && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">
           ログインに失敗しました。もう一度お試しください。
+          <div className="text-xs text-red-400 mt-1 break-all">{authError}</div>
         </div>
       )}
 
@@ -74,4 +75,12 @@ export default function LoginPage() {
     <div className="min-h-screen bg-navy-800 flex flex-col items-center justify-center px-4">
       <div className="text-center mb-10">
         <div className="text-8xl mb-6">⚾</div>
-        <h1 className="text-4xl font-bold text-white mb-3">草野
+        <h1 className="text-4xl font-bold text-white mb-3">草野球記録</h1>
+        <p className="text-blue-200 text-sm">あなたの打席を記録しよう</p>
+      </div>
+      <Suspense fallback={<div className="animate-pulse text-white text-sm">読み込み中...</div>}>
+        <LoginForm />
+      </Suspense>
+    </div>
+  )
+}

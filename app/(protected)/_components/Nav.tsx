@@ -42,4 +42,10 @@ export default function Nav() {
         <button
           onClick={handleSignOut}
           className="text-sm text-blue-100 hover:text-white transition-colors"
-   
+        >
+          ログアウト
+        </button>
+      </div>
+    </nav>
+  )
+}

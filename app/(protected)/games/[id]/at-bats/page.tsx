@@ -99,7 +99,7 @@ export default function AtBatsPage() {
     setGame(gameData)
     setAtBats(atBatsData ?? [])
     setLoading(false)
-  }, [gameId])
+  }, [gameId, supabase])
 
   useEffect(() => {
     fetchData()
@@ -380,3 +380,9 @@ export default function AtBatsPage() {
                 </button>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
