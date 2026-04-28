@@ -6,8 +6,9 @@ import { createClient } from '@/lib/supabase/client'
 export default function AuthCallbackPage() {
   useEffect(() => {
     const handleCallback = async () => {
-      // 1. Check for OAuth error from Supabase (query params)
       const searchParams = new URLSearchParams(window.location.search)
+
+      // 1. Check for OAuth errors returned in query string
       const errorParam = searchParams.get('error')
       const errorDescription = searchParams.get('error_description')
       if (errorParam) {
@@ -16,33 +17,25 @@ export default function AuthCallbackPage() {
         return
       }
 
-      // 2. With implicit flow, tokens come in the URL hash fragment
-      const hash = window.location.hash.substring(1) // strip '#'
-      const hashParams = new URLSearchParams(hash)
-      const accessToken = hashParams.get('access_token')
-      const refreshToken = hashParams.get('refresh_token')
+      const supabase = createClient()
+      const next = searchParams.get('next') ?? '/dashboard'
 
-      if (!accessToken || !refreshToken) {
-        window.location.href =
-          '/login?error=' + encodeURIComponent('ログイン情報が取得できませんでした。もう一度お試しください。')
+      // 2. PKCE flow: Supabase returns ?code= in the query string
+      const code = searchParams.get('code')
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        if (!error) {
+          window.location.href = next
+        } else {
+          window.location.href =
+            '/login?error=' + encodeURIComponent(error.message)
+        }
         return
       }
 
-      // 3. Explicitly set the session using the tokens
-      const supabase = createClient()
-      const { data, error } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      })
-
-      if (data.session) {
-        // 4. Hard redirect — ensures cookies are included in the next request
-        const next = searchParams.get('next') ?? '/dashboard'
-        window.location.href = next
-      } else {
-        window.location.href =
-          '/login?error=' + encodeURIComponent(error?.message ?? 'セッションの設定に失敗しました')
-      }
+      // 3. No code found — something went wrong
+      window.location.href =
+        '/login?error=' + encodeURIComponent('ログイン情報が取得できませんでした。もう一度お試しください。')
     }
 
     handleCallback()
