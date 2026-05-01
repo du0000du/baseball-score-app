@@ -63,21 +63,21 @@ export default async function DashboardPage() {
           <p className="text-gray-400 text-center py-4">まだ打席記録がありません</p>
         ) : (
           <>
-            <div className="grid grid-cols-4 gap-4 mb-4">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-navy-500">{fmtAvg(stats.avg)}</div>
+            <div className="grid grid-cols-4 gap-2 mb-4">
+              <div className="text-center min-w-0">
+                <div className="text-2xl font-bold text-navy-500 truncate">{fmtAvg(stats.avg)}</div>
                 <div className="text-xs text-gray-400 mt-1">打率</div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-navy-500">{fmtAvg(stats.obp)}</div>
+              <div className="text-center min-w-0">
+                <div className="text-2xl font-bold text-navy-500 truncate">{fmtAvg(stats.obp)}</div>
                 <div className="text-xs text-gray-400 mt-1">出塁率</div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-navy-500">{fmtAvg(stats.slg)}</div>
+              <div className="text-center min-w-0">
+                <div className="text-2xl font-bold text-navy-500 truncate">{fmtAvg(stats.slg)}</div>
                 <div className="text-xs text-gray-400 mt-1">長打率</div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-navy-500">{fmtDec(stats.ops, 3).replace(/^0/, '')}</div>
+              <div className="text-center min-w-0">
+                <div className="text-2xl font-bold text-navy-500 truncate">{fmtDec(stats.ops, 3).replace(/^0/, '')}</div>
                 <div className="text-xs text-gray-400 mt-1">OPS</div>
               </div>
             </div>
@@ -159,10 +159,4 @@ export default async function DashboardPage() {
                   </div>
                 </div>
               )
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
+      
