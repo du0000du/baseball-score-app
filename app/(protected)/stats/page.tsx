@@ -270,9 +270,22 @@ export default function StatsPage() {
                                 return cnt > 0
                                   ? <span className="text-orange-500 font-bold">{cnt}</span>
                                   : <span className="text-gray-200">-</span>
-                              })()}
+                              })()} 
                             </td>
                             <td className="px-3 py-2.5 text-center">
                               {ab.is_run ? <span className="text-blue-500 font-bold">●</span> : <span className="text-gray-200">-</span>}
                             </td>
-                   
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
