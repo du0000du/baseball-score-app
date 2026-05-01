@@ -53,4 +53,7 @@ export function fmtPct(n: number | null): string {
   return (n * 100).toFixed(1) + '%'
 }
 
-export function fmtDec(n: numbe
+export function fmtDec(n: number | null, d = 2): string {
+  if (n === null) return '---'
+  return n.toFixed(d)
+}
