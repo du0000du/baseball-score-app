@@ -14,9 +14,9 @@ export function calcBattingStats(atBats: AtBat[]): BattingStats {
   const sac_fly = atBats.filter(ab => ab.result_type === 'sac_fly').length
   const strikeouts = atBats.filter(ab => ab.result_type === 'strikeout').length
   const errors = atBats.filter(ab => ab.result_type === 'error').length
-  const rbi = atBats.filter(ab => ab.is_rbi).length
+  const rbi = atBats.reduce((sum, ab) => sum + (ab.rbi_count ?? (ab.is_rbi ? 1 : 0)), 0)
   const runs = atBats.filter(ab => ab.is_run).length
-  const sb = atBats.filter(ab => ab.is_stolen_base).length
+  const sb = atBats.reduce((sum, ab) => sum + (ab.stolen_base_count ?? (ab.is_stolen_base ? 1 : 0)), 0)
   const cs = atBats.filter(ab => ab.is_caught_stealing).length
 
   const ab = pa - walks - hbp - sac_bunt - sac_fly
@@ -53,7 +53,4 @@ export function fmtPct(n: number | null): string {
   return (n * 100).toFixed(1) + '%'
 }
 
-export function fmtDec(n: number | null, d = 2): string {
-  if (n === null) return '---'
-  return n.toFixed(d)
-}
+export function fmtDec(n: numbe
