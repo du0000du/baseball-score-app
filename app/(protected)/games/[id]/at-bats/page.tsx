@@ -500,4 +500,129 @@ export default function AtBatsPage() {
               <span className="text-sm text-gray-600 w-8 shrink-0">得点</span>
               <div
                 onClick={() => setIsRun(!isRun)}
-                className={`w-9 h-9 rounded-lg border flex items-cen
+                className={`w-9 h-9 rounded-lg border flex items-center justify-center cursor-pointer transition-all ${
+                  isRun
+                    ? 'bg-navy-500 border-navy-500 text-white'
+                    : 'border-gray-200 text-gray-400 hover:border-navy-300 hover:bg-navy-50'
+                }`}
+              >
+                {isRun ? (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <span className="text-xs font-medium">あり</span>
+                )}
+              </div>
+            </div>
+
+            {/* 盗塁（1〜3選択） */}
+            <CountSelector
+              label="盗塁"
+              value={stolenBaseCount}
+              onChange={setStolenBaseCount}
+              max={3}
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          {editingAtBatId && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="flex-none px-6 py-4 rounded-xl border-2 border-gray-200 text-gray-600 font-bold text-base transition-colors hover:bg-gray-50"
+            >
+              キャンセル
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={submitting || !battingOrder || !resultType}
+            className={`flex-1 text-white py-4 rounded-xl font-bold text-lg transition-colors disabled:opacity-40 ${
+              editingAtBatId
+                ? 'bg-blue-600 hover:bg-blue-700'
+                : 'bg-navy-500 hover:bg-navy-600'
+            }`}
+          >
+            {submitting
+              ? (editingAtBatId ? '更新中...' : '登録中...')
+              : (editingAtBatId ? '打席を更新する' : '打席を記録する')}
+          </button>
+        </div>
+      </div>
+
+      {/* 打席一覧 */}
+      {atBats.length > 0 && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <h2 className="font-semibold text-gray-700 mb-4">打席記録</h2>
+          <div className="space-y-2">
+            {atBats.map((ab) => {
+              const label = getAtBatLabel(ab.result_type as ResultType, ab.direction as Direction | null)
+              const isInfieldPlay = ab.result_type === 'groundout' || ab.result_type === 'infield_flyout'
+              const isEditing = editingAtBatId === ab.id
+              const rbiVal = ab.rbi_count ?? (ab.is_rbi ? 1 : 0)
+              const sbVal = ab.stolen_base_count ?? (ab.is_stolen_base ? 1 : 0)
+              return (
+                <div
+                  key={ab.id}
+                  className={`flex items-center justify-between py-2 px-3 rounded-lg transition-colors ${
+                    isEditing ? 'bg-blue-50 ring-2 ring-blue-300' : 'bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 flex-wrap min-w-0">
+                    <span className="text-xs text-gray-400 w-7 shrink-0">#{ab.at_bat_number}</span>
+                    <span className="text-xs bg-navy-100 text-navy-600 px-1.5 py-0.5 rounded font-medium shrink-0">
+                      {ab.batting_order}番
+                    </span>
+                    <span className="text-sm font-medium text-gray-800">
+                      {label}
+                    </span>
+                    {ab.direction && !isInfieldPlay && (
+                      <span className="text-xs text-gray-500">
+                        → {DIRECTION_LABELS[ab.direction as Direction]}
+                      </span>
+                    )}
+                    <div className="flex gap-1 flex-wrap">
+                      {rbiVal > 0 && (
+                        <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-medium">
+                          打点{rbiVal > 1 ? rbiVal : ''}
+                        </span>
+                      )}
+                      {ab.is_run && (
+                        <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium">得点</span>
+                      )}
+                      {sbVal > 0 && (
+                        <span className="text-xs bg-green-100 text-green-600 px-1.5 py-0.5 rounded font-medium">
+                          盗塁{sbVal > 1 ? sbVal : ''}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 ml-2">
+                    <button
+                      onClick={() => handleEditAtBat(ab)}
+                      disabled={!!deletingId}
+                      className="text-blue-400 hover:text-blue-600 transition-colors text-xs disabled:opacity-50"
+                    >
+                      編集
+                    </button>
+                    <span className="text-gray-200">|</span>
+                    <button
+                      onClick={() => handleDeleteAtBat(ab.id)}
+                      disabled={deletingId === ab.id}
+                      className="text-red-400 hover:text-red-600 transition-colors text-xs disabled:opacity-50"
+                    >
+                      {deletingId === ab.id ? '削除中' : '削除'}
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
