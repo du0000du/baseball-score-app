@@ -48,8 +48,10 @@ export interface AtBat {
   hit_type: HitType | null
   direction: Direction | null
   is_rbi: boolean
+  rbi_count: number
   is_run: boolean
   is_stolen_base: boolean
+  stolen_base_count: number
   is_caught_stealing: boolean
   is_error: boolean
   input_method: 'manual' | 'nlp'
@@ -180,7 +182,4 @@ export function getAtBatLabel(resultType: ResultType, direction: Direction | nul
     return GROUNDOUT_POSITION_LABELS[direction]
   }
   if (resultType === 'infield_flyout' && isInfieldPosition(direction)) {
-    return INFIELD_FLY_POSITION_LABELS[direction]
-  }
-  return RESULT_TYPE_LABELS[resultType]
-}
+    return INFIELD_FLY_POSITION_LABELS[direction

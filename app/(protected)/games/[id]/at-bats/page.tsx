@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import {
   DIRECTION_LABELS,
-  OUTFIELD_DIRECTION_LABELS,
   getAtBatLabel,
 } from '@/lib/supabase/types'
 import type { AtBat, Direction, Game, ResultType, OutfieldDirection, InfieldPosition } from '@/lib/supabase/types'
@@ -97,11 +96,48 @@ function ResultBadge({ result }: { result: Game['result'] }) {
   return <span className="text-yellow-600 font-bold">分</span>
 }
 
+// 数量選択ボタン（打点・盗塁用）
+function CountSelector({
+  label,
+  value,
+  onChange,
+  max,
+}: {
+  label: string
+  value: number
+  onChange: (v: number) => void
+  max: number
+}) {
+  const options = Array.from({ length: max + 1 }, (_, i) => i)
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-sm text-gray-600 w-8 shrink-0">{label}</span>
+      <div className="flex gap-1">
+        {options.map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(n)}
+            className={`w-9 h-9 rounded-lg border text-sm font-medium transition-all ${
+              value === n
+                ? 'bg-navy-500 border-navy-500 text-white'
+                : 'border-gray-200 text-gray-600 hover:border-navy-300 hover:bg-navy-50'
+            }`}
+          >
+            {n === 0 ? 'なし' : n}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function AtBatsPage() {
   const params = useParams()
   const gameId = params.id as string
   const supabaseRef = useRef(createClient())
   const supabase = supabaseRef.current
+  const formRef = useRef<HTMLDivElement>(null)
 
   const [game, setGame] = useState<Game | null>(null)
   const [atBats, setAtBats] = useState<AtBat[]>([])
@@ -110,13 +146,16 @@ export default function AtBatsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState('')
 
+  // 編集モード
+  const [editingAtBatId, setEditingAtBatId] = useState<string | null>(null)
+
   // フォーム状態
   const [battingOrder, setBattingOrder] = useState<number | null>(null)
   const [resultType, setResultType] = useState<ResultType | null>(null)
   const [direction, setDirection] = useState<Direction | null>(null)
-  const [isRbi, setIsRbi] = useState(false)
+  const [rbiCount, setRbiCount] = useState<number>(0)
   const [isRun, setIsRun] = useState(false)
-  const [isStolenBase, setIsStolenBase] = useState(false)
+  const [stolenBaseCount, setStolenBaseCount] = useState<number>(0)
 
   const fetchData = useCallback(async () => {
     const [{ data: gameData }, { data: atBatsData }] = await Promise.all([
@@ -133,16 +172,30 @@ export default function AtBatsPage() {
   }, [fetchData])
 
   const resetForm = () => {
+    setEditingAtBatId(null)
     setResultType(null)
     setDirection(null)
-    setIsRbi(false)
+    setRbiCount(0)
     setIsRun(false)
-    setIsStolenBase(false)
+    setStolenBaseCount(0)
   }
 
   const handleResultTypeChange = (rt: ResultType) => {
     setResultType(rt)
-    setDirection(null) // 結果タイプ変更時は位置/方向をリセット
+    setDirection(null)
+  }
+
+  // 編集開始：フォームに既存データをセットしてスクロール
+  const handleEditAtBat = (ab: AtBat) => {
+    setEditingAtBatId(ab.id)
+    setBattingOrder(ab.batting_order)
+    setResultType(ab.result_type as ResultType)
+    setDirection(ab.direction as Direction | null)
+    setRbiCount(ab.rbi_count ?? (ab.is_rbi ? 1 : 0))
+    setIsRun(ab.is_run)
+    setStolenBaseCount(ab.stolen_base_count ?? (ab.is_stolen_base ? 1 : 0))
+    setSubmitError('')
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   const handleSubmit = async () => {
@@ -170,27 +223,53 @@ export default function AtBatsPage() {
       : null
 
     const saveDirection = SHOW_OUTFIELD_DIRECTION.includes(resultType) || SHOW_INFIELD_POSITION.includes(resultType)
+    const directionValue = saveDirection ? direction : null
 
-    const { error } = await supabase.from('at_bats').insert({
-      game_id: gameId,
-      user_id: user.id,
-      at_bat_number: atBats.length + 1,
-      batting_order: battingOrder,
-      result_type: resultType,
-      hit_type: hitType,
-      direction: saveDirection ? direction : null,
-      is_rbi: isRbi,
-      is_run: isRun,
-      is_stolen_base: isStolenBase,
-      is_caught_stealing: false,
-      is_error: resultType === 'error',
-      input_method: 'manual',
-    })
+    if (editingAtBatId) {
+      // 編集モード：UPDATE
+      const { error } = await supabase.from('at_bats').update({
+        batting_order: battingOrder,
+        result_type: resultType,
+        hit_type: hitType,
+        direction: directionValue,
+        is_rbi: rbiCount > 0,
+        rbi_count: rbiCount,
+        is_run: isRun,
+        is_stolen_base: stolenBaseCount > 0,
+        stolen_base_count: stolenBaseCount,
+        is_error: resultType === 'error',
+      }).eq('id', editingAtBatId)
 
-    if (error) {
-      setSubmitError('登録に失敗しました: ' + error.message)
-      setSubmitting(false)
-      return
+      if (error) {
+        setSubmitError('更新に失敗しました: ' + error.message)
+        setSubmitting(false)
+        return
+      }
+    } else {
+      // 新規登録：INSERT
+      const { error } = await supabase.from('at_bats').insert({
+        game_id: gameId,
+        user_id: user.id,
+        at_bat_number: atBats.length + 1,
+        batting_order: battingOrder,
+        result_type: resultType,
+        hit_type: hitType,
+        direction: directionValue,
+        is_rbi: rbiCount > 0,
+        rbi_count: rbiCount,
+        is_run: isRun,
+        is_stolen_base: stolenBaseCount > 0,
+        stolen_base_count: stolenBaseCount,
+        is_caught_stealing: false,
+        is_error: resultType === 'error',
+        input_method: 'manual',
+      })
+
+      if (error) {
+        setSubmitError('登録に失敗しました: ' + error.message)
+        setSubmitting(false)
+        return
+      }
     }
 
     resetForm()
@@ -202,6 +281,7 @@ export default function AtBatsPage() {
     setDeletingId(id)
     await supabase.from('at_bats').delete().eq('id', id)
     setDeletingId(null)
+    if (editingAtBatId === id) resetForm()
     fetchData()
   }
 
@@ -251,8 +331,27 @@ export default function AtBatsPage() {
       </div>
 
       {/* 打席入力フォーム */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-5">
-        <h2 className="font-semibold text-gray-700">打席を追加</h2>
+      <div ref={formRef} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-5">
+        {/* 編集モードバナー */}
+        {editingAtBatId ? (
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-blue-700 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              打席 #{atBats.find(ab => ab.id === editingAtBatId)?.at_bat_number} を編集中
+            </h2>
+            <button
+              type="button"
+              onClick={resetForm}
+              className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              キャンセル
+            </button>
+          </div>
+        ) : (
+          <h2 className="font-semibold text-gray-700">打席を追加</h2>
+        )}
 
         {submitError && (
           <div className="bg-red-50 text-red-700 text-sm p-3 rounded-lg">{submitError}</div>
@@ -386,90 +485,19 @@ export default function AtBatsPage() {
 
         {/* 付加情報 */}
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-2">付加情報</label>
-          <div className="flex gap-4">
-            {[
-              { key: 'rbi', label: '打点', state: isRbi, set: setIsRbi },
-              { key: 'run', label: '得点', state: isRun, set: setIsRun },
-              { key: 'sb', label: '盗塁', state: isStolenBase, set: setIsStolenBase },
-            ].map((item) => (
-              <label key={item.key} className="flex items-center gap-2 cursor-pointer">
-                <div
-                  onClick={() => item.set(!item.state)}
-                  className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
-                    item.state
-                      ? 'bg-navy-500 border-navy-500 text-white'
-                      : 'border-gray-300 hover:border-navy-400'
-                  }`}
-                >
-                  {item.state && (
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </div>
-                <span className="text-sm text-gray-700">{item.label}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+          <label className="block text-sm font-medium text-gray-600 mb-3">付加情報</label>
+          <div className="space-y-3">
+            {/* 打点（1〜4選択） */}
+            <CountSelector
+              label="打点"
+              value={rbiCount}
+              onChange={setRbiCount}
+              max={4}
+            />
 
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={submitting || !battingOrder || !resultType}
-          className="w-full bg-navy-500 hover:bg-navy-600 text-white py-4 rounded-xl font-bold text-lg transition-colors disabled:opacity-40"
-        >
-          {submitting ? '登録中...' : '打席を記録する'}
-        </button>
-      </div>
-
-      {/* 打席一覧 */}
-      {atBats.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-          <h2 className="font-semibold text-gray-700 mb-4">打席記録</h2>
-          <div className="space-y-2">
-            {atBats.map((ab) => {
-              const label = getAtBatLabel(ab.result_type as ResultType, ab.direction as Direction | null)
-              const isInfieldPlay = ab.result_type === 'groundout' || ab.result_type === 'infield_flyout'
-              return (
-                <div
-                  key={ab.id}
-                  className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-gray-400 w-8">#{ab.at_bat_number}</span>
-                    <span className="text-xs bg-navy-100 text-navy-600 px-1.5 py-0.5 rounded font-medium">
-                      {ab.batting_order}番
-                    </span>
-                    <span className="text-sm font-medium text-gray-800">
-                      {label}
-                    </span>
-                    {/* 外野方向は内野プレー以外で表示 */}
-                    {ab.direction && !isInfieldPlay && (
-                      <span className="text-xs text-gray-500">
-                        → {DIRECTION_LABELS[ab.direction as Direction]}
-                      </span>
-                    )}
-                    <div className="flex gap-1">
-                      {ab.is_rbi && <span className="text-xs bg-orange-100 text-orange-600 px-1 rounded">打点</span>}
-                      {ab.is_run && <span className="text-xs bg-blue-100 text-blue-600 px-1 rounded">得点</span>}
-                      {ab.is_stolen_base && <span className="text-xs bg-green-100 text-green-600 px-1 rounded">盗塁</span>}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleDeleteAtBat(ab.id)}
-                    disabled={deletingId === ab.id}
-                    className="text-red-400 hover:text-red-600 transition-colors text-xs disabled:opacity-50 ml-2"
-                  >
-                    削除
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+            {/* 得点（チェックボックス） */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600 w-8 shrink-0">得点</span>
+              <div
+                onClick={() => setIsRun(!isRun)}
+                className={`w-9 h-9 rounded-lg border flex items-cen
