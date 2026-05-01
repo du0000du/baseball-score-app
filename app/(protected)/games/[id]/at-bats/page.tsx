@@ -4,14 +4,21 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { RESULT_TYPE_LABELS, DIRECTION_LABELS } from '@/lib/supabase/types'
-import type { AtBat, Direction, Game, ResultType } from '@/lib/supabase/types'
+import {
+  DIRECTION_LABELS,
+  OUTFIELD_DIRECTION_LABELS,
+  getAtBatLabel,
+} from '@/lib/supabase/types'
+import type { AtBat, Direction, Game, ResultType, OutfieldDirection, InfieldPosition } from '@/lib/supabase/types'
 
-// 打球方向を表示するかどうか（三振・四球・死球・犠打は方向なし）
-const SHOW_DIRECTION: ResultType[] = [
+// 外野方向を表示する結果タイプ
+const SHOW_OUTFIELD_DIRECTION: ResultType[] = [
   'hit', 'double', 'triple', 'hr',
-  'groundout', 'flyout', 'sac_fly', 'error', 'fc',
+  'flyout', 'sac_fly', 'error', 'fc',
 ]
+
+// 内野守備位置を表示する結果タイプ
+const SHOW_INFIELD_POSITION: ResultType[] = ['groundout', 'infield_flyout']
 
 const RESULT_GROUPS: { label: string; color: string; activeColor: string; cols: string; items: ResultType[] }[] = [
   {
@@ -25,8 +32,8 @@ const RESULT_GROUPS: { label: string; color: string; activeColor: string; cols: 
     label: 'アウト',
     color: 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100',
     activeColor: 'bg-gray-600 border-gray-600 text-white',
-    cols: 'grid-cols-3',
-    items: ['strikeout', 'groundout', 'flyout'],
+    cols: 'grid-cols-4',
+    items: ['strikeout', 'groundout', 'flyout', 'infield_flyout'],
   },
   {
     label: '出塁',
@@ -46,17 +53,37 @@ const RESULT_GROUPS: { label: string; color: string; activeColor: string; cols: 
 
 const RESULT_SHORT: Record<ResultType, string> = {
   hit: '単打', double: '二塁打', triple: '三塁打', hr: '本塁打',
-  strikeout: '三振', groundout: '内野ゴロ', flyout: '外野フライ',
+  strikeout: '三振', groundout: '内野ゴロ', flyout: '外野フライ', infield_flyout: '内野フライ',
   walk: '四球', hbp: '死球',
   sac_bunt: '犠打', sac_fly: '犠飛', error: 'エラー', fc: 'FC',
 }
 
-const DIRECTIONS: { value: Direction; label: string }[] = [
+const OUTFIELD_DIRECTIONS: { value: OutfieldDirection; label: string }[] = [
   { value: 'left', label: 'レフト' },
   { value: 'left_center', label: '左中間' },
   { value: 'center', label: 'センター' },
   { value: 'right_center', label: '右中間' },
   { value: 'right', label: 'ライト' },
+]
+
+// 内野ゴロ守備位置（頻度順）
+const GROUNDOUT_POSITIONS: { value: InfieldPosition; label: string }[] = [
+  { value: 'third_base', label: 'サードゴロ' },
+  { value: 'shortstop', label: 'ショートゴロ' },
+  { value: 'second_base', label: 'セカンドゴロ' },
+  { value: 'first_base', label: 'ファーストゴロ' },
+  { value: 'pitcher', label: 'ピッチャーゴロ' },
+  { value: 'catcher', label: 'キャッチャーゴロ' },
+]
+
+// 内野フライ守備位置
+const INFIELD_FLY_POSITIONS: { value: InfieldPosition; label: string }[] = [
+  { value: 'third_base', label: 'サードフライ' },
+  { value: 'shortstop', label: 'ショートフライ' },
+  { value: 'second_base', label: 'セカンドフライ' },
+  { value: 'first_base', label: 'ファーストフライ' },
+  { value: 'pitcher', label: 'ピッチャーフライ' },
+  { value: 'catcher', label: 'キャッチャーフライ' },
 ]
 
 function formatDate(dateStr: string) {
@@ -113,6 +140,11 @@ export default function AtBatsPage() {
     setIsStolenBase(false)
   }
 
+  const handleResultTypeChange = (rt: ResultType) => {
+    setResultType(rt)
+    setDirection(null) // 結果タイプ変更時は位置/方向をリセット
+  }
+
   const handleSubmit = async () => {
     if (!battingOrder) {
       setSubmitError('打順を選択してください')
@@ -137,7 +169,7 @@ export default function AtBatsPage() {
       : resultType === 'hr' ? 'hr'
       : null
 
-    const showDir = SHOW_DIRECTION.includes(resultType)
+    const saveDirection = SHOW_OUTFIELD_DIRECTION.includes(resultType) || SHOW_INFIELD_POSITION.includes(resultType)
 
     const { error } = await supabase.from('at_bats').insert({
       game_id: gameId,
@@ -146,7 +178,7 @@ export default function AtBatsPage() {
       batting_order: battingOrder,
       result_type: resultType,
       hit_type: hitType,
-      direction: showDir ? direction : null,
+      direction: saveDirection ? direction : null,
       is_rbi: isRbi,
       is_run: isRun,
       is_stolen_base: isStolenBase,
@@ -186,7 +218,8 @@ export default function AtBatsPage() {
     )
   }
 
-  const showDirection = resultType ? SHOW_DIRECTION.includes(resultType) : false
+  const showOutfieldDirection = resultType ? SHOW_OUTFIELD_DIRECTION.includes(resultType) : false
+  const showInfieldPosition = resultType ? SHOW_INFIELD_POSITION.includes(resultType) : false
 
   return (
     <div className="max-w-2xl mx-auto space-y-5">
@@ -260,10 +293,7 @@ export default function AtBatsPage() {
                   <button
                     key={rt}
                     type="button"
-                    onClick={() => {
-                      setResultType(rt)
-                      if (!SHOW_DIRECTION.includes(rt)) setDirection(null)
-                    }}
+                    onClick={() => handleResultTypeChange(rt)}
                     className={`py-3 rounded-lg border text-sm font-medium transition-all ${
                       resultType === rt ? group.activeColor : group.color
                     }`}
@@ -276,15 +306,67 @@ export default function AtBatsPage() {
           </div>
         </div>
 
-        {/* 打球方向（任意） */}
-        {showDirection && (
+        {/* 内野ゴロ守備位置 */}
+        {showInfieldPosition && resultType === 'groundout' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              守備位置
+              <span className="text-gray-400 font-normal ml-1">（任意）</span>
+            </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {GROUNDOUT_POSITIONS.map((pos) => (
+                <button
+                  key={pos.value}
+                  type="button"
+                  onClick={() => setDirection(direction === pos.value ? null : pos.value)}
+                  className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${
+                    direction === pos.value
+                      ? 'bg-gray-600 border-gray-600 text-white'
+                      : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {pos.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 内野フライ守備位置 */}
+        {showInfieldPosition && resultType === 'infield_flyout' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              守備位置
+              <span className="text-gray-400 font-normal ml-1">（任意）</span>
+            </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {INFIELD_FLY_POSITIONS.map((pos) => (
+                <button
+                  key={pos.value}
+                  type="button"
+                  onClick={() => setDirection(direction === pos.value ? null : pos.value)}
+                  className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${
+                    direction === pos.value
+                      ? 'bg-gray-600 border-gray-600 text-white'
+                      : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {pos.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 外野打球方向（安打・外野フライなど） */}
+        {showOutfieldDirection && (
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
               打球方向
               <span className="text-gray-400 font-normal ml-1">（任意）</span>
             </label>
             <div className="grid grid-cols-5 gap-1.5">
-              {DIRECTIONS.map((dir) => (
+              {OUTFIELD_DIRECTIONS.map((dir) => (
                 <button
                   key={dir.value}
                   type="button"
@@ -347,39 +429,44 @@ export default function AtBatsPage() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
           <h2 className="font-semibold text-gray-700 mb-4">打席記録</h2>
           <div className="space-y-2">
-            {atBats.map((ab) => (
-              <div
-                key={ab.id}
-                className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400 w-8">#{ab.at_bat_number}</span>
-                  <span className="text-xs bg-navy-100 text-navy-600 px-1.5 py-0.5 rounded font-medium">
-                    {ab.batting_order}番
-                  </span>
-                  <span className="text-sm font-medium text-gray-800">
-                    {RESULT_TYPE_LABELS[ab.result_type as ResultType] ?? ab.result_type}
-                  </span>
-                  {ab.direction && (
-                    <span className="text-xs text-gray-500">
-                      → {DIRECTION_LABELS[ab.direction as Direction]}
-                    </span>
-                  )}
-                  <div className="flex gap-1">
-                    {ab.is_rbi && <span className="text-xs bg-orange-100 text-orange-600 px-1 rounded">打点</span>}
-                    {ab.is_run && <span className="text-xs bg-blue-100 text-blue-600 px-1 rounded">得点</span>}
-                    {ab.is_stolen_base && <span className="text-xs bg-green-100 text-green-600 px-1 rounded">盗塁</span>}
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleDeleteAtBat(ab.id)}
-                  disabled={deletingId === ab.id}
-                  className="text-red-400 hover:text-red-600 transition-colors text-xs disabled:opacity-50 ml-2"
+            {atBats.map((ab) => {
+              const label = getAtBatLabel(ab.result_type as ResultType, ab.direction as Direction | null)
+              const isInfieldPlay = ab.result_type === 'groundout' || ab.result_type === 'infield_flyout'
+              return (
+                <div
+                  key={ab.id}
+                  className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50"
                 >
-                  削除
-                </button>
-              </div>
-            ))}
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-gray-400 w-8">#{ab.at_bat_number}</span>
+                    <span className="text-xs bg-navy-100 text-navy-600 px-1.5 py-0.5 rounded font-medium">
+                      {ab.batting_order}番
+                    </span>
+                    <span className="text-sm font-medium text-gray-800">
+                      {label}
+                    </span>
+                    {/* 外野方向は内野プレー以外で表示 */}
+                    {ab.direction && !isInfieldPlay && (
+                      <span className="text-xs text-gray-500">
+                        → {DIRECTION_LABELS[ab.direction as Direction]}
+                      </span>
+                    )}
+                    <div className="flex gap-1">
+                      {ab.is_rbi && <span className="text-xs bg-orange-100 text-orange-600 px-1 rounded">打点</span>}
+                      {ab.is_run && <span className="text-xs bg-blue-100 text-blue-600 px-1 rounded">得点</span>}
+                      {ab.is_stolen_base && <span className="text-xs bg-green-100 text-green-600 px-1 rounded">盗塁</span>}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteAtBat(ab.id)}
+                    disabled={deletingId === ab.id}
+                    className="text-red-400 hover:text-red-600 transition-colors text-xs disabled:opacity-50 ml-2"
+                  >
+                    削除
+                  </button>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

@@ -1,11 +1,19 @@
 export type ResultType =
   | 'hit' | 'double' | 'triple' | 'hr'
-  | 'strikeout' | 'groundout' | 'flyout'
+  | 'strikeout' | 'groundout' | 'flyout' | 'infield_flyout'
   | 'walk' | 'hbp' | 'sac_bunt' | 'sac_fly'
   | 'error' | 'fc'
 
 export type HitType = 'single' | 'double' | 'triple' | 'hr'
-export type Direction = 'left' | 'left_center' | 'center' | 'right_center' | 'right'
+
+// 外野方向
+export type OutfieldDirection = 'left' | 'left_center' | 'center' | 'right_center' | 'right'
+
+// 内野守備位置
+export type InfieldPosition = 'pitcher' | 'catcher' | 'first_base' | 'second_base' | 'third_base' | 'shortstop'
+
+export type Direction = OutfieldDirection | InfieldPosition
+
 export type GameResult = 'win' | 'loss' | 'draw'
 
 export interface User {
@@ -90,6 +98,7 @@ export const RESULT_TYPE_LABELS: Record<ResultType, string> = {
   strikeout: '三振',
   groundout: '内野ゴロ',
   flyout: '外野フライ',
+  infield_flyout: '内野フライ',
   walk: '四球',
   hbp: '死球',
   sac_bunt: '犠打',
@@ -98,7 +107,7 @@ export const RESULT_TYPE_LABELS: Record<ResultType, string> = {
   fc: 'FC',
 }
 
-export const DIRECTION_LABELS: Record<Direction, string> = {
+export const OUTFIELD_DIRECTION_LABELS: Record<OutfieldDirection, string> = {
   left: 'レフト',
   left_center: '左中間',
   center: 'センター',
@@ -106,18 +115,72 @@ export const DIRECTION_LABELS: Record<Direction, string> = {
   right: 'ライト',
 }
 
+export const INFIELD_POSITION_LABELS: Record<InfieldPosition, string> = {
+  pitcher: 'ピッチャー',
+  catcher: 'キャッチャー',
+  first_base: 'ファースト',
+  second_base: 'セカンド',
+  third_base: 'サード',
+  shortstop: 'ショート',
+}
+
+export const DIRECTION_LABELS: Record<Direction, string> = {
+  ...OUTFIELD_DIRECTION_LABELS,
+  ...INFIELD_POSITION_LABELS,
+}
+
+// 内野ゴロ時の守備位置ラベル（「〇ゴロ」形式）
+export const GROUNDOUT_POSITION_LABELS: Record<InfieldPosition, string> = {
+  pitcher: 'ピッチャーゴロ',
+  catcher: 'キャッチャーゴロ',
+  first_base: 'ファーストゴロ',
+  second_base: 'セカンドゴロ',
+  third_base: 'サードゴロ',
+  shortstop: 'ショートゴロ',
+}
+
+// 内野フライ時の守備位置ラベル（「〇フライ」形式）
+export const INFIELD_FLY_POSITION_LABELS: Record<InfieldPosition, string> = {
+  pitcher: 'ピッチャーフライ',
+  catcher: 'キャッチャーフライ',
+  first_base: 'ファーストフライ',
+  second_base: 'セカンドフライ',
+  third_base: 'サードフライ',
+  shortstop: 'ショートフライ',
+}
+
 export const RESULT_TYPE_SHORT: Record<ResultType, string> = {
   hit: '右安',
   double: '右二',
-  triple: '右三',
+  triple: '三塁',
   hr: '本塁',
   strikeout: '三振',
   groundout: '内ゴ',
   flyout: '外飛',
+  infield_flyout: '内飛',
   walk: '四球',
   hbp: '死球',
   sac_bunt: '犠打',
   sac_fly: '犠飛',
   error: '失策',
   fc: 'FC',
+}
+
+export const INFIELD_POSITIONS: InfieldPosition[] = [
+  'pitcher', 'catcher', 'first_base', 'second_base', 'third_base', 'shortstop',
+]
+
+export function isInfieldPosition(d: Direction | null): d is InfieldPosition {
+  return d !== null && (INFIELD_POSITIONS as string[]).includes(d)
+}
+
+// 打席結果の表示ラベル（守備位置付き）
+export function getAtBatLabel(resultType: ResultType, direction: Direction | null): string {
+  if (resultType === 'groundout' && isInfieldPosition(direction)) {
+    return GROUNDOUT_POSITION_LABELS[direction]
+  }
+  if (resultType === 'infield_flyout' && isInfieldPosition(direction)) {
+    return INFIELD_FLY_POSITION_LABELS[direction]
+  }
+  return RESULT_TYPE_LABELS[resultType]
 }
