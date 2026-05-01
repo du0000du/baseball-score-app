@@ -182,4 +182,7 @@ export function getAtBatLabel(resultType: ResultType, direction: Direction | nul
     return GROUNDOUT_POSITION_LABELS[direction]
   }
   if (resultType === 'infield_flyout' && isInfieldPosition(direction)) {
-    return INFIELD_FLY_POSITION_LABELS[direction
+    return INFIELD_FLY_POSITION_LABELS[direction]
+  }
+  return RESULT_TYPE_LABELS[resultType]
+}
