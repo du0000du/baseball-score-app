@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { calcBattingStats, fmtAvg, fmtDec } from '@/lib/stats'
-import type { AtBat, Game } from '@/lib/supabase/types'
+import type { AtBat, Game, User } from '@/lib/supabase/types'
 
 function formatDate(dateStr: string) {
   const [, m, d] = dateStr.split('-')
@@ -28,6 +28,13 @@ export default async function DashboardPage() {
 
   const currentYear = new Date().getFullYear()
 
+  const { data: profile } = await supabase
+    .from('users')
+    .select('team_name, name')
+    .eq('id', user!.id)
+    .single()
+  const typedProfile = profile as Pick<User, 'team_name' | 'name'> | null
+
   const { data: games } = await supabase
     .from('games')
     .select('*, at_bats(*)')
@@ -43,9 +50,14 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-navy-500">
-          {currentYear}年 シーズン
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold text-navy-500">
+            {currentYear}年 シーズン
+          </h1>
+          {typedProfile?.team_name && (
+            <p className="text-sm text-gray-500 mt-0.5">{typedProfile.team_name}</p>
+          )}
+        </div>
         <Link
           href="/games/new"
           className="bg-navy-500 hover:bg-navy-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"

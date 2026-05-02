@@ -39,13 +39,10 @@ export default function Nav() {
             成績
           </Link>
         </div>
-        <button
-          onClick={handleSignOut}
-          className="text-sm text-blue-100 hover:text-white transition-colors"
-        >
-          ログアウト
-        </button>
-      </div>
-    </nav>
-  )
-}
+        <div className="flex items-center gap-3">
+          <Link href="/settings" className={linkClass('/settings')}>
+            設定
+          </Link>
+          <button
+            onClick={handleSignOut}
+   
