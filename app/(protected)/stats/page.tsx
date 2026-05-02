@@ -5,12 +5,13 @@ import { createClient } from '@/lib/supabase/client'
 import { calcBattingStats, calcPitchingStats, fmtAvg, fmtDec, fmtERA, formatIP } from '@/lib/stats'
 import { RESULT_TYPE_LABELS, DIRECTION_LABELS } from '@/lib/supabase/types'
 import type { AtBat, Direction, Game, ResultType, PitchingStat } from '@/lib/supabase/types'
+import DirectionChart from '@/app/(protected)/_components/DirectionChart'
 
 interface GameWithAtBats extends Game {
   at_bats: AtBat[]
 }
 
-type Tab = 'season' | 'per-game' | 'log' | 'pitching'
+type Tab = 'season' | 'per-game' | 'log' | 'pitching' | 'direction'
 
 function formatDate(dateStr: string) {
   const [, m, d] = dateStr.split('-')
@@ -33,10 +34,11 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 }
 
 const TAB_LIST: { key: Tab; label: string }[] = [
-  { key: 'season',   label: 'シーズン累計' },
-  { key: 'per-game', label: '試合別' },
-  { key: 'log',      label: '打席ログ' },
-  { key: 'pitching', label: '投手成績' },
+  { key: 'season',    label: 'シーズン累計' },
+  { key: 'per-game',  label: '試合別' },
+  { key: 'log',       label: '打席ログ' },
+  { key: 'pitching',  label: '投手成績' },
+  { key: 'direction', label: '打球方向' },
 ]
 
 export default function StatsPage() {
@@ -416,6 +418,18 @@ export default function StatsPage() {
               )}
             </div>
           )}
+
+          {/* タブ5: 打球方向 */}
+          {tab === 'direction' && (
+            allAtBats.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-gray-400">
+                打席データがありません
+              </div>
+            ) : (
+              <DirectionChart atBats={allAtBats} />
+            )
+          )}
+
         </div>
       )}
     </div>
