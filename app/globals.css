@@ -7,3 +7,37 @@
     @apply bg-gray-50 text-gray-900;
   }
 }
+
+@layer components {
+  /* ボタン押下フィードバック共通 */
+  .btn {
+    @apply transition-all duration-100 ease-out;
+  }
+  .btn:active {
+    transform: scale(0.97);
+    opacity: 0.88;
+  }
+  .btn:disabled {
+    pointer-events: none;
+  }
+}
+
+@layer utilities {
+  /* ページ・コンテンツのフェードイン */
+  .page-enter {
+    animation: fadeUp 0.18s ease-out both;
+  }
+  .tab-enter {
+    animation: fadeIn 0.14s ease-out both;
+  }
+}
+
+@keyframes fadeUp {
+  0%   { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}

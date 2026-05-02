@@ -32,6 +32,13 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
   )
 }
 
+const TAB_LIST: { key: Tab; label: string }[] = [
+  { key: 'season',   label: 'シーズン累計' },
+  { key: 'per-game', label: '試合別' },
+  { key: 'log',      label: '打席ログ' },
+  { key: 'pitching', label: '投手成績' },
+]
+
 export default function StatsPage() {
   const supabaseRef = useRef(createClient())
   const supabase = supabaseRef.current
@@ -41,6 +48,7 @@ export default function StatsPage() {
   const [pitchingStats, setPitchingStats] = useState<PitchingStat[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('season')
+  const [tabKey, setTabKey] = useState(0)
 
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i)
 
@@ -65,6 +73,12 @@ export default function StatsPage() {
     fetch()
   }, [supabase, season])
 
+  const handleTabChange = (newTab: Tab) => {
+    if (newTab === tab) return
+    setTab(newTab)
+    setTabKey(k => k + 1)
+  }
+
   const allAtBats = games.flatMap((g) => g.at_bats)
   const stats = calcBattingStats(allAtBats)
   const pStats = calcPitchingStats(pitchingStats)
@@ -74,12 +88,7 @@ export default function StatsPage() {
   const draws = games.filter((g) => g.result === 'draw').length
   const winRate = (wins + losses) > 0 ? (wins / (wins + losses)).toFixed(3).replace(/^0/, '') : '---'
 
-  const tabs: { key: Tab; label: string }[] = [
-    { key: 'season', label: 'シーズン累計' },
-    { key: 'per-game', label: '試合別' },
-    { key: 'log', label: '打席ログ' },
-    { key: 'pitching', label: '投手成績' },
-  ]
+  const activeTabIdx = TAB_LIST.findIndex(t => t.key === tab)
 
   return (
     <div className="space-y-4">
@@ -88,7 +97,7 @@ export default function StatsPage() {
         <select
           value={season}
           onChange={(e) => setSeason(parseInt(e.target.value))}
-          className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
+          className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 transition-shadow duration-150"
         >
           {years.map((y) => (
             <option key={y} value={y}>{y}年</option>
@@ -96,32 +105,50 @@ export default function StatsPage() {
         </select>
       </div>
 
-      {/* タブ */}
-      <div className="flex border-b border-gray-200 overflow-x-auto">
-        {tabs.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px ${
-              tab === key
-                ? 'border-navy-500 text-navy-500'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+      {/* タブ - スライドインジケーター */}
+      <div className="relative border-b border-gray-200">
+        <div className="flex overflow-x-auto">
+          {TAB_LIST.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => handleTabChange(key)}
+              className={`relative px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors duration-150 outline-none ${
+                tab === key
+                  ? 'text-navy-500'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {/* スライドするアンダーライン */}
+        <div
+          className="absolute bottom-0 h-0.5 bg-navy-500 rounded-full transition-all duration-200 ease-out"
+          style={{
+            width: `${100 / TAB_LIST.length}%`,
+            transform: `translateX(${activeTabIdx * 100}%)`,
+          }}
+        />
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400">読み込み中...</div>
+        <div className="space-y-3">
+          {[1,2,3].map(i => (
+            <div key={i} className="bg-white rounded-xl border border-gray-100 p-6 animate-pulse">
+              <div className="h-4 bg-gray-100 rounded w-1/4 mb-4" />
+              <div className="grid grid-cols-4 gap-3">
+                {[1,2,3,4].map(j => <div key={j} className="h-10 bg-gray-100 rounded" />)}
+              </div>
+            </div>
+          ))}
+        </div>
       ) : (
-        <>
+        <div key={tabKey} className="tab-enter space-y-4">
+
           {/* タブ1: シーズン累計 */}
           {tab === 'season' && (
             <div className="space-y-4">
-
-              {/* チーム戦績 */}
               {games.length > 0 && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
                   <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">チーム戦績</h2>
@@ -214,12 +241,10 @@ export default function StatsPage() {
                       {games.map((game) => {
                         const gs = calcBattingStats(game.at_bats)
                         return (
-                          <tr key={game.id} className="hover:bg-gray-50">
+                          <tr key={game.id} className="hover:bg-gray-50 transition-colors duration-100">
                             <td className="px-4 py-3 text-gray-600">{formatDate(game.game_date)}</td>
                             <td className="px-4 py-3 font-medium text-gray-800">{game.opponent}</td>
-                            <td className="px-3 py-3 text-center">
-                              <ResultBadge result={game.result} />
-                            </td>
+                            <td className="px-3 py-3 text-center"><ResultBadge result={game.result} /></td>
                             <td className="px-3 py-3 text-center text-gray-700">{gs.pa}</td>
                             <td className="px-3 py-3 text-center text-gray-700">{gs.ab}</td>
                             <td className="px-3 py-3 text-center text-gray-700">{gs.hits}</td>
@@ -260,7 +285,7 @@ export default function StatsPage() {
                     <tbody className="divide-y divide-gray-50">
                       {games.flatMap((game) =>
                         game.at_bats.map((ab) => (
-                          <tr key={ab.id} className="hover:bg-gray-50">
+                          <tr key={ab.id} className="hover:bg-gray-50 transition-colors duration-100">
                             <td className="px-4 py-2.5 text-gray-600 whitespace-nowrap">{formatDate(game.game_date)}</td>
                             <td className="px-4 py-2.5 text-gray-700 whitespace-nowrap">{game.opponent}</td>
                             <td className="px-3 py-2.5 text-center text-gray-500">#{ab.at_bat_number}</td>
@@ -311,7 +336,6 @@ export default function StatsPage() {
                 </div>
               ) : (
                 <>
-                  {/* シーズン累計 */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">シーズン投手成績</h2>
                     <div className="grid grid-cols-4 gap-2 mb-4">
@@ -342,7 +366,6 @@ export default function StatsPage() {
                     </div>
                   </div>
 
-                  {/* 試合別投手成績 */}
                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="px-5 py-3 border-b border-gray-100">
                       <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">試合別投手成績</h2>
@@ -366,18 +389,13 @@ export default function StatsPage() {
                           {games.map((game) => {
                             const ps = pitchingStats.find(p => p.game_id === game.id)
                             if (!ps) return null
-                            const resultLabels: Record<string, string> = {
-                              win: '勝', loss: '敗', save: 'S', hold: 'H', none: '-'
-                            }
+                            const resultLabels: Record<string, string> = { win: '勝', loss: '敗', save: 'S', hold: 'H', none: '-' }
                             const resultColors: Record<string, string> = {
-                              win: 'text-green-600 font-bold',
-                              loss: 'text-red-500 font-bold',
-                              save: 'text-blue-600 font-bold',
-                              hold: 'text-purple-600 font-bold',
-                              none: 'text-gray-400'
+                              win: 'text-green-600 font-bold', loss: 'text-red-500 font-bold',
+                              save: 'text-blue-600 font-bold', hold: 'text-purple-600 font-bold', none: 'text-gray-400'
                             }
                             return (
-                              <tr key={game.id} className="hover:bg-gray-50">
+                              <tr key={game.id} className="hover:bg-gray-50 transition-colors duration-100">
                                 <td className="px-4 py-3 text-gray-600">{formatDate(game.game_date)}</td>
                                 <td className="px-4 py-3 font-medium text-gray-800">{game.opponent}</td>
                                 <td className={`px-3 py-3 text-center ${resultColors[ps.result]}`}>{resultLabels[ps.result]}</td>
@@ -398,7 +416,7 @@ export default function StatsPage() {
               )}
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   )

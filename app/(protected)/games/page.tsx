@@ -18,6 +18,25 @@ function ResultBadge({ result }: { result: Game['result'] }) {
   return <span className="inline-block w-7 text-center py-0.5 rounded text-xs font-bold bg-yellow-100 text-yellow-700">分</span>
 }
 
+function SkeletonRow() {
+  return (
+    <div className="p-4 flex items-center justify-between animate-pulse">
+      <div className="flex items-center gap-3">
+        <div className="w-7 h-5 bg-gray-100 rounded" />
+        <div className="space-y-1.5">
+          <div className="h-4 bg-gray-100 rounded w-32" />
+          <div className="h-3 bg-gray-100 rounded w-24" />
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <div className="h-7 w-16 bg-gray-100 rounded" />
+        <div className="h-7 w-16 bg-gray-100 rounded" />
+        <div className="h-7 w-10 bg-gray-100 rounded" />
+      </div>
+    </div>
+  )
+}
+
 export default function GamesPage() {
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
@@ -53,21 +72,23 @@ export default function GamesPage() {
         <h1 className="text-2xl font-bold text-navy-500">試合一覧</h1>
         <Link
           href="/games/new"
-          className="bg-navy-500 hover:bg-navy-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          className="btn bg-navy-500 hover:bg-navy-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
         >
           ＋ 試合を登録
         </Link>
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-gray-400">読み込み中...</div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 divide-y divide-gray-50">
+          {[1,2,3].map(i => <SkeletonRow key={i} />)}
+        </div>
       ) : games.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
           <div className="text-5xl mb-4">⚾</div>
           <p className="text-gray-400 mb-4">試合が登録されていません</p>
           <Link
             href="/games/new"
-            className="inline-block bg-navy-500 hover:bg-navy-600 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="btn inline-block bg-navy-500 hover:bg-navy-600 text-white px-6 py-2 rounded-lg text-sm font-medium"
           >
             最初の試合を登録する
           </Link>
@@ -75,23 +96,23 @@ export default function GamesPage() {
       ) : (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 divide-y divide-gray-50">
           {games.map((game) => (
-            <div key={game.id} className="p-4">
+            <div key={game.id} className="p-4 transition-colors duration-100">
               {confirmId === game.id ? (
-                <div className="flex items-center justify-between bg-red-50 rounded-lg p-3">
+                <div className="flex items-center justify-between bg-red-50 rounded-lg p-3 animate-fade-in">
                   <span className="text-sm text-red-700 font-medium">
                     この試合と全打席記録を削除しますか？
                   </span>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setConfirmId(null)}
-                      className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                      className="btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded transition-colors"
                     >
                       キャンセル
                     </button>
                     <button
                       onClick={() => handleDelete(game.id)}
                       disabled={deletingId === game.id}
-                      className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition-colors disabled:opacity-50"
+                      className="btn px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded disabled:opacity-50"
                     >
                       {deletingId === game.id ? '削除中...' : '削除する'}
                     </button>
@@ -117,25 +138,25 @@ export default function GamesPage() {
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <Link
                       href={`/games/${game.id}/at-bats`}
-                      className="px-2.5 py-1.5 text-xs font-medium bg-field-500 hover:bg-field-600 text-white rounded transition-colors"
+                      className="btn px-2.5 py-1.5 text-xs font-medium bg-field-500 hover:bg-field-600 text-white rounded"
                     >
                       打席入力
                     </Link>
                     <Link
                       href={`/games/${game.id}/pitching`}
-                      className="px-2.5 py-1.5 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+                      className="btn px-2.5 py-1.5 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded"
                     >
                       投手成績
                     </Link>
                     <Link
                       href={`/games/${game.id}/edit`}
-                      className="px-2.5 py-1.5 text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors"
+                      className="btn px-2.5 py-1.5 text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 rounded"
                     >
                       編集
                     </Link>
                     <button
                       onClick={() => setConfirmId(game.id)}
-                      className="px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 rounded transition-colors"
+                      className="btn px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 rounded"
                     >
                       削除
                     </button>
