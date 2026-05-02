@@ -13,11 +13,14 @@ import type { AtBat, Direction, Game, ResultType, OutfieldDirection, InfieldPosi
 // 外野方向を表示する結果タイプ
 const SHOW_OUTFIELD_DIRECTION: ResultType[] = [
   'hit', 'double', 'triple', 'hr',
-  'flyout', 'sac_fly', 'error', 'fc',
+  'flyout', 'sac_fly',
 ]
 
 // 内野守備位置を表示する結果タイプ
 const SHOW_INFIELD_POSITION: ResultType[] = ['groundout', 'infield_flyout']
+
+// FC時に内野守備位置を表示
+const SHOW_FC_POSITION: ResultType[] = ['fc']
 
 const RESULT_GROUPS: { label: string; color: string; activeColor: string; cols: string; items: ResultType[] }[] = [
   {
@@ -83,6 +86,29 @@ const INFIELD_FLY_POSITIONS: { value: InfieldPosition; label: string }[] = [
   { value: 'first_base', label: 'ファーストフライ' },
   { value: 'pitcher', label: 'ピッチャーフライ' },
   { value: 'catcher', label: 'キャッチャーフライ' },
+]
+
+// エラー守備位置（全9ポジション）
+const ERROR_POSITIONS: { value: Direction; label: string }[] = [
+  { value: 'pitcher',     label: 'ピッチャー' },
+  { value: 'catcher',     label: 'キャッチャー' },
+  { value: 'first_base',  label: 'ファースト' },
+  { value: 'second_base', label: 'セカンド' },
+  { value: 'third_base',  label: 'サード' },
+  { value: 'shortstop',   label: 'ショート' },
+  { value: 'left',        label: 'レフト' },
+  { value: 'center',      label: 'センター' },
+  { value: 'right',       label: 'ライト' },
+]
+
+// FC守備位置（内野6ポジション）
+const FC_POSITIONS: { value: InfieldPosition; label: string }[] = [
+  { value: 'third_base',  label: 'サードFC' },
+  { value: 'shortstop',   label: 'ショートFC' },
+  { value: 'second_base', label: 'セカンドFC' },
+  { value: 'first_base',  label: 'ファーストFC' },
+  { value: 'pitcher',     label: 'ピッチャーFC' },
+  { value: 'catcher',     label: 'キャッチャーFC' },
 ]
 
 function formatDate(dateStr: string) {
@@ -222,7 +248,10 @@ export default function AtBatsPage() {
       : resultType === 'hr' ? 'hr'
       : null
 
-    const saveDirection = SHOW_OUTFIELD_DIRECTION.includes(resultType) || SHOW_INFIELD_POSITION.includes(resultType)
+    const saveDirection = SHOW_OUTFIELD_DIRECTION.includes(resultType) ||
+                          SHOW_INFIELD_POSITION.includes(resultType) ||
+                          resultType === 'error' ||
+                          resultType === 'fc'
     const directionValue = saveDirection ? direction : null
 
     if (editingAtBatId) {
@@ -300,6 +329,8 @@ export default function AtBatsPage() {
 
   const showOutfieldDirection = resultType ? SHOW_OUTFIELD_DIRECTION.includes(resultType) : false
   const showInfieldPosition = resultType ? SHOW_INFIELD_POSITION.includes(resultType) : false
+  const showErrorPosition = resultType === 'error'
+  const showFCPosition = resultType === 'fc'
 
   return (
     <div className="max-w-2xl mx-auto space-y-5">
@@ -457,6 +488,58 @@ export default function AtBatsPage() {
           </div>
         )}
 
+        {/* エラー守備位置（全9ポジション） */}
+        {showErrorPosition && (
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              守備位置
+              <span className="text-gray-400 font-normal ml-1">（任意）</span>
+            </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {ERROR_POSITIONS.map((pos) => (
+                <button
+                  key={pos.value}
+                  type="button"
+                  onClick={() => setDirection(direction === pos.value ? null : pos.value)}
+                  className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${
+                    direction === pos.value
+                      ? 'bg-purple-600 border-purple-600 text-white'
+                      : 'bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100'
+                  }`}
+                >
+                  {pos.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* FC守備位置（内野6ポジション） */}
+        {showFCPosition && (
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              守備位置
+              <span className="text-gray-400 font-normal ml-1">（任意）</span>
+            </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {FC_POSITIONS.map((pos) => (
+                <button
+                  key={pos.value}
+                  type="button"
+                  onClick={() => setDirection(direction === pos.value ? null : pos.value)}
+                  className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${
+                    direction === pos.value
+                      ? 'bg-purple-600 border-purple-600 text-white'
+                      : 'bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100'
+                  }`}
+                >
+                  {pos.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* 外野打球方向（安打・外野フライなど） */}
         {showOutfieldDirection && (
           <div>
@@ -560,7 +643,11 @@ export default function AtBatsPage() {
           <div className="space-y-2">
             {atBats.map((ab) => {
               const label = getAtBatLabel(ab.result_type as ResultType, ab.direction as Direction | null)
-              const isInfieldPlay = ab.result_type === 'groundout' || ab.result_type === 'infield_flyout'
+              const isPositionInLabel = ab.result_type === 'groundout' ||
+                                        ab.result_type === 'infield_flyout' ||
+                                        ab.result_type === 'error' ||
+                                        (ab.result_type === 'hit' && !!ab.direction) ||
+                                        (ab.result_type === 'fc' && !!ab.direction)
               const isEditing = editingAtBatId === ab.id
               const rbiVal = ab.rbi_count ?? (ab.is_rbi ? 1 : 0)
               const sbVal = ab.stolen_base_count ?? (ab.is_stolen_base ? 1 : 0)
@@ -579,7 +666,7 @@ export default function AtBatsPage() {
                     <span className="text-sm font-medium text-gray-800">
                       {label}
                     </span>
-                    {ab.direction && !isInfieldPlay && (
+                    {ab.direction && !isPositionInLabel && (
                       <span className="text-xs text-gray-500">
                         → {DIRECTION_LABELS[ab.direction as Direction]}
                       </span>

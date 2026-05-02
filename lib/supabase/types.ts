@@ -199,6 +199,25 @@ export const INFIELD_FLY_POSITION_LABELS: Record<InfieldPosition, string> = {
   shortstop: 'ショートフライ',
 }
 
+// FC時の守備位置ラベル（「〇FC」形式）
+export const FC_POSITION_LABELS: Record<InfieldPosition, string> = {
+  pitcher: 'ピッチャーFC',
+  catcher: 'キャッチャーFC',
+  first_base: 'ファーストFC',
+  second_base: 'セカンドFC',
+  third_base: 'サードFC',
+  shortstop: 'ショートFC',
+}
+
+// 単打時の打球方向ラベル（「〇安打」形式）
+export const HIT_DIRECTION_LABELS: Record<OutfieldDirection, string> = {
+  left: 'レフト安打',
+  left_center: '左中間安打',
+  center: 'センター安打',
+  right_center: '右中間安打',
+  right: 'ライト安打',
+}
+
 export const RESULT_TYPE_SHORT: Record<ResultType, string> = {
   hit: '右安',
   double: '右二',
@@ -224,6 +243,19 @@ export function isInfieldPosition(d: Direction | null): d is InfieldPosition {
   return d !== null && (INFIELD_POSITIONS as string[]).includes(d)
 }
 
+// エラー時の守備位置ラベル（「〇エラー」形式）
+export const ERROR_POSITION_LABELS: Partial<Record<Direction, string>> = {
+  pitcher:     'ピッチャーエラー',
+  catcher:     'キャッチャーエラー',
+  first_base:  'ファーストエラー',
+  second_base: 'セカンドエラー',
+  third_base:  'サードエラー',
+  shortstop:   'ショートエラー',
+  left:        'レフトエラー',
+  center:      'センターエラー',
+  right:       'ライトエラー',
+}
+
 // 打席結果の表示ラベル（守備位置付き）
 export function getAtBatLabel(resultType: ResultType, direction: Direction | null): string {
   if (resultType === 'groundout' && isInfieldPosition(direction)) {
@@ -231,6 +263,15 @@ export function getAtBatLabel(resultType: ResultType, direction: Direction | nul
   }
   if (resultType === 'infield_flyout' && isInfieldPosition(direction)) {
     return INFIELD_FLY_POSITION_LABELS[direction]
+  }
+  if (resultType === 'error' && direction && ERROR_POSITION_LABELS[direction]) {
+    return ERROR_POSITION_LABELS[direction]!
+  }
+  if (resultType === 'hit' && direction && !isInfieldPosition(direction)) {
+    return HIT_DIRECTION_LABELS[direction as OutfieldDirection] ?? RESULT_TYPE_LABELS[resultType]
+  }
+  if (resultType === 'fc' && isInfieldPosition(direction)) {
+    return FC_POSITION_LABELS[direction]
   }
   return RESULT_TYPE_LABELS[resultType]
 }
