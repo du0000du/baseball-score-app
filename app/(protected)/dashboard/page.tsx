@@ -8,12 +8,35 @@ function formatDate(dateStr: string) {
   return `${parseInt(m)}/${parseInt(d)}`
 }
 
-function ResultBadge({ result }: { result: Game['result'] }) {
-  if (result === 'win')
-    return <span className="inline-block px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-700">勝</span>
-  if (result === 'loss')
-    return <span className="inline-block px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-700">負</span>
-  return <span className="inline-block px-2 py-0.5 rounded text-xs font-bold bg-yellow-100 text-yellow-700">分</span>
+function ScoreDisplay({ game }: { game: Game }) {
+  if (game.result === 'win') {
+    return (
+      <span className="flex items-center gap-1 text-base font-bold leading-none">
+        <span className="text-green-500">○</span>
+        <span className="text-gray-800">
+          {game.score_us}<span className="text-gray-400 font-normal mx-0.5">-</span>{game.score_them}
+        </span>
+      </span>
+    )
+  }
+  if (game.result === 'loss') {
+    return (
+      <span className="flex items-center gap-1 text-base font-bold leading-none">
+        <span className="text-gray-600">●</span>
+        <span className="text-gray-800">
+          {game.score_us}<span className="text-gray-400 font-normal mx-0.5">-</span>{game.score_them}
+        </span>
+      </span>
+    )
+  }
+  return (
+    <span className="flex items-center gap-1 text-base font-bold leading-none">
+      <span className="text-yellow-500">△</span>
+      <span className="text-gray-800">
+        {game.score_us}<span className="text-gray-400 font-normal mx-0.5">-</span>{game.score_them}
+      </span>
+    </span>
+  )
 }
 
 interface GameWithAtBats extends Game {
@@ -73,7 +96,7 @@ export default async function DashboardPage() {
         </div>
         <Link
           href="/games/new"
-          className="bg-navy-500 hover:bg-navy-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          className="btn bg-navy-500 hover:bg-navy-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
         >
           ＋ 試合を登録
         </Link>
@@ -235,16 +258,13 @@ export default async function DashboardPage() {
               return (
                 <div key={game.id} className="py-3 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <ResultBadge result={game.result} />
+                    <ScoreDisplay game={game} />
                     <div>
-                      <span className="font-medium text-gray-800">vs {game.opponent}</span>
-                      <span className="text-gray-400 text-sm ml-2">
-                        {game.score_us}-{game.score_them}
-                      </span>
+                      <span className="text-sm font-medium text-gray-700">vs {game.opponent}</span>
+                      <div className="text-xs text-gray-400 mt-0.5">{formatDate(game.game_date)}</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <span>{formatDate(game.game_date)}</span>
+                  <div className="flex items-center gap-3 text-sm text-gray-500">
                     {game.at_bats.length > 0 ? (
                       <span className="font-medium text-gray-700">
                         {gameStats.hits}/{gameStats.ab}
@@ -257,7 +277,7 @@ export default async function DashboardPage() {
                     )}
                     <Link
                       href={`/games/${game.id}/at-bats`}
-                      className="text-navy-500 hover:underline text-xs"
+                      className="btn text-navy-500 hover:underline text-xs"
                     >
                       打席入力
                     </Link>
