@@ -218,6 +218,15 @@ export const HIT_DIRECTION_LABELS: Record<OutfieldDirection, string> = {
   right: 'ライト安打',
 }
 
+// 内野安打時の守備位置ラベル（「〇内野安打」形式）
+export const INFIELD_HIT_POSITION_LABELS: Partial<Record<InfieldPosition, string>> = {
+  pitcher:     'ピッチャー内野安打',
+  catcher:     'キャッチャー内野安打',
+  first_base:  'ファースト内野安打',
+  second_base: 'セカンド内野安打',
+  shortstop:   'ショート内野安打',
+}
+
 export const RESULT_TYPE_SHORT: Record<ResultType, string> = {
   hit: '右安',
   double: '右二',
@@ -267,8 +276,12 @@ export function getAtBatLabel(resultType: ResultType, direction: Direction | nul
   if (resultType === 'error' && direction && ERROR_POSITION_LABELS[direction]) {
     return ERROR_POSITION_LABELS[direction]!
   }
-  if (resultType === 'hit' && direction && !isInfieldPosition(direction)) {
-    return HIT_DIRECTION_LABELS[direction as OutfieldDirection] ?? RESULT_TYPE_LABELS[resultType]
+  if (resultType === 'hit' && direction) {
+    if (!isInfieldPosition(direction)) {
+      return HIT_DIRECTION_LABELS[direction as OutfieldDirection] ?? RESULT_TYPE_LABELS[resultType]
+    } else if (INFIELD_HIT_POSITION_LABELS[direction as InfieldPosition]) {
+      return INFIELD_HIT_POSITION_LABELS[direction as InfieldPosition]!
+    }
   }
   if (resultType === 'fc' && isInfieldPosition(direction)) {
     return FC_POSITION_LABELS[direction]

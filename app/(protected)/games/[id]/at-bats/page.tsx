@@ -111,6 +111,15 @@ const FC_POSITIONS: { value: InfieldPosition; label: string }[] = [
   { value: 'catcher',     label: 'キャッチャーFC' },
 ]
 
+// 内野安打守備位置（5ポジション）
+const INFIELD_HIT_POSITIONS: { value: InfieldPosition; label: string }[] = [
+  { value: 'pitcher',     label: 'ピッチャー内野安打' },
+  { value: 'catcher',     label: 'キャッチャー内野安打' },
+  { value: 'first_base',  label: 'ファースト内野安打' },
+  { value: 'second_base', label: 'セカンド内野安打' },
+  { value: 'shortstop',   label: 'ショート内野安打' },
+]
+
 function formatDate(dateStr: string) {
   const [y, m, d] = dateStr.split('-')
   return `${y}年${parseInt(m)}月${parseInt(d)}日`
@@ -540,11 +549,37 @@ export default function AtBatsPage() {
           </div>
         )}
 
+        {/* 内野安打守備位置（単打のみ） */}
+        {resultType === 'hit' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              内野安打方向
+              <span className="text-gray-400 font-normal ml-1">（任意）</span>
+            </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {INFIELD_HIT_POSITIONS.map((pos) => (
+                <button
+                  key={pos.value}
+                  type="button"
+                  onClick={() => setDirection(direction === pos.value ? null : pos.value)}
+                  className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${
+                    direction === pos.value
+                      ? 'bg-green-600 border-green-600 text-white'
+                      : 'bg-green-50 border-green-200 text-green-800 hover:bg-green-100'
+                  }`}
+                >
+                  {pos.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* 外野打球方向（安打・外野フライなど） */}
         {showOutfieldDirection && (
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
-              打球方向
+              {resultType === 'hit' ? '外野安打方向' : '打球方向'}
               <span className="text-gray-400 font-normal ml-1">（任意）</span>
             </label>
             <div className="grid grid-cols-5 gap-1.5">
