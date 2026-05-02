@@ -1,4 +1,4 @@
-import type { AtBat, BattingStats } from './supabase/types'
+import type { AtBat, BattingStats, PitchingStat, PitchingStats } from './supabase/types'
 
 export function calcBattingStats(atBats: AtBat[]): BattingStats {
   const pa = atBats.length
@@ -43,6 +43,65 @@ export function calcBattingStats(atBats: AtBat[]): BattingStats {
   }
 }
 
+// innings_pitched は1/3イニング単位の整数
+// 例: 9 = 3.0回, 10 = 3.1回, 11 = 3.2回
+// IPをアウト数（1/3単位整数）に変換
+export function ipToOuts(ip: number): number {
+  return ip
+}
+
+// アウト数（1/3単位整数）をイニング表示文字列に変換
+export function formatIP(outs: number): string {
+  const innings = Math.floor(outs / 3)
+  const thirds = outs % 3
+  if (thirds === 0) return `${innings}`
+  return `${innings}.${thirds}`
+}
+
+// アウト数（1/3単位整数）を小数換算イニング数に変換（ERA計算用）
+export function outsToIPDecimal(outs: number): number {
+  return Math.floor(outs / 3) + (outs % 3) / 3
+}
+
+export function calcPitchingStats(stats: PitchingStat[]): PitchingStats {
+  const games = stats.length
+  const wins = stats.filter(s => s.result === 'win').length
+  const losses = stats.filter(s => s.result === 'loss').length
+  const saves = stats.filter(s => s.result === 'save').length
+  const holds = stats.filter(s => s.result === 'hold').length
+  const complete_games = stats.filter(s => s.complete_game).length
+  const innings_pitched = stats.reduce((sum, s) => sum + s.innings_pitched, 0)
+  const hits_allowed = stats.reduce((sum, s) => sum + s.hits_allowed, 0)
+  const home_runs_allowed = stats.reduce((sum, s) => sum + s.home_runs_allowed, 0)
+  const strikeouts = stats.reduce((sum, s) => sum + s.strikeouts, 0)
+  const walks = stats.reduce((sum, s) => sum + s.walks, 0)
+  const hit_batsmen = stats.reduce((sum, s) => sum + s.hit_batsmen, 0)
+  const runs_allowed = stats.reduce((sum, s) => sum + s.runs_allowed, 0)
+  const earned_runs = stats.reduce((sum, s) => sum + s.earned_runs, 0)
+  const hasPitchCount = stats.some(s => s.pitch_count !== null)
+  const pitch_count = hasPitchCount
+    ? stats.reduce((sum, s) => sum + (s.pitch_count ?? 0), 0)
+    : null
+
+  const ipDecimal = outsToIPDecimal(innings_pitched)
+  const era = ipDecimal > 0 ? (earned_runs / ipDecimal) * 9 : null
+  const whip = ipDecimal > 0 ? (hits_allowed + walks) / ipDecimal : null
+  const k9 = ipDecimal > 0 ? (strikeouts / ipDecimal) * 9 : null
+  const kbb = walks > 0 ? strikeouts / walks : null
+  // FIP = (13*HR + 3*(BB+HBP) - 2*K) / IP + FIP定数(3.10 近似)
+  const fip = ipDecimal > 0
+    ? (13 * home_runs_allowed + 3 * (walks + hit_batsmen) - 2 * strikeouts) / ipDecimal + 3.10
+    : null
+  const win_rate = (wins + losses) > 0 ? wins / (wins + losses) : null
+
+  return {
+    games, wins, losses, saves, holds, complete_games,
+    innings_pitched, hits_allowed, home_runs_allowed,
+    strikeouts, walks, hit_batsmen, runs_allowed, earned_runs,
+    pitch_count, era, whip, k9, kbb, fip, win_rate,
+  }
+}
+
 export function fmtAvg(n: number | null): string {
   if (n === null) return '---'
   return n.toFixed(3).replace(/^0/, '')
@@ -56,4 +115,9 @@ export function fmtPct(n: number | null): string {
 export function fmtDec(n: number | null, d = 2): string {
   if (n === null) return '---'
   return n.toFixed(d)
+}
+
+export function fmtERA(n: number | null): string {
+  if (n === null) return '---'
+  return n.toFixed(2)
 }

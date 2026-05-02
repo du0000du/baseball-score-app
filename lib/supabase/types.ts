@@ -16,6 +16,8 @@ export type Direction = OutfieldDirection | InfieldPosition
 
 export type GameResult = 'win' | 'loss' | 'draw'
 
+export type PitchingResult = 'win' | 'loss' | 'save' | 'hold' | 'none'
+
 export interface User {
   id: string
   name: string | null
@@ -58,8 +60,30 @@ export interface AtBat {
   created_at: string
 }
 
+export interface PitchingStat {
+  id: string
+  game_id: string
+  user_id: string
+  innings_pitched: number  // 1/3単位の整数 (3イニング=9, 3.1=10, 3.2=11)
+  result: PitchingResult
+  hits_allowed: number
+  home_runs_allowed: number
+  strikeouts: number
+  walks: number
+  hit_batsmen: number
+  runs_allowed: number
+  earned_runs: number
+  complete_game: boolean
+  pitch_count: number | null
+  created_at: string
+}
+
 export interface GameWithAtBats extends Game {
   at_bats: AtBat[]
+}
+
+export interface GameWithPitching extends Game {
+  pitching_stats: PitchingStat[]
 }
 
 // 成績集計
@@ -90,6 +114,30 @@ export interface BattingStats {
   isop: number | null
   sb_pct: number | null
   rc27: number | null
+}
+
+export interface PitchingStats {
+  games: number
+  wins: number
+  losses: number
+  saves: number
+  holds: number
+  complete_games: number
+  innings_pitched: number   // 1/3単位整数
+  hits_allowed: number
+  home_runs_allowed: number
+  strikeouts: number
+  walks: number
+  hit_batsmen: number
+  runs_allowed: number
+  earned_runs: number
+  pitch_count: number | null
+  era: number | null
+  whip: number | null
+  k9: number | null
+  kbb: number | null
+  fip: number | null
+  win_rate: number | null
 }
 
 export const RESULT_TYPE_LABELS: Record<ResultType, string> = {

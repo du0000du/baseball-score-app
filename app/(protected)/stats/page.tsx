@@ -2,15 +2,15 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { calcBattingStats, fmtAvg, fmtDec } from '@/lib/stats'
+import { calcBattingStats, calcPitchingStats, fmtAvg, fmtDec, fmtERA, formatIP } from '@/lib/stats'
 import { RESULT_TYPE_LABELS, DIRECTION_LABELS } from '@/lib/supabase/types'
-import type { AtBat, Direction, Game, ResultType } from '@/lib/supabase/types'
+import type { AtBat, Direction, Game, ResultType, PitchingStat } from '@/lib/supabase/types'
 
 interface GameWithAtBats extends Game {
   at_bats: AtBat[]
 }
 
-type Tab = 'season' | 'per-game' | 'log'
+type Tab = 'season' | 'per-game' | 'log' | 'pitching'
 
 function formatDate(dateStr: string) {
   const [, m, d] = dateStr.split('-')
@@ -38,6 +38,7 @@ export default function StatsPage() {
   const currentYear = new Date().getFullYear()
   const [season, setSeason] = useState(currentYear)
   const [games, setGames] = useState<GameWithAtBats[]>([])
+  const [pitchingStats, setPitchingStats] = useState<PitchingStat[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('season')
 
@@ -52,32 +53,41 @@ export default function StatsPage() {
         .eq('season', season)
         .order('game_date', { ascending: false })
       setGames((data ?? []) as GameWithAtBats[])
+
+      const { data: ps } = await supabase
+        .from('pitching_stats')
+        .select('*, games!inner(season)')
+        .eq('games.season', season)
+      setPitchingStats((ps ?? []) as PitchingStat[])
+
       setLoading(false)
     }
     fetch()
-  }, [season])
+  }, [supabase, season])
 
   const allAtBats = games.flatMap((g) => g.at_bats)
   const stats = calcBattingStats(allAtBats)
+  const pStats = calcPitchingStats(pitchingStats)
 
   const wins = games.filter((g) => g.result === 'win').length
   const losses = games.filter((g) => g.result === 'loss').length
   const draws = games.filter((g) => g.result === 'draw').length
   const winRate = (wins + losses) > 0 ? (wins / (wins + losses)).toFixed(3).replace(/^0/, '') : '---'
 
-  const tabs: { id: Tab; label: string }[] = [
-    { id: 'season', label: 'シーズン累計' },
-    { id: 'per-game', label: '試合ごと' },
-    { id: 'log', label: '全打席ログ' },
+  const tabs: { key: Tab; label: string }[] = [
+    { key: 'season', label: 'シーズン累計' },
+    { key: 'per-game', label: '試合別' },
+    { key: 'log', label: '打席ログ' },
+    { key: 'pitching', label: '投手成績' },
   ]
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-navy-500">打撃成績</h1>
+        <h1 className="text-2xl font-bold text-navy-500">成績</h1>
         <select
           value={season}
-          onChange={(e) => setSeason(Number(e.target.value))}
+          onChange={(e) => setSeason(parseInt(e.target.value))}
           className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
         >
           {years.map((y) => (
@@ -87,38 +97,34 @@ export default function StatsPage() {
       </div>
 
       {/* タブ */}
-      <div className="flex bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        {tabs.map((t) => (
+      <div className="flex border-b border-gray-200 overflow-x-auto">
+        {tabs.map(({ key, label }) => (
           <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`flex-1 py-3 text-sm font-medium transition-colors ${
-              tab === t.id
-                ? 'bg-navy-500 text-white'
-                : 'text-gray-500 hover:bg-gray-50'
+            key={key}
+            onClick={() => setTab(key)}
+            className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px ${
+              tab === key
+                ? 'border-navy-500 text-navy-500'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            {t.label}
+            {label}
           </button>
         ))}
       </div>
 
       {loading ? (
         <div className="text-center py-12 text-gray-400">読み込み中...</div>
-      ) : allAtBats.length === 0 && tab === 'season' ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-          <div className="text-5xl mb-4">📊</div>
-          <p className="text-gray-400">{season}年のデータがありません</p>
-        </div>
       ) : (
         <>
           {/* タブ1: シーズン累計 */}
           {tab === 'season' && (
             <div className="space-y-4">
+
               {/* チーム戦績 */}
               {games.length > 0 && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                  <h3 className="text-sm font-semibold text-gray-500 mb-3">チーム戦績</h3>
+                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">チーム戦績</h2>
                   <div className="grid grid-cols-5 gap-2 text-center text-sm">
                     <div>
                       <div className="text-xl font-bold text-navy-500">{games.length}</div>
@@ -145,67 +151,44 @@ export default function StatsPage() {
               )}
 
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div className="grid grid-cols-4 gap-4 mb-5">
-                  <StatCard label="打率" value={fmtAvg(stats.avg)} />
-                  <StatCard label="出塁率" value={fmtAvg(stats.obp)} />
-                  <StatCard label="長打率" value={fmtAvg(stats.slg)} />
-                  <StatCard label="OPS" value={fmtDec(stats.ops, 3).replace(/^0/, '')} />
-                </div>
-                <div className="grid grid-cols-6 gap-2 pt-4 border-t border-gray-100 text-center text-sm">
-                  <div><div className="font-semibold">{games.length}</div><div className="text-xs text-gray-400">試合</div></div>
-                  <div><div className="font-semibold">{stats.pa}</div><div className="text-xs text-gray-400">打席</div></div>
-                  <div><div className="font-semibold">{stats.ab}</div><div className="text-xs text-gray-400">打数</div></div>
-                  <div><div className="font-semibold">{stats.hits}</div><div className="text-xs text-gray-400">安打</div></div>
-                  <div><div className="font-semibold">{stats.hrs}</div><div className="text-xs text-gray-400">本塁打</div></div>
-                  <div><div className="font-semibold">{stats.rbi}</div><div className="text-xs text-gray-400">打点</div></div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                <h3 className="text-sm font-semibold text-gray-500 mb-4">内訳</h3>
-                <div className="grid grid-cols-3 gap-x-8 gap-y-3 text-sm">
-                  {[
-                    ['単打', stats.singles],
-                    ['二塁打', stats.doubles],
-                    ['三塁打', stats.triples],
-                    ['本塁打', stats.hrs],
-                    ['三振', stats.strikeouts],
-                    ['四球', stats.walks],
-                    ['死球', stats.hbp],
-                    ['犠打', stats.sac_bunt],
-                    ['犠飛', stats.sac_fly],
-                    ['得点', stats.runs],
-                    ['盗塁', stats.sb],
-                    ['盗塁死', stats.cs],
-                  ].map(([label, val]) => (
-                    <div key={label as string} className="flex justify-between">
-                      <span className="text-gray-500">{label}</span>
-                      <span className="font-medium text-gray-800">{val}</span>
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">打撃成績</h2>
+                {allAtBats.length === 0 ? (
+                  <p className="text-gray-400 text-center py-4">まだ打席記録がありません</p>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-4 gap-2 mb-6">
+                      <StatCard label="打率" value={fmtAvg(stats.avg)} />
+                      <StatCard label="出塁率" value={fmtAvg(stats.obp)} />
+                      <StatCard label="長打率" value={fmtAvg(stats.slg)} />
+                      <StatCard label="OPS" value={fmtDec(stats.ops, 3).replace(/^0/, '')} />
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                <h3 className="text-sm font-semibold text-gray-500 mb-4">セイバーメトリクス</h3>
-                <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
-                  {[
-                    ['ISO-D（出塁+）', fmtAvg(stats.isod)],
-                    ['ISO-P（長打+）', fmtAvg(stats.isop)],
-                    ['盗塁成功率', stats.sb_pct !== null ? (stats.sb_pct * 100).toFixed(1) + '%' : '---'],
-                    ['RC27', fmtDec(stats.rc27, 2)],
-                  ].map(([label, val]) => (
-                    <div key={label as string} className="flex justify-between">
-                      <span className="text-gray-500">{label}</span>
-                      <span className="font-medium text-gray-800">{val}</span>
+                    <div className="grid grid-cols-4 gap-3 pt-4 border-t border-gray-100">
+                      <StatCard label="打席" value={stats.pa} />
+                      <StatCard label="打数" value={stats.ab} />
+                      <StatCard label="安打" value={stats.hits} />
+                      <StatCard label="二塁打" value={stats.doubles} />
+                      <StatCard label="三塁打" value={stats.triples} />
+                      <StatCard label="本塁打" value={stats.hrs} />
+                      <StatCard label="打点" value={stats.rbi} />
+                      <StatCard label="得点" value={stats.runs} />
+                      <StatCard label="盗塁" value={stats.sb} />
+                      <StatCard label="盗塁死" value={stats.cs} />
+                      <StatCard label="三振" value={stats.strikeouts} />
+                      <StatCard label="四球" value={stats.walks} />
+                      <StatCard label="死球" value={stats.hbp} />
+                      <StatCard label="犠打" value={stats.sac_bunt} />
+                      <StatCard label="犠飛" value={stats.sac_fly} />
+                      <StatCard label="ISOD" value={fmtAvg(stats.isod)} />
+                      <StatCard label="ISOP" value={fmtAvg(stats.isop)} />
+                      <StatCard label="RC27" value={fmtDec(stats.rc27, 2)} />
                     </div>
-                  ))}
-                </div>
+                  </>
+                )}
               </div>
             </div>
           )}
 
-          {/* タブ2: 試合ごと */}
+          {/* タブ2: 試合別 */}
           {tab === 'per-game' && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               {games.length === 0 ? (
@@ -217,7 +200,7 @@ export default function StatsPage() {
                       <tr className="bg-gray-50 text-gray-500 text-xs">
                         <th className="text-left px-4 py-3 font-medium">日付</th>
                         <th className="text-left px-4 py-3 font-medium">相手</th>
-                        <th className="px-3 py-3 font-medium">結果</th>
+                        <th className="px-3 py-3 font-medium">勝敗</th>
                         <th className="px-3 py-3 font-medium">打席</th>
                         <th className="px-3 py-3 font-medium">打数</th>
                         <th className="px-3 py-3 font-medium">安打</th>
@@ -304,7 +287,7 @@ export default function StatsPage() {
                                 return cnt > 0
                                   ? <span className="text-orange-500 font-bold">{cnt}</span>
                                   : <span className="text-gray-200">-</span>
-                              })()} 
+                              })()}
                             </td>
                             <td className="px-3 py-2.5 text-center">
                               {ab.is_run ? <span className="text-blue-500 font-bold">●</span> : <span className="text-gray-200">-</span>}
@@ -315,6 +298,103 @@ export default function StatsPage() {
                     </tbody>
                   </table>
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* タブ4: 投手成績 */}
+          {tab === 'pitching' && (
+            <div className="space-y-4">
+              {pitchingStats.length === 0 ? (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-gray-400">
+                  投手成績が登録されていません
+                </div>
+              ) : (
+                <>
+                  {/* シーズン累計 */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">シーズン投手成績</h2>
+                    <div className="grid grid-cols-4 gap-2 mb-4">
+                      <StatCard label="防御率" value={fmtERA(pStats.era)} />
+                      <StatCard label="WHIP" value={fmtDec(pStats.whip, 2)} />
+                      <StatCard label="K/9" value={fmtDec(pStats.k9, 1)} />
+                      <StatCard label="K/BB" value={fmtDec(pStats.kbb, 2)} />
+                    </div>
+                    <div className="grid grid-cols-4 gap-3 pt-4 border-t border-gray-100">
+                      <StatCard label="登板" value={pStats.games} />
+                      <StatCard label="勝" value={pStats.wins} />
+                      <StatCard label="敗" value={pStats.losses} />
+                      <StatCard label="セーブ" value={pStats.saves} />
+                      <StatCard label="ホールド" value={pStats.holds} />
+                      <StatCard label="完投" value={pStats.complete_games} />
+                      <StatCard label="投球回" value={formatIP(pStats.innings_pitched)} />
+                      <StatCard label="被安打" value={pStats.hits_allowed} />
+                      <StatCard label="被本塁打" value={pStats.home_runs_allowed} />
+                      <StatCard label="奪三振" value={pStats.strikeouts} />
+                      <StatCard label="与四球" value={pStats.walks} />
+                      <StatCard label="与死球" value={pStats.hit_batsmen} />
+                      <StatCard label="失点" value={pStats.runs_allowed} />
+                      <StatCard label="自責点" value={pStats.earned_runs} />
+                      <StatCard label="FIP" value={fmtDec(pStats.fip, 2)} />
+                      {pStats.pitch_count !== null && (
+                        <StatCard label="総投球数" value={pStats.pitch_count} />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 試合別投手成績 */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="px-5 py-3 border-b border-gray-100">
+                      <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">試合別投手成績</h2>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-gray-50 text-gray-500 text-xs">
+                            <th className="text-left px-4 py-3 font-medium">日付</th>
+                            <th className="text-left px-4 py-3 font-medium">相手</th>
+                            <th className="px-3 py-3 font-medium">結果</th>
+                            <th className="px-3 py-3 font-medium">投球回</th>
+                            <th className="px-3 py-3 font-medium">被安</th>
+                            <th className="px-3 py-3 font-medium">K</th>
+                            <th className="px-3 py-3 font-medium">BB</th>
+                            <th className="px-3 py-3 font-medium">失点</th>
+                            <th className="px-3 py-3 font-medium">自責</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {games.map((game) => {
+                            const ps = pitchingStats.find(p => p.game_id === game.id)
+                            if (!ps) return null
+                            const resultLabels: Record<string, string> = {
+                              win: '勝', loss: '敗', save: 'S', hold: 'H', none: '-'
+                            }
+                            const resultColors: Record<string, string> = {
+                              win: 'text-green-600 font-bold',
+                              loss: 'text-red-500 font-bold',
+                              save: 'text-blue-600 font-bold',
+                              hold: 'text-purple-600 font-bold',
+                              none: 'text-gray-400'
+                            }
+                            return (
+                              <tr key={game.id} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 text-gray-600">{formatDate(game.game_date)}</td>
+                                <td className="px-4 py-3 font-medium text-gray-800">{game.opponent}</td>
+                                <td className={`px-3 py-3 text-center ${resultColors[ps.result]}`}>{resultLabels[ps.result]}</td>
+                                <td className="px-3 py-3 text-center text-gray-700">{formatIP(ps.innings_pitched)}</td>
+                                <td className="px-3 py-3 text-center text-gray-700">{ps.hits_allowed}</td>
+                                <td className="px-3 py-3 text-center text-gray-700">{ps.strikeouts}</td>
+                                <td className="px-3 py-3 text-center text-gray-700">{ps.walks}</td>
+                                <td className="px-3 py-3 text-center text-gray-700">{ps.runs_allowed}</td>
+                                <td className="px-3 py-3 text-center text-gray-700">{ps.earned_runs}</td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           )}

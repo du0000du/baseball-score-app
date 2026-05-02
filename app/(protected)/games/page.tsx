@@ -117,19 +117,25 @@ export default function GamesPage() {
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <Link
                       href={`/games/${game.id}/at-bats`}
-                      className="px-3 py-1.5 text-xs font-medium bg-field-500 hover:bg-field-600 text-white rounded transition-colors"
+                      className="px-2.5 py-1.5 text-xs font-medium bg-field-500 hover:bg-field-600 text-white rounded transition-colors"
                     >
                       打席入力
                     </Link>
                     <Link
+                      href={`/games/${game.id}/pitching`}
+                      className="px-2.5 py-1.5 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+                    >
+                      投手成績
+                    </Link>
+                    <Link
                       href={`/games/${game.id}/edit`}
-                      className="px-3 py-1.5 text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors"
+                      className="px-2.5 py-1.5 text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors"
                     >
                       編集
                     </Link>
                     <button
                       onClick={() => setConfirmId(game.id)}
-                      className="px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 rounded transition-colors"
+                      className="px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 rounded transition-colors"
                     >
                       削除
                     </button>

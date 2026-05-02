@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { calcBattingStats, fmtAvg, fmtDec } from '@/lib/stats'
-import type { AtBat, Game, User } from '@/lib/supabase/types'
+import { calcBattingStats, calcPitchingStats, fmtAvg, fmtDec, fmtERA, formatIP } from '@/lib/stats'
+import type { AtBat, Game, User, PitchingStat } from '@/lib/supabase/types'
 
 function formatDate(dateStr: string) {
   const [, m, d] = dateStr.split('-')
@@ -51,6 +51,14 @@ export default async function DashboardPage() {
   const losses = typedGames.filter((g) => g.result === 'loss').length
   const draws = typedGames.filter((g) => g.result === 'draw').length
   const winRate = (wins + losses) > 0 ? (wins / (wins + losses)).toFixed(3).replace(/^0/, '') : '---'
+
+  const { data: pitchingData } = await supabase
+    .from('pitching_stats')
+    .select('*, games!inner(season, user_id)')
+    .eq('games.season', currentYear)
+    .eq('games.user_id', user!.id)
+  const pitchingStats = (pitchingData ?? []) as PitchingStat[]
+  const pStats = calcPitchingStats(pitchingStats)
 
   return (
     <div className="space-y-6">
@@ -158,6 +166,55 @@ export default async function DashboardPage() {
           </>
         )}
       </div>
+
+      {/* 投手成績サマリー */}
+      {pitchingStats.length > 0 && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+            シーズン投手成績
+          </h2>
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            <div className="text-center min-w-0">
+              <div className="text-2xl font-bold text-navy-500 truncate">{fmtERA(pStats.era)}</div>
+              <div className="text-xs text-gray-400 mt-1">防御率</div>
+            </div>
+            <div className="text-center min-w-0">
+              <div className="text-2xl font-bold text-navy-500 truncate">{fmtDec(pStats.whip, 2)}</div>
+              <div className="text-xs text-gray-400 mt-1">WHIP</div>
+            </div>
+            <div className="text-center min-w-0">
+              <div className="text-2xl font-bold text-navy-500 truncate">{pStats.strikeouts}</div>
+              <div className="text-xs text-gray-400 mt-1">奪三振</div>
+            </div>
+            <div className="text-center min-w-0">
+              <div className="text-2xl font-bold text-navy-500 truncate">{formatIP(pStats.innings_pitched)}</div>
+              <div className="text-xs text-gray-400 mt-1">投球回</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-5 gap-2 pt-4 border-t border-gray-100 text-center text-sm">
+            <div>
+              <div className="font-semibold text-gray-700">{pStats.games}</div>
+              <div className="text-xs text-gray-400">登板</div>
+            </div>
+            <div>
+              <div className="font-semibold text-green-600">{pStats.wins}</div>
+              <div className="text-xs text-gray-400">勝</div>
+            </div>
+            <div>
+              <div className="font-semibold text-red-500">{pStats.losses}</div>
+              <div className="text-xs text-gray-400">敗</div>
+            </div>
+            <div>
+              <div className="font-semibold text-gray-700">{pStats.saves}</div>
+              <div className="text-xs text-gray-400">S</div>
+            </div>
+            <div>
+              <div className="font-semibold text-gray-700">{pStats.holds}</div>
+              <div className="text-xs text-gray-400">H</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 直近5試合 */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
