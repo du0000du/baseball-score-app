@@ -45,4 +45,12 @@ export default function Nav() {
           </Link>
           <button
             onClick={handleSignOut}
-   
+            className="text-sm text-blue-100 hover:text-white transition-colors"
+          >
+            ログアウト
+          </button>
+        </div>
+      </div>
+    </nav>
+  )
+}
