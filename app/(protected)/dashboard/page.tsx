@@ -47,6 +47,11 @@ export default async function DashboardPage() {
   const stats = calcBattingStats(allAtBats)
   const recentGames = typedGames.slice(0, 5)
 
+  const wins = typedGames.filter((g) => g.result === 'win').length
+  const losses = typedGames.filter((g) => g.result === 'loss').length
+  const draws = typedGames.filter((g) => g.result === 'draw').length
+  const winRate = (wins + losses) > 0 ? (wins / (wins + losses)).toFixed(3).replace(/^0/, '') : '---'
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -65,6 +70,37 @@ export default async function DashboardPage() {
           ＋ 試合を登録
         </Link>
       </div>
+
+      {/* チーム戦績 */}
+      {typedGames.length > 0 && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+            チーム戦績
+          </h2>
+          <div className="grid grid-cols-5 gap-2 text-center text-sm">
+            <div>
+              <div className="text-xl font-bold text-navy-500">{typedGames.length}</div>
+              <div className="text-xs text-gray-400 mt-0.5">試合</div>
+            </div>
+            <div>
+              <div className="text-xl font-bold text-green-600">{wins}</div>
+              <div className="text-xs text-gray-400 mt-0.5">勝</div>
+            </div>
+            <div>
+              <div className="text-xl font-bold text-red-500">{losses}</div>
+              <div className="text-xs text-gray-400 mt-0.5">負</div>
+            </div>
+            <div>
+              <div className="text-xl font-bold text-yellow-500">{draws}</div>
+              <div className="text-xs text-gray-400 mt-0.5">分</div>
+            </div>
+            <div>
+              <div className="text-xl font-bold text-navy-500">{winRate}</div>
+              <div className="text-xs text-gray-400 mt-0.5">勝率</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 成績サマリー */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

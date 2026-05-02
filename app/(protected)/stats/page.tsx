@@ -60,6 +60,11 @@ export default function StatsPage() {
   const allAtBats = games.flatMap((g) => g.at_bats)
   const stats = calcBattingStats(allAtBats)
 
+  const wins = games.filter((g) => g.result === 'win').length
+  const losses = games.filter((g) => g.result === 'loss').length
+  const draws = games.filter((g) => g.result === 'draw').length
+  const winRate = (wins + losses) > 0 ? (wins / (wins + losses)).toFixed(3).replace(/^0/, '') : '---'
+
   const tabs: { id: Tab; label: string }[] = [
     { id: 'season', label: 'シーズン累計' },
     { id: 'per-game', label: '試合ごと' },
@@ -110,6 +115,35 @@ export default function StatsPage() {
           {/* タブ1: シーズン累計 */}
           {tab === 'season' && (
             <div className="space-y-4">
+              {/* チーム戦績 */}
+              {games.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                  <h3 className="text-sm font-semibold text-gray-500 mb-3">チーム戦績</h3>
+                  <div className="grid grid-cols-5 gap-2 text-center text-sm">
+                    <div>
+                      <div className="text-xl font-bold text-navy-500">{games.length}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">試合</div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-bold text-green-600">{wins}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">勝</div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-bold text-red-500">{losses}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">負</div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-bold text-yellow-500">{draws}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">分</div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-bold text-navy-500">{winRate}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">勝率</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div className="grid grid-cols-4 gap-4 mb-5">
                   <StatCard label="打率" value={fmtAvg(stats.avg)} />
