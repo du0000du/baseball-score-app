@@ -10,19 +10,42 @@ function formatDate(dateStr: string) {
   return `${y}年${parseInt(m)}月${parseInt(d)}日`
 }
 
-function ResultBadge({ result }: { result: Game['result'] }) {
-  if (result === 'win')
-    return <span className="inline-block w-7 text-center py-0.5 rounded text-xs font-bold bg-green-100 text-green-700">勝</span>
-  if (result === 'loss')
-    return <span className="inline-block w-7 text-center py-0.5 rounded text-xs font-bold bg-red-100 text-red-700">負</span>
-  return <span className="inline-block w-7 text-center py-0.5 rounded text-xs font-bold bg-yellow-100 text-yellow-700">分</span>
+function ScoreDisplay({ game }: { game: Game }) {
+  if (game.result === 'win') {
+    return (
+      <div className="flex items-center gap-1.5">
+        <span className="text-base text-green-500 leading-none">○</span>
+        <span className="text-base font-bold text-gray-800 leading-none">
+          {game.score_us}<span className="text-gray-400 font-normal mx-0.5">-</span>{game.score_them}
+        </span>
+      </div>
+    )
+  }
+  if (game.result === 'loss') {
+    return (
+      <div className="flex items-center gap-1.5">
+        <span className="text-base text-gray-600 leading-none">●</span>
+        <span className="text-base font-bold text-gray-800 leading-none">
+          {game.score_us}<span className="text-gray-400 font-normal mx-0.5">-</span>{game.score_them}
+        </span>
+      </div>
+    )
+  }
+  // draw
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-base text-yellow-500 leading-none">△</span>
+      <span className="text-base font-bold text-gray-800 leading-none">
+        {game.score_us}<span className="text-gray-400 font-normal mx-0.5">-</span>{game.score_them}
+      </span>
+    </div>
+  )
 }
 
 function SkeletonRow() {
   return (
     <div className="p-4 flex items-center justify-between animate-pulse">
       <div className="flex items-center gap-3">
-        <div className="w-7 h-5 bg-gray-100 rounded" />
         <div className="space-y-1.5">
           <div className="h-4 bg-gray-100 rounded w-32" />
           <div className="h-3 bg-gray-100 rounded w-24" />
@@ -121,15 +144,12 @@ export default function GamesPage() {
               ) : (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0">
-                    <ResultBadge result={game.result} />
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-800">vs {game.opponent}</span>
-                        <span className="text-gray-500 text-sm">
-                          {game.score_us}-{game.score_them}
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <ScoreDisplay game={game} />
+                        <span className="font-medium text-gray-700 text-sm">vs {game.opponent}</span>
                       </div>
-                      <div className="text-xs text-gray-400 mt-0.5">
+                      <div className="text-xs text-gray-400 mt-1">
                         {formatDate(game.game_date)}
                         {game.stadium && ` ・ ${game.stadium}`}
                       </div>
