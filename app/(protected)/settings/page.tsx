@@ -61,7 +61,7 @@ export default function SettingsPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-400">読み込み中...</div>
+    return <div className="min-h-[520px] flex items-center justify-center text-gray-400">読み込み中...</div>
   }
 
   return (
