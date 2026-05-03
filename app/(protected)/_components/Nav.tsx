@@ -21,7 +21,7 @@ export default function Nav() {
     pathname === path || (path !== '/dashboard' && pathname.startsWith(path))
 
   return (
-    <nav className="bg-navy-500 shadow-lg">
+    <nav className="bg-crimson-700 shadow-lg">
       <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-1">
           <span className="text-white font-bold text-lg mr-3">⚾</span>
@@ -36,7 +36,7 @@ export default function Nav() {
               className={`text-sm font-medium px-3 py-1.5 rounded-md transition-all duration-150 ${
                 isActive(href)
                   ? 'bg-white/20 text-white'
-                  : 'text-blue-100 hover:text-white hover:bg-white/10 active:bg-white/15 active:scale-[0.97]'
+                  : 'text-crimson-100 hover:text-white hover:bg-white/10 active:bg-white/15 active:scale-[0.97]'
               }`}
             >
               {label}
@@ -49,14 +49,14 @@ export default function Nav() {
             className={`text-sm font-medium px-3 py-1.5 rounded-md transition-all duration-150 ${
               isActive('/settings')
                 ? 'bg-white/20 text-white'
-                : 'text-blue-100 hover:text-white hover:bg-white/10 active:bg-white/15 active:scale-[0.97]'
+                : 'text-crimson-100 hover:text-white hover:bg-white/10 active:bg-white/15 active:scale-[0.97]'
             }`}
           >
             設定
           </Link>
           <button
             onClick={handleSignOut}
-            className="text-sm text-blue-100 hover:text-white transition-all duration-150 active:opacity-70 active:scale-[0.97]"
+            className="text-sm text-crimson-100 hover:text-white transition-all duration-150 active:opacity-70 active:scale-[0.97]"
           >
             ログアウト
           </button>

@@ -131,7 +131,7 @@ export default function PitchingPage() {
         >
           ← 戻る
         </button>
-        <h1 className="text-2xl font-bold text-navy-500">投手成績入力</h1>
+        <h1 className="text-2xl font-bold text-crimson-500">投手成績入力</h1>
         {game && (
           <p className="text-sm text-gray-500 mt-1">
             {formatDate(game.game_date)} vs {game.opponent}
@@ -149,7 +149,7 @@ export default function PitchingPage() {
               <select
                 value={inningsWhole}
                 onChange={(e) => setInningsWhole(parseInt(e.target.value))}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500"
               >
                 {Array.from({ length: 13 }, (_, i) => (
                   <option key={i} value={i}>{i}</option>
@@ -161,7 +161,7 @@ export default function PitchingPage() {
               <select
                 value={inningsThirds}
                 onChange={(e) => setInningsThirds(parseInt(e.target.value))}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500"
               >
                 <option value={0}>0/3</option>
                 <option value={1}>1/3</option>
@@ -182,7 +182,7 @@ export default function PitchingPage() {
                 onClick={() => setResult(opt.value)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   result === opt.value
-                    ? 'bg-navy-500 text-white'
+                    ? 'bg-crimson-500 text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -231,7 +231,7 @@ export default function PitchingPage() {
               type="checkbox"
               checked={completeGame}
               onChange={(e) => setCompleteGame(e.target.checked)}
-              className="w-4 h-4 rounded accent-navy-500"
+              className="w-4 h-4 rounded accent-crimson-500"
             />
             <span className="text-sm font-medium text-gray-700">完投</span>
           </label>
@@ -248,7 +248,7 @@ export default function PitchingPage() {
             onChange={(e) => setPitchCount(e.target.value)}
             placeholder="例: 85"
             min={0}
-            className="w-32 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
+            className="w-32 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500"
           />
         </div>
 
@@ -258,7 +258,7 @@ export default function PitchingPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="w-full bg-navy-500 hover:bg-navy-600 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition-colors text-sm"
+          className="w-full bg-crimson-500 hover:bg-crimson-600 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition-colors text-sm"
         >
           {saving ? '保存中...' : '保存する'}
         </button>

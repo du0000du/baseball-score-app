@@ -75,10 +75,10 @@ export default function GamesPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-navy-500">試合一覧</h1>
+        <h1 className="text-2xl font-bold text-crimson-500">試合一覧</h1>
         <Link
           href="/games/new"
-          className="btn bg-navy-500 hover:bg-navy-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
+          className="btn bg-crimson-500 hover:bg-crimson-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
         >
           ＋ 試合を登録
         </Link>
@@ -94,7 +94,7 @@ export default function GamesPage() {
           <p className="text-gray-400 mb-4">試合が登録されていません</p>
           <Link
             href="/games/new"
-            className="btn inline-block bg-navy-500 hover:bg-navy-600 text-white px-6 py-2 rounded-lg text-sm font-medium"
+            className="btn inline-block bg-crimson-500 hover:bg-crimson-600 text-white px-6 py-2 rounded-lg text-sm font-medium"
           >
             最初の試合を登録する
           </Link>

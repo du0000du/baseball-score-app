@@ -66,7 +66,7 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-lg space-y-6">
-      <h1 className="text-2xl font-bold text-navy-500">プロフィール設定</h1>
+      <h1 className="text-2xl font-bold text-crimson-500">プロフィール設定</h1>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-5">
         <div>
@@ -78,7 +78,7 @@ export default function SettingsPage() {
             value={teamName}
             onChange={(e) => setTeamName(e.target.value)}
             placeholder="例: Tigers"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500"
           />
         </div>
 
@@ -91,7 +91,7 @@ export default function SettingsPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="例: 山田太郎"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500"
           />
         </div>
 
@@ -104,7 +104,7 @@ export default function SettingsPage() {
             value={position}
             onChange={(e) => setPosition(e.target.value)}
             placeholder="例: 外野手"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500"
           />
         </div>
 
@@ -119,7 +119,7 @@ export default function SettingsPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="w-full bg-navy-500 hover:bg-navy-600 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition-colors text-sm"
+          className="w-full bg-crimson-500 hover:bg-crimson-600 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition-colors text-sm"
         >
           {saving ? '保存中...' : '保存する'}
         </button>

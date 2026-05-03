@@ -87,7 +87,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-navy-500">
+          <h1 className="text-2xl font-bold text-crimson-500">
             {currentYear}年 シーズン
           </h1>
           {typedProfile?.team_name && (
@@ -96,7 +96,7 @@ export default async function DashboardPage() {
         </div>
         <Link
           href="/games/new"
-          className="btn bg-navy-500 hover:bg-navy-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
+          className="btn bg-crimson-500 hover:bg-crimson-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
         >
           ＋ 試合を登録
         </Link>
@@ -110,7 +110,7 @@ export default async function DashboardPage() {
           </h2>
           <div className="grid grid-cols-5 gap-2 text-center text-sm">
             <div>
-              <div className="text-xl font-bold text-navy-500">{typedGames.length}</div>
+              <div className="text-xl font-bold text-crimson-500">{typedGames.length}</div>
               <div className="text-xs text-gray-400 mt-0.5">試合</div>
             </div>
             <div>
@@ -126,7 +126,7 @@ export default async function DashboardPage() {
               <div className="text-xs text-gray-400 mt-0.5">分</div>
             </div>
             <div>
-              <div className="text-xl font-bold text-navy-500">{winRate}</div>
+              <div className="text-xl font-bold text-crimson-500">{winRate}</div>
               <div className="text-xs text-gray-400 mt-0.5">勝率</div>
             </div>
           </div>
@@ -144,19 +144,19 @@ export default async function DashboardPage() {
           <>
             <div className="grid grid-cols-4 gap-2 mb-4">
               <div className="text-center min-w-0">
-                <div className="text-2xl font-bold text-navy-500 truncate">{fmtAvg(stats.avg)}</div>
+                <div className="text-2xl font-bold text-crimson-500 truncate">{fmtAvg(stats.avg)}</div>
                 <div className="text-xs text-gray-400 mt-1">打率</div>
               </div>
               <div className="text-center min-w-0">
-                <div className="text-2xl font-bold text-navy-500 truncate">{fmtAvg(stats.obp)}</div>
+                <div className="text-2xl font-bold text-crimson-500 truncate">{fmtAvg(stats.obp)}</div>
                 <div className="text-xs text-gray-400 mt-1">出塁率</div>
               </div>
               <div className="text-center min-w-0">
-                <div className="text-2xl font-bold text-navy-500 truncate">{fmtAvg(stats.slg)}</div>
+                <div className="text-2xl font-bold text-crimson-500 truncate">{fmtAvg(stats.slg)}</div>
                 <div className="text-xs text-gray-400 mt-1">長打率</div>
               </div>
               <div className="text-center min-w-0">
-                <div className="text-2xl font-bold text-navy-500 truncate">{fmtDec(stats.ops, 3).replace(/^0/, '')}</div>
+                <div className="text-2xl font-bold text-crimson-500 truncate">{fmtDec(stats.ops, 3).replace(/^0/, '')}</div>
                 <div className="text-xs text-gray-400 mt-1">OPS</div>
               </div>
             </div>
@@ -198,19 +198,19 @@ export default async function DashboardPage() {
           </h2>
           <div className="grid grid-cols-4 gap-2 mb-4">
             <div className="text-center min-w-0">
-              <div className="text-2xl font-bold text-navy-500 truncate">{fmtERA(pStats.era)}</div>
+              <div className="text-2xl font-bold text-crimson-500 truncate">{fmtERA(pStats.era)}</div>
               <div className="text-xs text-gray-400 mt-1">防御率</div>
             </div>
             <div className="text-center min-w-0">
-              <div className="text-2xl font-bold text-navy-500 truncate">{fmtDec(pStats.whip, 2)}</div>
+              <div className="text-2xl font-bold text-crimson-500 truncate">{fmtDec(pStats.whip, 2)}</div>
               <div className="text-xs text-gray-400 mt-1">WHIP</div>
             </div>
             <div className="text-center min-w-0">
-              <div className="text-2xl font-bold text-navy-500 truncate">{pStats.strikeouts}</div>
+              <div className="text-2xl font-bold text-crimson-500 truncate">{pStats.strikeouts}</div>
               <div className="text-xs text-gray-400 mt-1">奪三振</div>
             </div>
             <div className="text-center min-w-0">
-              <div className="text-2xl font-bold text-navy-500 truncate">{formatIP(pStats.innings_pitched)}</div>
+              <div className="text-2xl font-bold text-crimson-500 truncate">{formatIP(pStats.innings_pitched)}</div>
               <div className="text-xs text-gray-400 mt-1">投球回</div>
             </div>
           </div>
@@ -245,7 +245,7 @@ export default async function DashboardPage() {
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
             直近の試合
           </h2>
-          <Link href="/games" className="text-sm text-navy-500 hover:underline">
+          <Link href="/games" className="text-sm text-crimson-500 hover:underline">
             全試合を見る →
           </Link>
         </div>
@@ -277,7 +277,7 @@ export default async function DashboardPage() {
                     )}
                     <Link
                       href={`/games/${game.id}/at-bats`}
-                      className="btn text-navy-500 hover:underline text-xs"
+                      className="btn text-crimson-500 hover:underline text-xs"
                     >
                       打席入力
                     </Link>

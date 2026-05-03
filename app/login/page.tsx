@@ -61,7 +61,7 @@ function LoginForm() {
       <button
         onClick={handleGoogleLogin}
         disabled={loading}
-        className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-navy-500 hover:bg-gray-50 text-gray-700 font-medium py-3 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-crimson-500 hover:bg-gray-50 text-gray-700 font-medium py-3 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <GoogleSvg />
         {loading ? 'リダイレクト中...' : 'Googleでログイン'}
@@ -72,7 +72,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-navy-800 flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-crimson-800 flex flex-col items-center justify-center px-4">
       <div className="text-center mb-10">
         <div className="text-8xl mb-6">⚾</div>
         <h1 className="text-4xl font-bold text-white mb-3">草野球記録</h1>

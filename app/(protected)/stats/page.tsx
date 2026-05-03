@@ -27,7 +27,7 @@ function ResultBadge({ result }: { result: Game['result'] }) {
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="text-center">
-      <div className="text-2xl font-bold text-navy-500">{value}</div>
+      <div className="text-2xl font-bold text-crimson-500">{value}</div>
       <div className="text-xs text-gray-400 mt-0.5">{label}</div>
     </div>
   )
@@ -42,12 +42,12 @@ function StatRow({ left, right }: {
     <div className="grid grid-cols-2 divide-x divide-gray-100 odd:bg-white even:bg-gray-50">
       <div className="flex items-center justify-between px-5 py-3.5">
         <span className="text-sm text-gray-500">{left.label}</span>
-        <span className="text-xl font-bold text-navy-700">{left.value}</span>
+        <span className="text-xl font-bold text-crimson-700">{left.value}</span>
       </div>
       {right ? (
         <div className="flex items-center justify-between px-5 py-3.5">
           <span className="text-sm text-gray-500">{right.label}</span>
-          <span className="text-xl font-bold text-navy-700">{right.value}</span>
+          <span className="text-xl font-bold text-crimson-700">{right.value}</span>
         </div>
       ) : (
         <div />
@@ -119,11 +119,11 @@ export default function StatsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-navy-500">成績</h1>
+        <h1 className="text-2xl font-bold text-crimson-500">成績</h1>
         <select
           value={season}
           onChange={(e) => setSeason(parseInt(e.target.value))}
-          className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 transition-shadow duration-150"
+          className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500 transition-shadow duration-150"
         >
           {years.map((y) => (
             <option key={y} value={y}>{y}年</option>
@@ -140,7 +140,7 @@ export default function StatsPage() {
               onClick={() => handleTabChange(key)}
               className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px outline-none transition-colors duration-150 ${
                 tab === key
-                  ? 'text-navy-500 border-navy-500'
+                  ? 'text-crimson-500 border-crimson-500'
                   : 'text-gray-500 hover:text-gray-700 border-transparent'
               }`}
             >
@@ -178,7 +178,7 @@ export default function StatsPage() {
                   <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">チーム戦績</h2>
                   <div className="grid grid-cols-5 gap-2 text-center text-sm">
                     <div>
-                      <div className="text-xl font-bold text-navy-500">{games.length}</div>
+                      <div className="text-xl font-bold text-crimson-500">{games.length}</div>
                       <div className="text-xs text-gray-400 mt-0.5">試合</div>
                     </div>
                     <div>
@@ -194,7 +194,7 @@ export default function StatsPage() {
                       <div className="text-xs text-gray-400 mt-0.5">分</div>
                     </div>
                     <div>
-                      <div className="text-xl font-bold text-navy-500">{winRate}</div>
+                      <div className="text-xl font-bold text-crimson-500">{winRate}</div>
                       <div className="text-xs text-gray-400 mt-0.5">勝率</div>
                     </div>
                   </div>
@@ -219,7 +219,7 @@ export default function StatsPage() {
                       ].map(({ label, value }) => (
                         <div key={label} className="flex flex-col items-center py-4 px-2">
                           <span className="text-xs text-gray-400 mb-1">{label}</span>
-                          <span className="text-2xl font-bold text-navy-500">{value}</span>
+                          <span className="text-2xl font-bold text-crimson-500">{value}</span>
                         </div>
                       ))}
                     </div>
@@ -274,7 +274,7 @@ export default function StatsPage() {
                             <td className="px-3 py-3 text-center text-gray-700">{gs.pa}</td>
                             <td className="px-3 py-3 text-center text-gray-700">{gs.ab}</td>
                             <td className="px-3 py-3 text-center text-gray-700">{gs.hits}</td>
-                            <td className="px-3 py-3 text-center font-medium text-navy-500">{fmtAvg(gs.avg)}</td>
+                            <td className="px-3 py-3 text-center font-medium text-crimson-500">{fmtAvg(gs.avg)}</td>
                             <td className="px-3 py-3 text-center text-gray-700">{gs.rbi}</td>
                             <td className="px-3 py-3 text-center text-gray-700">{gs.strikeouts}</td>
                             <td className="px-3 py-3 text-center text-gray-700">{gs.walks}</td>
@@ -376,7 +376,7 @@ export default function StatsPage() {
                       ].map(({ label, value }) => (
                         <div key={label} className="flex flex-col items-center py-4 px-2">
                           <span className="text-xs text-gray-400 mb-1">{label}</span>
-                          <span className="text-2xl font-bold text-navy-500">{value}</span>
+                          <span className="text-2xl font-bold text-crimson-500">{value}</span>
                         </div>
                       ))}
                     </div>
@@ -422,41 +422,4 @@ export default function StatsPage() {
                               save: 'text-blue-600 font-bold', hold: 'text-purple-600 font-bold', none: 'text-gray-400'
                             }
                             return (
-                              <tr key={game.id} className="hover:bg-gray-50 transition-colors duration-100">
-                                <td className="px-4 py-3 text-gray-600">{formatDate(game.game_date)}</td>
-                                <td className="px-4 py-3 font-medium text-gray-800">{game.opponent}</td>
-                                <td className={`px-3 py-3 text-center ${resultColors[ps.result]}`}>{resultLabels[ps.result]}</td>
-                                <td className="px-3 py-3 text-center text-gray-700">{formatIP(ps.innings_pitched)}</td>
-                                <td className="px-3 py-3 text-center text-gray-700">{ps.hits_allowed}</td>
-                                <td className="px-3 py-3 text-center text-gray-700">{ps.strikeouts}</td>
-                                <td className="px-3 py-3 text-center text-gray-700">{ps.walks}</td>
-                                <td className="px-3 py-3 text-center text-gray-700">{ps.runs_allowed}</td>
-                                <td className="px-3 py-3 text-center text-gray-700">{ps.earned_runs}</td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* タブ5: 打球方向 */}
-          {tab === 'direction' && (
-            allAtBats.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-gray-400">
-                打席データがありません
-              </div>
-            ) : (
-              <DirectionChart atBats={allAtBats} />
-            )
-          )}
-
-        </div>
-      )}
-    </div>
-  )
-}
+  

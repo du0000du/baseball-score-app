@@ -78,7 +78,7 @@ export default function NewGamePage() {
         <Link href="/games" className="text-gray-400 hover:text-gray-600 transition-colors">
           ← 試合一覧
         </Link>
-        <h1 className="text-2xl font-bold text-navy-500">試合を登録</h1>
+        <h1 className="text-2xl font-bold text-crimson-500">試合を登録</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-5">
@@ -93,7 +93,7 @@ export default function NewGamePage() {
             value={form.game_date}
             onChange={(e) => set('game_date', e.target.value)}
             required
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500"
           />
         </div>
 
@@ -105,7 +105,7 @@ export default function NewGamePage() {
             onChange={(e) => set('opponent', e.target.value)}
             placeholder="例：○○ファイターズ"
             required
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500"
           />
         </div>
 
@@ -139,7 +139,7 @@ export default function NewGamePage() {
                 min="0"
                 value={form.score_us}
                 onChange={(e) => set('score_us', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-navy-500"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-crimson-500"
               />
             </div>
             <span className="text-gray-400 font-bold mt-5">-</span>
@@ -150,7 +150,7 @@ export default function NewGamePage() {
                 min="0"
                 value={form.score_them}
                 onChange={(e) => set('score_them', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-navy-500"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-crimson-500"
               />
             </div>
           </div>
@@ -163,7 +163,7 @@ export default function NewGamePage() {
             value={form.stadium}
             onChange={(e) => set('stadium', e.target.value)}
             placeholder="例：○○公園野球場"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500"
           />
         </div>
 
@@ -174,14 +174,14 @@ export default function NewGamePage() {
             onChange={(e) => set('notes', e.target.value)}
             rows={2}
             placeholder="試合の感想など"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy-500 resize-none"
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500 resize-none"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-navy-500 hover:bg-navy-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+          className="w-full bg-crimson-500 hover:bg-crimson-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
         >
           {loading ? '登録中...' : '試合を登録する'}
         </button>
