@@ -26,15 +26,18 @@ export default function Nav() {
     { href: '/stats',     label: '成績',           icon: '📊' },
   ]
 
+  // モバイル上部ナビ（crimson-700 / dark:night-900 背景）
   const mobileLinkClass = (href: string) =>
     isActive(href)
       ? 'bg-white/20 text-white'
       : 'text-crimson-100 dark:text-night-300 hover:text-white hover:bg-white/10'
 
+  // デスクトップ左サイドバー（crimson-700 / dark:night-900 背景）
+  // ライトモードも背景が濃い赤なので文字は明るい crimson-100 を使う
   const sidebarLinkClass = (href: string) =>
     isActive(href)
-      ? 'bg-crimson-500 dark:bg-crimson-600 text-white'
-      : 'text-gray-600 dark:text-night-300 hover:bg-gray-100 dark:hover:bg-night-700 hover:text-gray-900 dark:hover:text-white'
+      ? 'bg-white/20 text-white'
+      : 'text-crimson-100 dark:text-night-300 hover:bg-white/10 dark:hover:bg-night-700 hover:text-white dark:hover:text-white'
 
   return (
     <>
@@ -99,7 +102,7 @@ export default function Nav() {
           </Link>
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-crimson-200 dark:text-night-400 hover:bg-white/10 dark:hover:bg-night-700 hover:text-white transition-all duration-150"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-crimson-100 dark:text-night-400 hover:bg-white/10 dark:hover:bg-night-700 hover:text-white transition-all duration-150"
           >
             <span className="text-base">🚪</span>
             ログアウト
