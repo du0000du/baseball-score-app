@@ -6,8 +6,9 @@
   body {
     @apply bg-gray-50 text-gray-900;
   }
-  .dark body, .dark {
-    background-color: #0d0f14;
+  .dark body,
+  .dark {
+    background-color: #0b0808;
     color: #ffffff;
   }
 }
@@ -22,11 +23,6 @@
   }
   .btn:disabled {
     pointer-events: none;
-  }
-  /* Dark mode card */
-  .dark .card {
-    background-color: #1a1e27;
-    border-color: #2d3448;
   }
 }
 

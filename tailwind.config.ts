@@ -16,7 +16,7 @@ const config: Config = {
           100: '#ffe0da',
           200: '#ffc5bc',
           300: '#f4907e',
-          400: '#e05252',  // brighter for dark mode
+          400: '#e05252',
           500: '#b83227',
           600: '#9d2a1e',
           700: '#7f2117',
@@ -29,19 +29,19 @@ const config: Config = {
           600: '#15803d',
           700: '#166534',
         },
-        // Dark mode night palette (Yahoo Sports inspired)
+        // Dark mode — deep red-black (baseball dark theme)
         night: {
-          950: '#0d0f14',  // main bg
-          900: '#13161d',  // slightly lighter bg
-          800: '#1a1e27',  // cards / surfaces
-          750: '#1e2330',  // table header, hover
-          700: '#252a38',  // elevated surfaces
-          600: '#2d3448',  // borders / dividers
-          500: '#3d4560',  // subtle borders
-          400: '#8b95a9',  // secondary text
-          300: '#b0bac9',  // muted text
-          200: '#d0d7e3',  // subdued text
-          100: '#e8ecf3',  // near-white text
+          950: '#0b0808',   // main bg (very dark red-black)
+          900: '#120d0d',   // sidebar / secondary bg
+          800: '#1c1414',   // cards / surfaces
+          750: '#231b1b',   // table header, row hover
+          700: '#2c2020',   // elevated surfaces
+          600: '#3d2828',   // borders / dividers
+          500: '#523535',   // subtle borders
+          400: '#a08888',   // secondary text (warm muted)
+          300: '#c4b0b0',   // muted text
+          200: '#e0d0d0',   // subdued text
+          100: '#f2eaea',   // near-white warm text
         },
       },
       keyframes: {
