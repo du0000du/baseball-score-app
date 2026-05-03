@@ -39,7 +39,7 @@ function StatRow({ left, right }: {
   right?: { label: string; value: string | number }
 }) {
   return (
-    <div className="grid grid-cols-2 divide-x divide-gray-100">
+    <div className="grid grid-cols-2 divide-x divide-gray-100 odd:bg-white even:bg-gray-50">
       <div className="flex items-center justify-between px-5 py-3.5">
         <span className="text-sm text-gray-500">{left.label}</span>
         <span className="text-xl font-bold text-navy-700">{left.value}</span>
@@ -73,7 +73,7 @@ export default function StatsPage() {
   const [pitchingStats, setPitchingStats] = useState<PitchingStat[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('season')
-  const [tabKey, setTabKey] = useState(0)
+  const [tabVisible, setTabVisible] = useState(true)
 
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i)
 
@@ -100,8 +100,11 @@ export default function StatsPage() {
 
   const handleTabChange = (newTab: Tab) => {
     if (newTab === tab) return
+    setTabVisible(false)
     setTab(newTab)
-    setTabKey(k => k + 1)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setTabVisible(true))
+    })
   }
 
   const allAtBats = games.flatMap((g) => g.at_bats)
@@ -169,7 +172,13 @@ export default function StatsPage() {
           ))}
         </div>
       ) : (
-        <div key={tabKey} className="tab-enter space-y-4">
+        <div
+          className="space-y-4"
+          style={{
+            opacity: tabVisible ? 1 : 0,
+            transition: tabVisible ? 'opacity 0.14s ease-out' : 'none',
+          }}
+        >
 
           {/* タブ1: シーズン累計 */}
           {tab === 'season' && (
