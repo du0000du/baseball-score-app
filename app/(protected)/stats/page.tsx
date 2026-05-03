@@ -422,4 +422,41 @@ export default function StatsPage() {
                               save: 'text-blue-600 font-bold', hold: 'text-purple-600 font-bold', none: 'text-gray-400'
                             }
                             return (
-  
+                              <tr key={game.id} className="hover:bg-gray-50 transition-colors duration-100">
+                                <td className="px-4 py-3 text-gray-600">{formatDate(game.game_date)}</td>
+                                <td className="px-4 py-3 font-medium text-gray-800">{game.opponent}</td>
+                                <td className={`px-3 py-3 text-center ${resultColors[ps.result]}`}>{resultLabels[ps.result]}</td>
+                                <td className="px-3 py-3 text-center text-gray-700">{formatIP(ps.innings_pitched)}</td>
+                                <td className="px-3 py-3 text-center text-gray-700">{ps.hits_allowed}</td>
+                                <td className="px-3 py-3 text-center text-gray-700">{ps.strikeouts}</td>
+                                <td className="px-3 py-3 text-center text-gray-700">{ps.walks}</td>
+                                <td className="px-3 py-3 text-center text-gray-700">{ps.runs_allowed}</td>
+                                <td className="px-3 py-3 text-center text-gray-700">{ps.earned_runs}</td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* タブ5: 打球方向 */}
+          {tab === 'direction' && (
+            allAtBats.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-gray-400">
+                打席データがありません
+              </div>
+            ) : (
+              <DirectionChart atBats={allAtBats} />
+            )
+          )}
+
+        </div>
+      )}
+    </div>
+  )
+}

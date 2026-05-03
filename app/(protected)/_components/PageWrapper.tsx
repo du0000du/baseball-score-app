@@ -10,16 +10,13 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
   const [displayedChildren, setDisplayedChildren] = useState(children)
 
   useEffect(() => {
-    // 初回マウント
     if (prevPathname.current === null) {
       prevPathname.current = pathname
       setVisible(true)
       return
     }
-    // ページ遷移時だけアニメーション
     if (prevPathname.current !== pathname) {
       prevPathname.current = pathname
-      // 一瞬フェードアウト → 新コンテンツに差し替え → フェードイン
       setVisible(false)
       const t = setTimeout(() => {
         setDisplayedChildren(children)
@@ -27,7 +24,6 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
       }, 60)
       return () => clearTimeout(t)
     }
-    // 同一パス内の再レンダリング（データ更新等）はそのまま反映
     setDisplayedChildren(children)
   }, [pathname, children])
 

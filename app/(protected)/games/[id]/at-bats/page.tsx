@@ -155,8 +155,8 @@ function CountSelector({
             onClick={() => onChange(n)}
             className={`w-9 h-9 rounded-lg border text-sm font-medium transition-all ${
               value === n
-                ? 'bg-crimson-500 border-crimson-500 text-white'
-                : 'border-gray-200 text-gray-600 hover:border-crimson-300 hover:bg-crimson-50'
+                ? 'bg-navy-500 border-navy-500 text-white'
+                : 'border-gray-200 text-gray-600 hover:border-navy-300 hover:bg-navy-50'
             }`}
           >
             {n === 0 ? 'なし' : n}
@@ -331,7 +331,7 @@ export default function AtBatsPage() {
     return (
       <div className="text-center py-12">
         <p className="text-gray-400">試合が見つかりません</p>
-        <Link href="/games" className="text-crimson-500 hover:underline mt-2 block">試合一覧へ</Link>
+        <Link href="/games" className="text-navy-500 hover:underline mt-2 block">試合一覧へ</Link>
       </div>
     )
   }
@@ -350,7 +350,7 @@ export default function AtBatsPage() {
         </Link>
       </div>
 
-      <div className="bg-crimson-500 text-white rounded-xl p-4">
+      <div className="bg-navy-500 text-white rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div>
             <div className="text-sm text-blue-200">{formatDate(game.game_date)}</div>
@@ -410,8 +410,8 @@ export default function AtBatsPage() {
                 onClick={() => setBattingOrder(n)}
                 className={`py-3 rounded-lg text-sm font-bold border-2 transition-all ${
                   battingOrder === n
-                    ? 'bg-crimson-500 border-crimson-500 text-white'
-                    : 'border-gray-200 text-gray-600 hover:border-crimson-100 hover:bg-crimson-50'
+                    ? 'bg-navy-500 border-navy-500 text-white'
+                    : 'border-gray-200 text-gray-600 hover:border-navy-100 hover:bg-navy-50'
                 }`}
               >
                 {n}
@@ -620,8 +620,8 @@ export default function AtBatsPage() {
                 onClick={() => setIsRun(!isRun)}
                 className={`w-9 h-9 rounded-lg border flex items-center justify-center cursor-pointer transition-all ${
                   isRun
-                    ? 'bg-crimson-500 border-crimson-500 text-white'
-                    : 'border-gray-200 text-gray-400 hover:border-crimson-300 hover:bg-crimson-50'
+                    ? 'bg-navy-500 border-navy-500 text-white'
+                    : 'border-gray-200 text-gray-400 hover:border-navy-300 hover:bg-navy-50'
                 }`}
               >
                 {isRun ? (
@@ -661,7 +661,7 @@ export default function AtBatsPage() {
             className={`flex-1 text-white py-4 rounded-xl font-bold text-lg transition-colors disabled:opacity-40 ${
               editingAtBatId
                 ? 'bg-blue-600 hover:bg-blue-700'
-                : 'bg-crimson-500 hover:bg-crimson-600'
+                : 'bg-navy-500 hover:bg-navy-600'
             }`}
           >
             {submitting
@@ -678,4 +678,73 @@ export default function AtBatsPage() {
           <div className="space-y-2">
             {atBats.map((ab) => {
               const label = getAtBatLabel(ab.result_type as ResultType, ab.direction as Direction | null)
-              const isPositionInLabel = ab.result_type === 
+              const isPositionInLabel = ab.result_type === 'groundout' ||
+                                        ab.result_type === 'infield_flyout' ||
+                                        ab.result_type === 'error' ||
+                                        (ab.result_type === 'hit' && !!ab.direction) ||
+                                        (ab.result_type === 'fc' && !!ab.direction)
+              const isEditing = editingAtBatId === ab.id
+              const rbiVal = ab.rbi_count ?? (ab.is_rbi ? 1 : 0)
+              const sbVal = ab.stolen_base_count ?? (ab.is_stolen_base ? 1 : 0)
+              return (
+                <div
+                  key={ab.id}
+                  className={`flex items-center justify-between py-2 px-3 rounded-lg transition-colors ${
+                    isEditing ? 'bg-blue-50 ring-2 ring-blue-300' : 'bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 flex-wrap min-w-0">
+                    <span className="text-xs text-gray-400 w-7 shrink-0">#{ab.at_bat_number}</span>
+                    <span className="text-xs bg-navy-100 text-navy-600 px-1.5 py-0.5 rounded font-medium shrink-0">
+                      {ab.batting_order}番
+                    </span>
+                    <span className="text-sm font-medium text-gray-800">
+                      {label}
+                    </span>
+                    {ab.direction && !isPositionInLabel && (
+                      <span className="text-xs text-gray-500">
+                        → {DIRECTION_LABELS[ab.direction as Direction]}
+                      </span>
+                    )}
+                    <div className="flex gap-1 flex-wrap">
+                      {rbiVal > 0 && (
+                        <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-medium">
+                          打点{rbiVal > 1 ? rbiVal : ''}
+                        </span>
+                      )}
+                      {ab.is_run && (
+                        <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium">得点</span>
+                      )}
+                      {sbVal > 0 && (
+                        <span className="text-xs bg-green-100 text-green-600 px-1.5 py-0.5 rounded font-medium">
+                          盗塁{sbVal > 1 ? sbVal : ''}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 ml-2">
+                    <button
+                      onClick={() => handleEditAtBat(ab)}
+                      disabled={!!deletingId}
+                      className="text-blue-400 hover:text-blue-600 transition-colors text-xs disabled:opacity-50"
+                    >
+                      編集
+                    </button>
+                    <span className="text-gray-200">|</span>
+                    <button
+                      onClick={() => handleDeleteAtBat(ab.id)}
+                      disabled={deletingId === ab.id}
+                      className="text-red-400 hover:text-red-600 transition-colors text-xs disabled:opacity-50"
+                    >
+                      {deletingId === ab.id ? '削除中' : '削除'}
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
