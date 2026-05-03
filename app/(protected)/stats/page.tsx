@@ -116,8 +116,6 @@ export default function StatsPage() {
   const draws = games.filter((g) => g.result === 'draw').length
   const winRate = (wins + losses) > 0 ? (wins / (wins + losses)).toFixed(3).replace(/^0/, '') : '---'
 
-  const activeTabIdx = TAB_LIST.findIndex(t => t.key === tab)
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -133,35 +131,27 @@ export default function StatsPage() {
         </select>
       </div>
 
-      {/* タブ - スライドインジケーター */}
-      <div className="relative border-b border-gray-200">
+      {/* タブ */}
+      <div className="border-b border-gray-200">
         <div className="flex overflow-x-auto">
           {TAB_LIST.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => handleTabChange(key)}
-              className={`relative px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors duration-150 outline-none ${
+              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px outline-none transition-colors duration-150 ${
                 tab === key
-                  ? 'text-navy-500'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'text-navy-500 border-navy-500'
+                  : 'text-gray-500 hover:text-gray-700 border-transparent'
               }`}
             >
               {label}
             </button>
           ))}
         </div>
-        {/* スライドするアンダーライン */}
-        <div
-          className="absolute bottom-0 h-0.5 bg-navy-500 rounded-full transition-all duration-200 ease-out"
-          style={{
-            width: `${100 / TAB_LIST.length}%`,
-            transform: `translateX(${activeTabIdx * 100}%)`,
-          }}
-        />
       </div>
 
       {loading ? (
-        <div className="space-y-3">
+        <div className="space-y-3 min-h-[520px]">
           {[1,2,3].map(i => (
             <div key={i} className="bg-white rounded-xl border border-gray-100 p-6 animate-pulse">
               <div className="h-4 bg-gray-100 rounded w-1/4 mb-4" />
@@ -173,7 +163,7 @@ export default function StatsPage() {
         </div>
       ) : (
         <div
-          className="space-y-4"
+          className="space-y-4 min-h-[520px]"
           style={{
             opacity: tabVisible ? 1 : 0,
             transition: tabVisible ? 'opacity 0.14s ease-out' : 'none',
