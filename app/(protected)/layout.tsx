@@ -14,9 +14,8 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-night-950">
       <Nav />
-      {/* モバイル: Navの下に通常フロー / デスクトップ: サイドバー分(w-60)左にオフセット */}
       <main className="lg:pl-60 px-4 py-6">
         <div className="max-w-5xl mx-auto">
           <PageWrapper>{children}</PageWrapper>
