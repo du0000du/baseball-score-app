@@ -33,6 +33,29 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
   )
 }
 
+// 2カラムリスト形式の1行（左右それぞれラベル+値）
+function StatRow({ left, right }: {
+  left: { label: string; value: string | number }
+  right?: { label: string; value: string | number }
+}) {
+  return (
+    <div className="grid grid-cols-2 divide-x divide-gray-100">
+      <div className="flex items-center justify-between px-5 py-3.5">
+        <span className="text-sm text-gray-500">{left.label}</span>
+        <span className="text-xl font-bold text-navy-700">{left.value}</span>
+      </div>
+      {right ? (
+        <div className="flex items-center justify-between px-5 py-3.5">
+          <span className="text-sm text-gray-500">{right.label}</span>
+          <span className="text-xl font-bold text-navy-700">{right.value}</span>
+        </div>
+      ) : (
+        <div />
+      )}
+    </div>
+  )
+}
+
 const TAB_LIST: { key: Tab; label: string }[] = [
   { key: 'season',    label: 'シーズン累計' },
   { key: 'per-game',  label: '試合別' },
@@ -179,37 +202,39 @@ export default function StatsPage() {
                 </div>
               )}
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">打撃成績</h2>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="px-5 py-4 border-b border-gray-100">
+                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">打撃成績</h2>
+                </div>
                 {allAtBats.length === 0 ? (
-                  <p className="text-gray-400 text-center py-4">まだ打席記録がありません</p>
+                  <p className="text-gray-400 text-center py-8">まだ打席記録がありません</p>
                 ) : (
                   <>
-                    <div className="grid grid-cols-4 gap-2 mb-6">
-                      <StatCard label="打率" value={fmtAvg(stats.avg)} />
-                      <StatCard label="出塁率" value={fmtAvg(stats.obp)} />
-                      <StatCard label="長打率" value={fmtAvg(stats.slg)} />
-                      <StatCard label="OPS" value={fmtDec(stats.ops, 3).replace(/^0/, '')} />
+                    {/* 主要指標ハイライト */}
+                    <div className="grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100">
+                      {[
+                        { label: '打率', value: fmtAvg(stats.avg) },
+                        { label: '出塁率', value: fmtAvg(stats.obp) },
+                        { label: '長打率', value: fmtAvg(stats.slg) },
+                        { label: 'OPS', value: fmtDec(stats.ops, 3).replace(/^0/, '') },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="flex flex-col items-center py-4 px-2">
+                          <span className="text-xs text-gray-400 mb-1">{label}</span>
+                          <span className="text-2xl font-bold text-navy-500">{value}</span>
+                        </div>
+                      ))}
                     </div>
-                    <div className="grid grid-cols-4 gap-3 pt-4 border-t border-gray-100">
-                      <StatCard label="打席" value={stats.pa} />
-                      <StatCard label="打数" value={stats.ab} />
-                      <StatCard label="安打" value={stats.hits} />
-                      <StatCard label="二塁打" value={stats.doubles} />
-                      <StatCard label="三塁打" value={stats.triples} />
-                      <StatCard label="本塁打" value={stats.hrs} />
-                      <StatCard label="打点" value={stats.rbi} />
-                      <StatCard label="得点" value={stats.runs} />
-                      <StatCard label="盗塁" value={stats.sb} />
-                      <StatCard label="盗塁死" value={stats.cs} />
-                      <StatCard label="三振" value={stats.strikeouts} />
-                      <StatCard label="四球" value={stats.walks} />
-                      <StatCard label="死球" value={stats.hbp} />
-                      <StatCard label="犠打" value={stats.sac_bunt} />
-                      <StatCard label="犠飛" value={stats.sac_fly} />
-                      <StatCard label="ISOD" value={fmtAvg(stats.isod)} />
-                      <StatCard label="ISOP" value={fmtAvg(stats.isop)} />
-                      <StatCard label="RC27" value={fmtDec(stats.rc27, 2)} />
+                    {/* 詳細成績 2カラムリスト */}
+                    <div className="divide-y divide-gray-100">
+                      <StatRow left={{ label: '打席', value: stats.pa }}        right={{ label: '打数', value: stats.ab }} />
+                      <StatRow left={{ label: '安打', value: stats.hits }}      right={{ label: '本塁打', value: stats.hrs }} />
+                      <StatRow left={{ label: '二塁打', value: stats.doubles }} right={{ label: '三塁打', value: stats.triples }} />
+                      <StatRow left={{ label: '打点', value: stats.rbi }}       right={{ label: '得点', value: stats.runs }} />
+                      <StatRow left={{ label: '盗塁', value: stats.sb }}        right={{ label: '盗塁死', value: stats.cs }} />
+                      <StatRow left={{ label: '三振', value: stats.strikeouts }} right={{ label: '四球', value: stats.walks }} />
+                      <StatRow left={{ label: '死球', value: stats.hbp }}       right={{ label: '犠打', value: stats.sac_bunt }} />
+                      <StatRow left={{ label: '犠飛', value: stats.sac_fly }}   right={{ label: 'RC27', value: fmtDec(stats.rc27, 2) }} />
+                      <StatRow left={{ label: 'IsoD', value: fmtAvg(stats.isod) }} right={{ label: 'IsoP', value: fmtAvg(stats.isop) }} />
                     </div>
                   </>
                 )}
@@ -338,33 +363,34 @@ export default function StatsPage() {
                 </div>
               ) : (
                 <>
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">シーズン投手成績</h2>
-                    <div className="grid grid-cols-4 gap-2 mb-4">
-                      <StatCard label="防御率" value={fmtERA(pStats.era)} />
-                      <StatCard label="WHIP" value={fmtDec(pStats.whip, 2)} />
-                      <StatCard label="K/9" value={fmtDec(pStats.k9, 1)} />
-                      <StatCard label="K/BB" value={fmtDec(pStats.kbb, 2)} />
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="px-5 py-4 border-b border-gray-100">
+                      <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">シーズン投手成績</h2>
                     </div>
-                    <div className="grid grid-cols-4 gap-3 pt-4 border-t border-gray-100">
-                      <StatCard label="登板" value={pStats.games} />
-                      <StatCard label="勝" value={pStats.wins} />
-                      <StatCard label="敗" value={pStats.losses} />
-                      <StatCard label="セーブ" value={pStats.saves} />
-                      <StatCard label="ホールド" value={pStats.holds} />
-                      <StatCard label="完投" value={pStats.complete_games} />
-                      <StatCard label="投球回" value={formatIP(pStats.innings_pitched)} />
-                      <StatCard label="被安打" value={pStats.hits_allowed} />
-                      <StatCard label="被本塁打" value={pStats.home_runs_allowed} />
-                      <StatCard label="奪三振" value={pStats.strikeouts} />
-                      <StatCard label="与四球" value={pStats.walks} />
-                      <StatCard label="与死球" value={pStats.hit_batsmen} />
-                      <StatCard label="失点" value={pStats.runs_allowed} />
-                      <StatCard label="自責点" value={pStats.earned_runs} />
-                      <StatCard label="FIP" value={fmtDec(pStats.fip, 2)} />
-                      {pStats.pitch_count !== null && (
-                        <StatCard label="総投球数" value={pStats.pitch_count} />
-                      )}
+                    {/* 主要指標ハイライト */}
+                    <div className="grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100">
+                      {[
+                        { label: '防御率', value: fmtERA(pStats.era) },
+                        { label: 'WHIP', value: fmtDec(pStats.whip, 2) },
+                        { label: 'K/9', value: fmtDec(pStats.k9, 1) },
+                        { label: 'K/BB', value: fmtDec(pStats.kbb, 2) },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="flex flex-col items-center py-4 px-2">
+                          <span className="text-xs text-gray-400 mb-1">{label}</span>
+                          <span className="text-2xl font-bold text-navy-500">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {/* 詳細成績 2カラムリスト */}
+                    <div className="divide-y divide-gray-100">
+                      <StatRow left={{ label: '登板', value: pStats.games }}          right={{ label: '投球回', value: formatIP(pStats.innings_pitched) }} />
+                      <StatRow left={{ label: '勝', value: pStats.wins }}             right={{ label: '敗', value: pStats.losses }} />
+                      <StatRow left={{ label: 'セーブ', value: pStats.saves }}        right={{ label: 'ホールド', value: pStats.holds }} />
+                      <StatRow left={{ label: '完投', value: pStats.complete_games }} right={{ label: '被安打', value: pStats.hits_allowed }} />
+                      <StatRow left={{ label: '被本塁打', value: pStats.home_runs_allowed }} right={{ label: '奪三振', value: pStats.strikeouts }} />
+                      <StatRow left={{ label: '与四球', value: pStats.walks }}        right={{ label: '与死球', value: pStats.hit_batsmen }} />
+                      <StatRow left={{ label: '失点', value: pStats.runs_allowed }}   right={{ label: '自責点', value: pStats.earned_runs }} />
+                      <StatRow left={{ label: 'FIP', value: fmtDec(pStats.fip, 2) }} right={pStats.pitch_count !== null ? { label: '総投球数', value: pStats.pitch_count } : undefined} />
                     </div>
                   </div>
 
