@@ -14,10 +14,13 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Nav />
-      <main className="max-w-4xl mx-auto px-4 py-6">
-        <PageWrapper>{children}</PageWrapper>
+      {/* モバイル: Navの下に通常フロー / デスクトップ: サイドバー分(w-60)左にオフセット */}
+      <main className="lg:pl-60 px-4 py-6">
+        <div className="max-w-5xl mx-auto">
+          <PageWrapper>{children}</PageWrapper>
+        </div>
       </main>
     </div>
   )

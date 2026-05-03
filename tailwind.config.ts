@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
+  darkMode: 'class',
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -9,7 +10,6 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Baseball Crimson — Cardinals/Red Sox 系のクラシックな深紅
         crimson: {
           50:  '#fff1f0',
           100: '#ffe0da',

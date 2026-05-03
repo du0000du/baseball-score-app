@@ -20,48 +20,95 @@ export default function Nav() {
   const isActive = (path: string) =>
     pathname === path || (path !== '/dashboard' && pathname.startsWith(path))
 
+  const navLinks = [
+    { href: '/dashboard', label: 'ダッシュボード', icon: '🏠' },
+    { href: '/games',     label: '試合',           icon: '⚾' },
+    { href: '/stats',     label: '成績',           icon: '📊' },
+  ]
+
+  const mobileLinkClass = (href: string) =>
+    isActive(href)
+      ? 'bg-white/20 text-white'
+      : 'text-crimson-100 dark:text-gray-300 hover:text-white hover:bg-white/10 active:bg-white/15 active:scale-[0.97]'
+
+  const sidebarLinkClass = (href: string) =>
+    isActive(href)
+      ? 'bg-crimson-500 text-white'
+      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+
   return (
-    <nav className="bg-crimson-700 shadow-lg">
-      <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-1">
-          <span className="text-white font-bold text-lg mr-3">⚾</span>
-          {[
-            { href: '/dashboard', label: 'ダッシュボード' },
-            { href: '/games',     label: '試合' },
-            { href: '/stats',     label: '成績' },
-          ].map(({ href, label }) => (
+    <>
+      {/* ===== モバイル: 上部ナビ (lg未満) ===== */}
+      <nav className="lg:hidden bg-crimson-700 dark:bg-gray-900 shadow-lg">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <span className="text-white font-bold text-lg mr-3">⚾</span>
+            {navLinks.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={`text-sm font-medium px-3 py-1.5 rounded-md transition-all duration-150 ${mobileLinkClass(href)}`}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/settings"
+              className={`text-sm font-medium px-3 py-1.5 rounded-md transition-all duration-150 ${mobileLinkClass('/settings')}`}
+            >
+              設定
+            </Link>
+            <button
+              onClick={handleSignOut}
+              className="text-sm text-crimson-100 dark:text-gray-300 hover:text-white transition-all duration-150 active:opacity-70 active:scale-[0.97]"
+            >
+              ログアウト
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* ===== デスクトップ: 左サイドバー (lg以上) ===== */}
+      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-60 bg-crimson-700 dark:bg-gray-900 shadow-xl z-10">
+        {/* ロゴ */}
+        <div className="px-6 py-5 border-b border-crimson-600 dark:border-gray-700">
+          <span className="text-white font-bold text-xl tracking-tight">⚾ 草野球記録</span>
+        </div>
+
+        {/* ナビリンク */}
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          {navLinks.map(({ href, label, icon }) => (
             <Link
               key={href}
               href={href}
-              className={`text-sm font-medium px-3 py-1.5 rounded-md transition-all duration-150 ${
-                isActive(href)
-                  ? 'bg-white/20 text-white'
-                  : 'text-crimson-100 hover:text-white hover:bg-white/10 active:bg-white/15 active:scale-[0.97]'
-              }`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${sidebarLinkClass(href)}`}
             >
+              <span className="text-base">{icon}</span>
               {label}
             </Link>
           ))}
-        </div>
-        <div className="flex items-center gap-3">
+        </nav>
+
+        {/* 下部: 設定 + ログアウト */}
+        <div className="px-3 py-4 border-t border-crimson-600 dark:border-gray-700 space-y-1">
           <Link
             href="/settings"
-            className={`text-sm font-medium px-3 py-1.5 rounded-md transition-all duration-150 ${
-              isActive('/settings')
-                ? 'bg-white/20 text-white'
-                : 'text-crimson-100 hover:text-white hover:bg-white/10 active:bg-white/15 active:scale-[0.97]'
-            }`}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${sidebarLinkClass('/settings')}`}
           >
+            <span className="text-base">⚙️</span>
             設定
           </Link>
           <button
             onClick={handleSignOut}
-            className="text-sm text-crimson-100 hover:text-white transition-all duration-150 active:opacity-70 active:scale-[0.97]"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-crimson-100 dark:text-gray-400 hover:bg-white/10 dark:hover:bg-gray-700 hover:text-white transition-all duration-150"
           >
+            <span className="text-base">🚪</span>
             ログアウト
           </button>
         </div>
-      </div>
-    </nav>
+      </aside>
+    </>
   )
 }

@@ -13,12 +13,12 @@ function formatDate(dateStr: string) {
 function ScoreDisplay({ game }: { game: Game }) {
   const marker =
     game.result === 'win'  ? <span className="text-green-500">○</span> :
-    game.result === 'loss' ? <span className="text-gray-600">●</span> :
+    game.result === 'loss' ? <span className="text-gray-500">●</span> :
                              <span className="text-yellow-500">△</span>
   return (
     <span className="flex items-center gap-1 text-base font-bold leading-none shrink-0">
       {marker}
-      <span className="text-gray-800">
+      <span className="text-gray-800 dark:text-gray-100">
         {game.score_us}<span className="text-gray-400 font-normal mx-0.5">-</span>{game.score_them}
       </span>
     </span>
@@ -29,15 +29,15 @@ function SkeletonRow() {
   return (
     <div className="px-4 py-4 animate-pulse">
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-12 h-5 bg-gray-100 rounded" />
-        <div className="h-5 bg-gray-100 rounded w-40" />
+        <div className="w-12 h-5 bg-gray-100 dark:bg-gray-700 rounded" />
+        <div className="h-5 bg-gray-100 dark:bg-gray-700 rounded w-40" />
       </div>
-      <div className="h-3 bg-gray-100 rounded w-28 mb-3" />
+      <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded w-28 mb-3" />
       <div className="flex gap-2">
-        <div className="h-7 w-16 bg-gray-100 rounded" />
-        <div className="h-7 w-16 bg-gray-100 rounded" />
-        <div className="h-7 w-10 bg-gray-100 rounded" />
-        <div className="h-7 w-10 bg-gray-100 rounded" />
+        <div className="h-7 w-16 bg-gray-100 dark:bg-gray-700 rounded" />
+        <div className="h-7 w-16 bg-gray-100 dark:bg-gray-700 rounded" />
+        <div className="h-7 w-10 bg-gray-100 dark:bg-gray-700 rounded" />
+        <div className="h-7 w-10 bg-gray-100 dark:bg-gray-700 rounded" />
       </div>
     </div>
   )
@@ -85,13 +85,13 @@ export default function GamesPage() {
       </div>
 
       {loading ? (
-        <div className="min-h-[520px] bg-white rounded-xl shadow-sm border border-gray-100 divide-y divide-gray-100">
+        <div className="min-h-[520px] bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
           {[1, 2, 3].map(i => <SkeletonRow key={i} />)}
         </div>
       ) : games.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center">
           <div className="text-5xl mb-4">⚾</div>
-          <p className="text-gray-400 mb-4">試合が登録されていません</p>
+          <p className="text-gray-400 dark:text-gray-500 mb-4">試合が登録されていません</p>
           <Link
             href="/games/new"
             className="btn inline-block bg-crimson-500 hover:bg-crimson-600 text-white px-6 py-2 rounded-lg text-sm font-medium"
@@ -100,18 +100,18 @@ export default function GamesPage() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 divide-y divide-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
           {games.map((game) => (
             <div key={game.id} className="px-4 py-4">
               {confirmId === game.id ? (
                 <div className="animate-fade-in">
-                  <p className="text-sm text-red-700 font-medium mb-3">
+                  <p className="text-sm text-red-600 dark:text-red-400 font-medium mb-3">
                     この試合と全打席記録を削除しますか？
                   </p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setConfirmId(null)}
-                      className="btn flex-1 py-2 text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium"
+                      className="btn flex-1 py-2 text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg font-medium"
                     >
                       キャンセル
                     </button>
@@ -126,19 +126,16 @@ export default function GamesPage() {
                 </div>
               ) : (
                 <>
-                  {/* 上段: スコア + 相手チーム */}
                   <div className="flex items-center gap-2 mb-1">
                     <ScoreDisplay game={game} />
-                    <span className="text-base font-semibold text-gray-800 truncate">
+                    <span className="text-base font-semibold text-gray-800 dark:text-gray-100 truncate">
                       vs {game.opponent}
                     </span>
                   </div>
-                  {/* 中段: 日付・球場 */}
-                  <p className="text-xs text-gray-400 mb-3 pl-0.5">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-3 pl-0.5">
                     {formatDate(game.game_date)}
                     {game.stadium && <span className="ml-1.5">・ {game.stadium}</span>}
                   </p>
-                  {/* 下段: アクションボタン */}
                   <div className="flex gap-2">
                     <Link
                       href={`/games/${game.id}/at-bats`}
@@ -154,13 +151,13 @@ export default function GamesPage() {
                     </Link>
                     <Link
                       href={`/games/${game.id}/edit`}
-                      className="btn flex-1 text-center py-2 text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg"
+                      className="btn flex-1 text-center py-2 text-xs font-medium bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg"
                     >
                       編集
                     </Link>
                     <button
                       onClick={() => setConfirmId(game.id)}
-                      className="btn flex-1 py-2 text-xs font-medium text-red-500 hover:bg-red-50 rounded-lg"
+                      className="btn flex-1 py-2 text-xs font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
                     >
                       削除
                     </button>
@@ -174,4 +171,3 @@ export default function GamesPage() {
     </div>
   )
 }
-   

@@ -27,8 +27,8 @@ function ResultBadge({ result }: { result: Game['result'] }) {
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="text-center">
-      <div className="text-2xl font-bold text-crimson-500">{value}</div>
-      <div className="text-xs text-gray-400 mt-0.5">{label}</div>
+      <div className="text-2xl font-bold text-crimson-500 dark:text-crimson-400">{value}</div>
+      <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{label}</div>
     </div>
   )
 }
@@ -39,14 +39,14 @@ function StatRow({ left, right }: {
   right?: { label: string; value: string | number }
 }) {
   return (
-    <div className="grid grid-cols-2 divide-x divide-gray-100 odd:bg-white even:bg-gray-50">
+    <div className="grid grid-cols-2 divide-x divide-gray-100 odd:bg-white even:bg-gray-50 dark:odd:bg-gray-800 dark:even:bg-gray-750/50">
       <div className="flex items-center justify-between px-5 py-3.5">
-        <span className="text-sm text-gray-500">{left.label}</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">{left.label}</span>
         <span className="text-xl font-bold text-crimson-700">{left.value}</span>
       </div>
       {right ? (
         <div className="flex items-center justify-between px-5 py-3.5">
-          <span className="text-sm text-gray-500">{right.label}</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">{right.label}</span>
           <span className="text-xl font-bold text-crimson-700">{right.value}</span>
         </div>
       ) : (
@@ -119,7 +119,7 @@ export default function StatsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-crimson-500">成績</h1>
+        <h1 className="text-2xl font-bold text-crimson-500 dark:text-crimson-400">成績</h1>
         <select
           value={season}
           onChange={(e) => setSeason(parseInt(e.target.value))}
@@ -174,36 +174,36 @@ export default function StatsPage() {
           {tab === 'season' && (
             <div className="space-y-4">
               {games.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">チーム戦績</h2>
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
+                  <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">チーム戦績</h2>
                   <div className="grid grid-cols-5 gap-2 text-center text-sm">
                     <div>
                       <div className="text-xl font-bold text-crimson-500">{games.length}</div>
-                      <div className="text-xs text-gray-400 mt-0.5">試合</div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">試合</div>
                     </div>
                     <div>
                       <div className="text-xl font-bold text-green-600">{wins}</div>
-                      <div className="text-xs text-gray-400 mt-0.5">勝</div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">勝</div>
                     </div>
                     <div>
                       <div className="text-xl font-bold text-red-500">{losses}</div>
-                      <div className="text-xs text-gray-400 mt-0.5">負</div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">負</div>
                     </div>
                     <div>
                       <div className="text-xl font-bold text-yellow-500">{draws}</div>
-                      <div className="text-xs text-gray-400 mt-0.5">分</div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">分</div>
                     </div>
                     <div>
                       <div className="text-xl font-bold text-crimson-500">{winRate}</div>
-                      <div className="text-xs text-gray-400 mt-0.5">勝率</div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">勝率</div>
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-100">
-                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">打撃成績</h2>
+                  <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">打撃成績</h2>
                 </div>
                 {allAtBats.length === 0 ? (
                   <p className="text-gray-400 text-center py-8">まだ打席記録がありません</p>
@@ -218,13 +218,13 @@ export default function StatsPage() {
                         { label: 'OPS', value: fmtDec(stats.ops, 3).replace(/^0/, '') },
                       ].map(({ label, value }) => (
                         <div key={label} className="flex flex-col items-center py-4 px-2">
-                          <span className="text-xs text-gray-400 mb-1">{label}</span>
-                          <span className="text-2xl font-bold text-crimson-500">{value}</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500 mb-1">{label}</span>
+                          <span className="text-2xl font-bold text-crimson-500 dark:text-crimson-400">{value}</span>
                         </div>
                       ))}
                     </div>
                     {/* 詳細成績 2カラムリスト */}
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
                       <StatRow left={{ label: '打席', value: stats.pa }}        right={{ label: '打数', value: stats.ab }} />
                       <StatRow left={{ label: '安打', value: stats.hits }}      right={{ label: '本塁打', value: stats.hrs }} />
                       <StatRow left={{ label: '二塁打', value: stats.doubles }} right={{ label: '三塁打', value: stats.triples }} />
@@ -243,7 +243,7 @@ export default function StatsPage() {
 
           {/* タブ2: 試合別 */}
           {tab === 'per-game' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
               {games.length === 0 ? (
                 <div className="p-12 text-center text-gray-400">試合データがありません</div>
               ) : (
@@ -267,9 +267,9 @@ export default function StatsPage() {
                       {games.map((game) => {
                         const gs = calcBattingStats(game.at_bats)
                         return (
-                          <tr key={game.id} className="hover:bg-gray-50 transition-colors duration-100">
-                            <td className="px-4 py-3 text-gray-600">{formatDate(game.game_date)}</td>
-                            <td className="px-4 py-3 font-medium text-gray-800">{game.opponent}</td>
+                          <tr key={game.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-100">
+                            <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{formatDate(game.game_date)}</td>
+                            <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">{game.opponent}</td>
                             <td className="px-3 py-3 text-center"><ResultBadge result={game.result} /></td>
                             <td className="px-3 py-3 text-center text-gray-700">{gs.pa}</td>
                             <td className="px-3 py-3 text-center text-gray-700">{gs.ab}</td>
@@ -290,7 +290,7 @@ export default function StatsPage() {
 
           {/* タブ3: 全打席ログ */}
           {tab === 'log' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
               {allAtBats.length === 0 ? (
                 <div className="p-12 text-center text-gray-400">打席データがありません</div>
               ) : (
@@ -311,7 +311,7 @@ export default function StatsPage() {
                     <tbody className="divide-y divide-gray-50">
                       {games.flatMap((game) =>
                         game.at_bats.map((ab) => (
-                          <tr key={ab.id} className="hover:bg-gray-50 transition-colors duration-100">
+                          <tr key={ab.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-100">
                             <td className="px-4 py-2.5 text-gray-600 whitespace-nowrap">{formatDate(game.game_date)}</td>
                             <td className="px-4 py-2.5 text-gray-700 whitespace-nowrap">{game.opponent}</td>
                             <td className="px-3 py-2.5 text-center text-gray-500">#{ab.at_bat_number}</td>
@@ -357,14 +357,14 @@ export default function StatsPage() {
           {tab === 'pitching' && (
             <div className="space-y-4">
               {pitchingStats.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-gray-400">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center text-gray-400">
                   投手成績が登録されていません
                 </div>
               ) : (
                 <>
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <div className="px-5 py-4 border-b border-gray-100">
-                      <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">シーズン投手成績</h2>
+                      <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">シーズン投手成績</h2>
                     </div>
                     {/* 主要指標ハイライト */}
                     <div className="grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100">
@@ -375,13 +375,13 @@ export default function StatsPage() {
                         { label: 'K/BB', value: fmtDec(pStats.kbb, 2) },
                       ].map(({ label, value }) => (
                         <div key={label} className="flex flex-col items-center py-4 px-2">
-                          <span className="text-xs text-gray-400 mb-1">{label}</span>
-                          <span className="text-2xl font-bold text-crimson-500">{value}</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500 mb-1">{label}</span>
+                          <span className="text-2xl font-bold text-crimson-500 dark:text-crimson-400">{value}</span>
                         </div>
                       ))}
                     </div>
                     {/* 詳細成績 2カラムリスト */}
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-gray-100 dark:divide-gray-700">
                       <StatRow left={{ label: '登板', value: pStats.games }}          right={{ label: '投球回', value: formatIP(pStats.innings_pitched) }} />
                       <StatRow left={{ label: '勝', value: pStats.wins }}             right={{ label: '敗', value: pStats.losses }} />
                       <StatRow left={{ label: 'セーブ', value: pStats.saves }}        right={{ label: 'ホールド', value: pStats.holds }} />
@@ -393,9 +393,9 @@ export default function StatsPage() {
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <div className="px-5 py-3 border-b border-gray-100">
-                      <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">試合別投手成績</h2>
+                      <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">試合別投手成績</h2>
                     </div>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
@@ -422,9 +422,9 @@ export default function StatsPage() {
                               save: 'text-blue-600 font-bold', hold: 'text-purple-600 font-bold', none: 'text-gray-400'
                             }
                             return (
-                              <tr key={game.id} className="hover:bg-gray-50 transition-colors duration-100">
-                                <td className="px-4 py-3 text-gray-600">{formatDate(game.game_date)}</td>
-                                <td className="px-4 py-3 font-medium text-gray-800">{game.opponent}</td>
+                              <tr key={game.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-100">
+                                <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{formatDate(game.game_date)}</td>
+                                <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">{game.opponent}</td>
                                 <td className={`px-3 py-3 text-center ${resultColors[ps.result]}`}>{resultLabels[ps.result]}</td>
                                 <td className="px-3 py-3 text-center text-gray-700">{formatIP(ps.innings_pitched)}</td>
                                 <td className="px-3 py-3 text-center text-gray-700">{ps.hits_allowed}</td>
@@ -447,7 +447,7 @@ export default function StatsPage() {
           {/* タブ5: 打球方向 */}
           {tab === 'direction' && (
             allAtBats.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center text-gray-400">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center text-gray-400">
                 打席データがありません
               </div>
             ) : (
