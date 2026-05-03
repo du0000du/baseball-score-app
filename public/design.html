@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>草野球成績管理アプリ — システム設計書</title>
+<style>
+  :root {
+    --navy: #1e3a5f;
+    --navy-light: #2e5f8a;
+    --navy-pale: #f0f4ff;
+    --green: #16a34a;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #e2e8f0;
+    --code-bg: #0d1117;
+    --code-fg: #c9d1d9;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text);
+    background: #f8fafc;
+  }
+
+  /* ── Sidebar nav ── */
+  #sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 240px;
+    height: 100vh;
+    background: var(--navy);
+    overflow-y: auto;
+    z-index: 100;
+    padding: 0 0 32px;
+  }
+
+  #sidebar .logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  #sidebar .logo .app-name {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  #sidebar .logo .doc-type {
+    color: rgba(255,255,255,0.5);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  #sidebar nav { padding: 16px 0; }
+
+  #sidebar nav a {
+    display: block;
+    padding: 7px 20px;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  #sidebar nav a:hover, #sidebar nav a.active {
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+  }
+  #sidebar nav a.section-link {
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    margin-top: 8px;
+  }
+  #sidebar nav a.sub-link {
+    padding-left: 32px;
+    font-size: 12px;
+  }
+
+  /* ── Main content ── */
+  #main {
+    margin-left: 240px;
+    padding: 40px 48px 80px;
+    max-width: 1000px;
+  }
+
+  /* ── Cover ── */
+  .cover {
+    text-align: center;
+    padding: 60px 0 48px;
+    border-bottom: 3px solid var(--navy);
+    margin-bottom: 48px;
+  }
+  .cover .badge {
+    display: inline-block;
+    background: var(--navy-pale);
+    color: var(--navy);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+  }
+  .cover h1 {
+    font-size: 36px;
+    color: var(--navy);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .cover .subtitle {
+    font-size: 16px;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+  .cover-meta {
+    display: inline-grid;
+    grid-template-columns: auto auto;
+    gap: 8px 24px;
+    text-align: left;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 28px;
+    font-size: 13px;
+  }
+  .cover-meta .key {
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .cover-meta .val {
+    color: var(--text);
+  }
+
+  /* ── Section headings ── */
+  section { margin-bottom: 56px; }
+
+  h2.sec-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--navy);
+    padding-bottom: 10px;
+    border-bottom: 3px solid var(--navy);
+    margin-bottom: 24px;
+    scroll-margin-top: 24px;
+  }
+
+  h3.sub-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 28px 0 14px;
+    scroll-margin-top: 24px;
+  }
+
+  h4.sub-sub {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy-light);
+    margin: 20px 0 10px;
+  }
+
+  p { margin-bottom: 14px; }
+
+  /* ── Tables ── */
+  .info-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .info-table th {
+    background: var(--navy-pale);
+    color: var(--navy);
+    font-weight: 700;
+    text-align: left;
+    padding: 10px 14px;
+    border: 1px solid #d1d9f0;
+    width: 26%;
+  }
+  .info-table td {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    background: white;
+  }
+  .info-table tr:nth-child(even) td { background: #fafbff; }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  .data-table thead th {
+    background: var(--navy);
+    color: white;
+    font-weight: 600;
+    padding: 10px 14px;
+    text-align: left;
+    border: 1px solid #16305a;
+  }
+  .data-table tbody tr:nth-child(odd) td  { background: white; }
+  .data-table tbody tr:nth-child(even) td { background: #f8f9ff; }
+  .data-table tbody td {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .data-table code {
+    background: var(--navy-pale);
+    color: var(--navy);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 12px;
+  }
+
+  /* ── Code block (diagram) ── */
+  .code-block {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+    padding: 24px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin-bottom: 24px;
+    border: 1px solid #30363d;
+    white-space: pre;
+  }
+
+  .code-inline {
+    background: var(--navy-pale);
+    color: var(--navy);
+    font-family: 'Consolas', monospace;
+    font-size: 12.5px;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ── Chip tags ── */
+  .tag {
+    display: inline-block;
+    background: var(--navy-pale);
+    color: var(--navy);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 12px;
+    margin: 2px 3px 2px 0;
+  }
+  .tag.green  { background: #dcfce7; color: #15803d; }
+  .tag.purple { background: #f3e8ff; color: #7e22ce; }
+  .tag.orange { background: #fff7ed; color: #c2410c; }
+
+  /* ── Grid cards ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .card .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+  .card .card-body {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ── Directory tree ── */
+  .dir-tree {
+    background: #0d1117;
+    color: #8b949e;
+    font-family: 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    padding: 24px;
+    border-radius: 10px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    border: 1px solid #30363d;
+    white-space: pre;
+  }
+  .dir-tree .dir  { color: #79c0ff; }
+  .dir-tree .file { color: #c9d1d9; }
+  .dir-tree .note { color: #6e7681; }
+
+  /* ── Flow steps ── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 24px;
+  }
+  .flow-step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 14px 0;
+    border-left: 2px solid var(--border);
+    padding-left: 20px;
+    position: relative;
+  }
+  .flow-step::before {
+    content: attr(data-n);
+    position: absolute;
+    left: -13px;
+    top: 16px;
+    width: 24px;
+    height: 24px;
+    background: var(--navy);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .flow-step .step-label {
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 14px;
+    min-width: 160px;
+  }
+  .flow-step .step-desc {
+    font-size: 13.5px;
+    color: #374151;
+  }
+
+  /* ── Stats formula ── */
+  .formula-list {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 1px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .formula-list .fl-key {
+    background: var(--navy-pale);
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    border-bottom: 1px solid var(--border);
+  }
+  .formula-list .fl-val {
+    background: white;
+    padding: 9px 14px;
+    font-size: 13px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    font-family: 'Consolas', monospace;
+  }
+  .formula-list .fl-key:last-of-type,
+  .formula-list .fl-val:last-of-type { border-bottom: none; }
+
+  /* ── Env table ── */
+  .env-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  .env-table th {
+    background: var(--navy);
+    color: white;
+    padding: 9px 14px;
+    text-align: left;
+    border: 1px solid #16305a;
+  }
+  .env-table td {
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    font-family: 'Consolas', monospace;
+  }
+  .env-table tr:nth-child(odd)  td { background: white; }
+  .env-table tr:nth-child(even) td { background: #fafbff; }
+
+  /* ── Migration timeline ── */
+  .migration {
+    position: relative;
+    padding-left: 28px;
+    margin-bottom: 24px;
+  }
+  .migration::before {
+    content: '';
+    position: absolute;
+    left: 8px; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .mig-item {
+    position: relative;
+    margin-bottom: 20px;
+  }
+  .mig-item::before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    background: var(--navy);
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px var(--navy);
+  }
+  .mig-title {
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 13.5px;
+    margin-bottom: 4px;
+  }
+  .mig-desc {
+    font-size: 13px;
+    color: #374151;
+  }
+
+  /* ── Alert box ── */
+  .note-box {
+    background: #fffbeb;
+    border: 1px solid #fbbf24;
+    border-left: 4px solid #f59e0b;
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 13.5px;
+    margin-bottom: 20px;
+  }
+
+  /* ── Scrollbar ── */
+  #sidebar::-webkit-scrollbar { width: 4px; }
+  #sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    #sidebar { display: none; }
+    #main { margin-left: 0; padding: 24px 20px 60px; }
+  }
+
+  @media print {
+    #sidebar { display: none; }
+    #main { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════ SIDEBAR ════════════════════ -->
+<div id="sidebar">
+  <div class="logo">
+    <div class="app-name">⚾ 草野球成績管理アプリ</div>
+    <div class="doc-type">システム設計書 v1.0.0</div>
+  </div>
+  <nav>
+    <a href="#cover" class="section-link">表紙</a>
+    <a href="#sec1"  class="section-link">1. システム概要</a>
+    <a href="#sec1-1" class="sub-link">1.1 主要機能</a>
+    <a href="#sec2"  class="section-link">2. システム構成図</a>
+    <a href="#sec3"  class="section-link">3. アーキテクチャ詳細</a>
+    <a href="#sec3-1" class="sub-link">3.1 フロントエンド</a>
+    <a href="#sec3-2" class="sub-link">3.2 認証・セキュリティ</a>
+    <a href="#sec3-3" class="sub-link">3.3 データ層</a>
+    <a href="#sec3-4" class="sub-link">3.4 ホスティング・CI/CD</a>
+    <a href="#sec4"  class="section-link">4. ディレクトリ構成</a>
+    <a href="#sec5"  class="section-link">5. 画面・ルート一覧</a>
+    <a href="#sec6"  class="section-link">6. 型システム</a>
+    <a href="#sec7"  class="section-link">7. 成績計算ロジック</a>
+    <a href="#sec8"  class="section-link">8. 認証フロー</a>
+    <a href="#sec9"  class="section-link">9. 環境変数</a>
+    <a href="#sec10" class="section-link">10. 主要ライブラリ</a>
+    <a href="#sec11" class="section-link">11. DBマイグレーション</a>
+  </nav>
+</div>
+
+<!-- ════════════════════ MAIN ════════════════════ -->
+<div id="main">
+
+  <!-- COVER -->
+  <div class="cover" id="cover">
+    <div class="badge">System Architecture &amp; Design Document</div>
+    <h1>草野球成績管理アプリ</h1>
+    <div class="subtitle">Baseball Score App — システム設計書</div>
+    <div class="cover-meta">
+      <span class="key">バージョン</span>   <span class="val">v1.0.0</span>
+      <span class="key">作成日</span>       <span class="val">2026年5月2日</span>
+      <span class="key">リポジトリ</span>   <span class="val">github.com/du0000du/baseball-score-app</span>
+      <span class="key">デプロイ先</span>   <span class="val">Vercel (自動デプロイ)</span>
+      <span class="key">技術スタック</span> <span class="val">Next.js 14 / Supabase / Vercel</span>
+    </div>
+  </div>
+
+  <!-- ══ 1. システム概要 ══ -->
+  <section id="sec1">
+    <h2 class="sec-title">1. システム概要</h2>
+    <p>本アプリは、草野球プレイヤーが試合ごとの打席・投手成績を記録・集計するためのWebアプリケーションである。モバイルファーストのUIで設計されており、試合当日のリアルタイム入力から、シーズン通算成績の分析まで一貫して対応する。</p>
+
+    <h3 class="sub-title" id="sec1-1">1.1 主要機能</h3>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">⚾ 打席記録</div>
+        <div class="card-body">打席結果（安打・アウト・出塁等）、打球方向、打点・得点・盗塁を入力。内野安打・エラー・FCの守備位置まで記録可能</div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚾ 投手成績記録</div>
+        <div class="card-body">登板イニング数、勝敗・セーブ・ホールド、被安打・奪三振・四球・自責点等を記録</div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 成績集計（打撃）</div>
+        <div class="card-body">打率・出塁率・長打率・OPS・IsoD・IsoP・RC27など高度な指標を自動算出</div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 成績集計（投手）</div>
+        <div class="card-body">ERA・WHIP・K/9・K/BB・FIPを自動算出</div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 ダッシュボード</div>
+        <div class="card-body">最近の試合結果と今シーズン主要成績をサマリー表示</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🎯 打球方向分析</div>
+        <div class="card-body">打球方向チャート（グラフィカル表示）</div>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 マルチシーズン</div>
+        <div class="card-body">シーズン単位での成績管理・切り替え</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 2. システム構成図 ══ -->
+  <section id="sec2">
+    <h2 class="sec-title">2. システム構成図</h2>
+    <p>本システムは、フロントエンド・BaaS・CDN/ホスティングの3層で構成されるサーバーレスアーキテクチャを採用する。</p>
+    <div class="code-block">  ┌─────────────────────────────────────────────────────────────────┐
+  │                         ユーザー (Browser / Mobile)              │
+  └────────────────────────────────┬────────────────────────────────┘
+                                   │ HTTPS
+  ┌────────────────────────────────▼────────────────────────────────┐
+  │                          Vercel Edge Network                     │
+  │  ┌─────────────────────────────────────────────────────────┐   │
+  │  │              Next.js 14 App Router                       │   │
+  │  │                                                           │   │
+  │  │  ┌──────────────────┐    ┌──────────────────────────┐   │   │
+  │  │  │  Server Components│    │   Client Components       │   │   │
+  │  │  │  (dashboard, etc) │    │   (at-bats, stats, etc)   │   │   │
+  │  │  └────────┬─────────┘    └────────────┬─────────────┘   │   │
+  │  │           │  server-side fetch          │  browser fetch  │   │
+  │  │  ┌────────▼────────────────────────────▼─────────────┐  │   │
+  │  │  │                  Middleware (auth guard)           │  │   │
+  │  │  └──────────────────────────┬────────────────────────┘  │   │
+  │  └─────────────────────────────┼───────────────────────────┘   │
+  └────────────────────────────────┼────────────────────────────────┘
+                                   │ Supabase JS SDK (REST / Realtime)
+  ┌────────────────────────────────▼────────────────────────────────┐
+  │                          Supabase (BaaS)                         │
+  │                                                                   │
+  │  ┌───────────────┐  ┌────────────────┐  ┌──────────────────┐   │
+  │  │  Auth Service  │  │  PostgreSQL DB  │  │  Row Level Sec.  │   │
+  │  │ (OAuth / Magic │  │  ┌──────────┐  │  │  (per-user data  │   │
+  │  │   Link)        │  │  │  users   │  │  │   isolation)     │   │
+  │  └───────────────┘  │  ├──────────┤  │  └──────────────────┘   │
+  │                     │  │  games   │  │                           │
+  │  ┌───────────────┐  │  ├──────────┤  │  ┌──────────────────┐   │
+  │  │ Storage (将来) │  │  │ at_bats  │  │  │  DB Trigger      │   │
+  │  │               │  │  ├──────────┤  │  │ (auto-create     │   │
+  │  └───────────────┘  │  │pitching  │  │  │  user record)    │   │
+  │                     │  │ _stats   │  │  └──────────────────┘   │
+  │                     │  └──────────┘  │                           │
+  │                     └────────────────┘                           │
+  └───────────────────────────────────────────────────────────────────┘
+                                   │
+  ┌────────────────────────────────▼────────────────────────────────┐
+  │            GitHub (du0000du/baseball-score-app)                  │
+  │         ← git push → Vercel 自動デプロイ (CI/CD)                │
+  └─────────────────────────────────────────────────────────────────┘</div>
+  </section>
+
+  <!-- ══ 3. アーキテクチャ詳細 ══ -->
+  <section id="sec3">
+    <h2 class="sec-title">3. アーキテクチャ詳細</h2>
+
+    <h3 class="sub-title" id="sec3-1">3.1 フロントエンド層</h3>
+    <table class="info-table">
+      <tr><th>フレームワーク</th><td>Next.js 14.2.29（App Router）</td></tr>
+      <tr><th>UIライブラリ</th><td>React 18</td></tr>
+      <tr><th>言語</th><td>TypeScript 5</td></tr>
+      <tr><th>スタイリング</th><td>Tailwind CSS 3.4（カスタムカラー: navy / field）</td></tr>
+      <tr><th>レンダリング</th><td>Server Components（データ取得）+ Client Components（インタラクション）混在</td></tr>
+      <tr><th>ルーティング</th><td>App Router + Route Groups（<code class="code-inline">/(protected)</code> で認証保護）</td></tr>
+    </table>
+
+    <h3 class="sub-title" id="sec3-2">3.2 認証・セキュリティ層</h3>
+    <table class="info-table">
+      <tr><th>認証基盤</th><td>Supabase Auth（@supabase/ssr）</td></tr>
+      <tr><th>セッション管理</th><td>Cookie ベース（SSR対応）</td></tr>
+      <tr><th>認証方式</th><td>OAuth / Magic Link（Supabase提供）</td></tr>
+      <tr><th>認証ガード</th><td>Next.js Middleware（全ルートに適用）</td></tr>
+      <tr><th>未認証時</th><td><code class="code-inline">/login</code> へリダイレクト</td></tr>
+      <tr><th>認証済みで/login</th><td><code class="code-inline">/dashboard</code> へリダイレクト</td></tr>
+      <tr><th>OAuthコールバック</th><td><code class="code-inline">/auth/callback/route.ts</code> がコード交換 → セッション確立</td></tr>
+      <tr><th>データ保護</th><td>Supabase Row Level Security（全テーブルに適用）</td></tr>
+    </table>
+
+    <h3 class="sub-title" id="sec3-3">3.3 データ層（Supabase / PostgreSQL）</h3>
+    <p>全テーブルにRow Level Securityを有効化し、<code class="code-inline">auth.uid() = user_id</code> の条件でユーザー固有データのみアクセス可能とする。</p>
+
+    <h4 class="sub-sub">テーブル構成</h4>
+    <table class="data-table">
+      <thead><tr><th style="width:18%">テーブル名</th><th style="width:38%">主なカラム</th><th>説明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>users</code></td>
+          <td><code>id</code>, <code>name</code>, <code>position</code>, <code>team_name</code></td>
+          <td>ユーザープロフィール。認証登録時にDBトリガーで自動作成</td>
+        </tr>
+        <tr>
+          <td><code>games</code></td>
+          <td><code>id</code>, <code>user_id</code>, <code>game_date</code>, <code>opponent</code>, <code>result</code>, <code>score_us</code>, <code>score_them</code>, <code>stadium</code>, <code>season</code></td>
+          <td>試合記録。シーズン管理対応</td>
+        </tr>
+        <tr>
+          <td><code>at_bats</code></td>
+          <td><code>id</code>, <code>game_id</code>, <code>user_id</code>, <code>at_bat_number</code>, <code>batting_order</code>, <code>result_type</code>, <code>hit_type</code>, <code>direction</code>, <code>is_rbi</code>, <code>rbi_count</code>, <code>is_run</code>, <code>stolen_base_count</code>, <code>is_error</code>, <code>input_method</code></td>
+          <td>打席記録。打球方向・守備位置含む</td>
+        </tr>
+        <tr>
+          <td><code>pitching_stats</code></td>
+          <td><code>id</code>, <code>game_id</code>, <code>user_id</code>, <code>innings_pitched</code>, <code>result</code>, <code>hits_allowed</code>, <code>strikeouts</code>, <code>walks</code>, <code>earned_runs</code>, <code>complete_game</code>, <code>pitch_count</code></td>
+          <td>投手成績。イニングは1/3単位の整数で保存</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4 class="sub-sub">インデックス</h4>
+    <table class="info-table">
+      <tr><th><code class="code-inline">idx_games_user_id_game_date</code></th><td>games (user_id, game_date DESC) — ダッシュボード・一覧取得の高速化</td></tr>
+      <tr><th><code class="code-inline">idx_at_bats_game_id</code></th><td>at_bats (game_id) — 試合別打席取得</td></tr>
+      <tr><th><code class="code-inline">idx_at_bats_user_id</code></th><td>at_bats (user_id) — ユーザー全打席集計</td></tr>
+    </table>
+
+    <h4 class="sub-sub">DBトリガー</h4>
+    <table class="info-table">
+      <tr><th><code class="code-inline">on_auth_user_created</code></th><td>auth.users INSERT後、public.usersレコードを自動生成（handle_new_user関数）。OAuth初回ログイン時にユーザーテーブルが自動セットアップされる</td></tr>
+    </table>
+
+    <h3 class="sub-title" id="sec3-4">3.4 ホスティング・CI/CD層</h3>
+    <table class="info-table">
+      <tr><th>ホスティング</th><td>Vercel（Serverless / Edge Functions）</td></tr>
+      <tr><th>CI/CD</th><td>GitHub連携による自動デプロイ（mainブランチへのpushで即時デプロイ）</td></tr>
+      <tr><th>リポジトリ</th><td>github.com/du0000du/baseball-score-app</td></tr>
+      <tr><th>ビルドコマンド</th><td><code class="code-inline">next build</code></td></tr>
+      <tr><th>デプロイ手順</th><td><code class="code-inline">deploy_v2.bat</code> → PowerShell(<code class="code-inline">do_copy.ps1</code>) → git push → Vercel自動ビルド</td></tr>
+    </table>
+  </section>
+
+  <!-- ══ 4. ディレクトリ構成 ══ -->
+  <section id="sec4">
+    <h2 class="sec-title">4. ディレクトリ構成</h2>
+    <div class="dir-tree"><span class="dir">app/</span>                          <span class="note"># Next.js プロジェクトルート</span>
+├── <span class="dir">app/</span>                       <span class="note"># App Router</span>
+│   ├── <span class="file">layout.tsx</span>            <span class="note"># ルートレイアウト</span>
+│   ├── <span class="file">page.tsx</span>              <span class="note"># / → /dashboard リダイレクト</span>
+│   ├── <span class="dir">(protected)/</span>          <span class="note"># 認証保護ルートグループ</span>
+│   │   ├── <span class="dir">dashboard/</span>
+│   │   │   └── <span class="file">page.tsx</span>       <span class="note"># ダッシュボード</span>
+│   │   ├── <span class="dir">games/</span>
+│   │   │   ├── <span class="file">page.tsx</span>       <span class="note"># 試合一覧</span>
+│   │   │   ├── <span class="file">new/page.tsx</span>   <span class="note"># 試合登録</span>
+│   │   │   └── <span class="dir">[id]/</span>
+│   │   │       ├── <span class="file">page.tsx</span>   <span class="note"># 試合詳細</span>
+│   │   │       └── <span class="dir">at-bats/</span>
+│   │   │           └── <span class="file">page.tsx</span> <span class="note"># 打席記録</span>
+│   │   ├── <span class="dir">stats/</span>
+│   │   │   └── <span class="file">page.tsx</span>       <span class="note"># 成績サマリー（打撃＋投手）</span>
+│   │   ├── <span class="dir">pitching/</span>
+│   │   │   └── <span class="file">page.tsx</span>       <span class="note"># 投手成績記録</span>
+│   │   └── <span class="dir">profile/</span>
+│   │       └── <span class="file">page.tsx</span>       <span class="note"># プロフィール設定</span>
+│   ├── <span class="dir">auth/callback/</span>
+│   │   └── <span class="file">route.ts</span>          <span class="note"># OAuth コールバック</span>
+│   └── <span class="dir">login/</span>
+│       └── <span class="file">page.tsx</span>          <span class="note"># ログイン画面</span>
+├── <span class="dir">components/</span>                <span class="note"># 共通コンポーネント</span>
+│   ├── <span class="file">navigation.tsx</span>        <span class="note"># ボトムナビゲーション</span>
+│   └── <span class="file">direction-chart.tsx</span>   <span class="note"># 打球方向チャート</span>
+├── <span class="dir">lib/</span>                       <span class="note"># ユーティリティ</span>
+│   ├── <span class="dir">supabase/</span>
+│   │   ├── <span class="file">client.ts</span>         <span class="note"># ブラウザ用 Supabase クライアント</span>
+│   │   ├── <span class="file">server.ts</span>         <span class="note"># サーバー用 Supabase クライアント</span>
+│   │   └── <span class="file">types.ts</span>          <span class="note"># 型定義・定数 (ResultType, Direction等)</span>
+│   └── <span class="file">stats.ts</span>              <span class="note"># 成績計算ロジック</span>
+├── <span class="dir">supabase/migrations/</span>       <span class="note"># DBマイグレーション</span>
+│   ├── <span class="file">001_initial_schema.sql</span>
+│   ├── <span class="file">002_add_direction.sql</span>
+│   ├── <span class="file">003_add_stolen_base.sql</span>
+│   └── <span class="file">004_add_pitching_stats.sql</span>
+├── <span class="file">middleware.ts</span>              <span class="note"># 認証ガード</span>
+├── <span class="file">tailwind.config.ts</span>        <span class="note"># Tailwind カスタム設定</span>
+└── <span class="file">next.config.ts</span>            <span class="note"># Next.js 設定</span></div>
+  </section>
+
+  <!-- ══ 5. 画面・ルート一覧 ══ -->
+  <section id="sec5">
+    <h2 class="sec-title">5. 画面・ルート一覧</h2>
+    <table class="data-table">
+      <thead><tr><th>パス</th><th>画面名</th><th>認証</th><th>コンポーネント種別</th></tr></thead>
+      <tbody>
+        <tr><td><code>/</code></td><td>ルート（リダイレクト）</td><td><span class="tag green">不要</span></td><td>Server</td></tr>
+        <tr><td><code>/login</code></td><td>ログイン</td><td><span class="tag green">不要</span></td><td>Client</td></tr>
+        <tr><td><code>/auth/callback</code></td><td>OAuthコールバック</td><td><span class="tag green">不要</span></td><td>Route Handler</td></tr>
+        <tr><td><code>/dashboard</code></td><td>ダッシュボード</td><td><span class="tag">必要</span></td><td>Server</td></tr>
+        <tr><td><code>/games</code></td><td>試合一覧</td><td><span class="tag">必要</span></td><td>Server</td></tr>
+        <tr><td><code>/games/new</code></td><td>試合登録</td><td><span class="tag">必要</span></td><td>Client</td></tr>
+        <tr><td><code>/games/[id]</code></td><td>試合詳細</td><td><span class="tag">必要</span></td><td>Server</td></tr>
+        <tr><td><code>/games/[id]/at-bats</code></td><td>打席記録</td><td><span class="tag">必要</span></td><td>Client</td></tr>
+        <tr><td><code>/stats</code></td><td>成績サマリー</td><td><span class="tag">必要</span></td><td>Server + Client</td></tr>
+        <tr><td><code>/pitching</code></td><td>投手成績記録</td><td><span class="tag">必要</span></td><td>Client</td></tr>
+        <tr><td><code>/profile</code></td><td>プロフィール設定</td><td><span class="tag">必要</span></td><td>Client</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══ 6. 型システム ══ -->
+  <section id="sec6">
+    <h2 class="sec-title">6. 型システム</h2>
+    <p><code class="code-inline">lib/supabase/types.ts</code> で定義されたユニオン型・定数が型安全性を保証する。</p>
+
+    <h3 class="sub-title">主要型定義</h3>
+    <table class="data-table">
+      <thead><tr><th style="width:28%">型名</th><th>値</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>ResultType</code></td>
+          <td><code>hit</code> / <code>double</code> / <code>triple</code> / <code>hr</code> / <code>walk</code> / <code>hbp</code> / <code>strikeout</code> / <code>groundout</code> / <code>flyout</code> / <code>sac_bunt</code> / <code>sac_fly</code> / <code>error</code> / <code>fc</code> / <code>other</code></td>
+        </tr>
+        <tr>
+          <td><code>OutfieldDirection</code></td>
+          <td><code>left</code> / <code>center_left</code> / <code>center</code> / <code>center_right</code> / <code>right</code></td>
+        </tr>
+        <tr>
+          <td><code>InfieldPosition</code></td>
+          <td><code>pitcher</code> / <code>catcher</code> / <code>first_base</code> / <code>second_base</code> / <code>third_base</code> / <code>shortstop</code></td>
+        </tr>
+        <tr>
+          <td><code>Direction</code></td>
+          <td>OutfieldDirection | InfieldPosition のユニオン</td>
+        </tr>
+        <tr>
+          <td><code>PitchingResult</code></td>
+          <td><code>win</code> / <code>loss</code> / <code>save</code> / <code>hold</code> / <code>none</code></td>
+        </tr>
+        <tr>
+          <td><code>GameResult</code></td>
+          <td><code>win</code> / <code>loss</code> / <code>draw</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-title">主要定数</h3>
+    <table class="data-table">
+      <thead><tr><th>定数名</th><th>説明</th></tr></thead>
+      <tbody>
+        <tr><td><code>RESULT_TYPE_LABELS</code></td><td>ResultType → 日本語表示名のマッピング</td></tr>
+        <tr><td><code>HIT_DIRECTION_LABELS</code></td><td>外野方向 → 日本語ラベル（例: <code>left</code> → "レフト"）</td></tr>
+        <tr><td><code>INFIELD_HIT_POSITION_LABELS</code></td><td>内野安打守備位置 → ラベル（ピッチャー〜ショートの5ポジション）</td></tr>
+        <tr><td><code>FC_POSITIONS</code></td><td>フィールダーズチョイス時の守備位置一覧</td></tr>
+        <tr><td><code>ERROR_POSITIONS</code></td><td>エラー時の守備位置一覧（全9ポジション）</td></tr>
+        <tr><td><code>getAtBatLabel()</code></td><td>ResultType + Direction から表示ラベルを生成するユーティリティ関数</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══ 7. 成績計算ロジック ══ -->
+  <section id="sec7">
+    <h2 class="sec-title">7. 成績計算ロジック</h2>
+    <p><code class="code-inline">lib/stats.ts</code> に実装。すべてクライアントサイドで計算される純粋関数。</p>
+
+    <h3 class="sub-title">打撃成績（calcBattingStats）</h3>
+    <div class="formula-list">
+      <div class="fl-key">打数 (AB)</div><div class="fl-val">PA − BB − HBP − 犠打 − 犠飛</div>
+      <div class="fl-key">打率 (AVG)</div><div class="fl-val">H / AB</div>
+      <div class="fl-key">出塁率 (OBP)</div><div class="fl-val">(H + BB + HBP) / (AB + BB + HBP + 犠飛)</div>
+      <div class="fl-key">長打率 (SLG)</div><div class="fl-val">塁打 / AB　（1B×1 + 2B×2 + 3B×3 + HR×4）</div>
+      <div class="fl-key">OPS</div><div class="fl-val">OBP + SLG</div>
+      <div class="fl-key">IsoD</div><div class="fl-val">OBP − AVG</div>
+      <div class="fl-key">IsoP</div><div class="fl-val">SLG − AVG</div>
+      <div class="fl-key">RC27</div><div class="fl-val">((H+BB+HBP) × TB / (AB+BB+HBP)) × 27 / (AB − H + CS)</div>
+    </div>
+
+    <h3 class="sub-title">投手成績（calcPitchingStats）</h3>
+    <div class="note-box">
+      投球回（innings_pitched）は <strong>1/3イニング単位の整数</strong>で保存。例: 3回0/3 = 9、3回1/3 = 10、3回2/3 = 11。
+      ERA等の計算時は <code class="code-inline">outsToIPDecimal()</code> で小数換算してから使用する。
+    </div>
+    <div class="formula-list">
+      <div class="fl-key">ERA</div><div class="fl-val">(自責点 / IP) × 9</div>
+      <div class="fl-key">WHIP</div><div class="fl-val">(被安打 + 四球) / IP</div>
+      <div class="fl-key">K/9</div><div class="fl-val">(奪三振 / IP) × 9</div>
+      <div class="fl-key">K/BB</div><div class="fl-val">奪三振 / 四球</div>
+      <div class="fl-key">FIP</div><div class="fl-val">(13×HR + 3×(BB+HBP) − 2×K) / IP + 3.10</div>
+      <div class="fl-key">勝率</div><div class="fl-val">勝 / (勝 + 敗)</div>
+    </div>
+  </section>
+
+  <!-- ══ 8. 認証フロー ══ -->
+  <section id="sec8">
+    <h2 class="sec-title">8. 認証フロー</h2>
+    <p>Supabase Auth の OAuth / Magic Link フローを Next.js Middleware と組み合わせて実装。</p>
+
+    <h3 class="sub-title">ログインフロー</h3>
+    <div class="flow">
+      <div class="flow-step" data-n="1">
+        <div class="step-label">ユーザー操作</div>
+        <div class="step-desc"><code class="code-inline">/login</code> でOAuth / Magic Link を選択してボタンをクリック</div>
+      </div>
+      <div class="flow-step" data-n="2">
+        <div class="step-label">Supabase認証</div>
+        <div class="step-desc">Supabase Auth がプロバイダー認証ページへリダイレクト</div>
+      </div>
+      <div class="flow-step" data-n="3">
+        <div class="step-label">コールバック受信</div>
+        <div class="step-desc"><code class="code-inline">/auth/callback</code> に認証コードが届く。<code class="code-inline">exchangeCodeForSession()</code> でセッションCookieを発行</div>
+      </div>
+      <div class="flow-step" data-n="4">
+        <div class="step-label">ユーザーテーブル作成</div>
+        <div class="step-desc">初回ログイン時、DBトリガー <code class="code-inline">on_auth_user_created</code> が <code class="code-inline">public.users</code> レコードを自動生成</div>
+      </div>
+      <div class="flow-step" data-n="5">
+        <div class="step-label">ダッシュボードへ</div>
+        <div class="step-desc"><code class="code-inline">/dashboard</code> へリダイレクト。以降はCookieでセッション維持</div>
+      </div>
+    </div>
+
+    <h3 class="sub-title">ミドルウェア認証ガード</h3>
+    <table class="info-table">
+      <tr><th>保護対象</th><td><code class="code-inline">/(protected)</code> 配下の全ルート</td></tr>
+      <tr><th>未認証リクエスト</th><td><code class="code-inline">/login</code> へ自動リダイレクト</td></tr>
+      <tr><th>認証済み → /login</th><td><code class="code-inline">/dashboard</code> へリダイレクト</td></tr>
+      <tr><th>セッション更新</th><td>Middleware でリクエストのたびにCookieを自動更新（@supabase/ssr）</td></tr>
+    </table>
+  </section>
+
+  <!-- ══ 9. 環境変数 ══ -->
+  <section id="sec9">
+    <h2 class="sec-title">9. 環境変数</h2>
+    <table class="env-table">
+      <thead><tr><th>変数名</th><th>説明</th><th>設定場所</th></tr></thead>
+      <tbody>
+        <tr><td>NEXT_PUBLIC_SUPABASE_URL</td><td>Supabase プロジェクトURL</td><td>.env.local / Vercel</td></tr>
+        <tr><td>NEXT_PUBLIC_SUPABASE_ANON_KEY</td><td>Supabase Anon Key（公開可）</td><td>.env.local / Vercel</td></tr>
+        <tr><td>SUPABASE_SERVICE_ROLE_KEY</td><td>管理者キー（サーバーサイドのみ・非公開）</td><td>Vercel環境変数のみ</td></tr>
+      </tbody>
+    </table>
+    <div class="note-box">
+      <code class="code-inline">.env.local</code> は <code class="code-inline">.gitignore</code> に含まれており、リポジトリには含まれない。本番環境はVercelの環境変数設定で管理する。
+    </div>
+  </section>
+
+  <!-- ══ 10. 主要ライブラリ ══ -->
+  <section id="sec10">
+    <h2 class="sec-title">10. 主要ライブラリ</h2>
+    <table class="data-table">
+      <thead><tr><th>ライブラリ</th><th>バージョン</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>next</td><td>14.2.29</td><td>Webフレームワーク（App Router）</td></tr>
+        <tr><td>react / react-dom</td><td>18</td><td>UIライブラリ</td></tr>
+        <tr><td>typescript</td><td>5</td><td>型付きJavaScript</td></tr>
+        <tr><td>@supabase/supabase-js</td><td>2.x</td><td>SupabaseクライアントSDK</td></tr>
+        <tr><td>@supabase/ssr</td><td>0.x</td><td>SSR対応Supabaseクライアント（Cookie管理）</td></tr>
+        <tr><td>tailwindcss</td><td>3.4</td><td>ユーティリティファーストCSS</td></tr>
+        <tr><td>recharts</td><td>2.x</td><td>打球方向チャート描画</td></tr>
+        <tr><td>lucide-react</td><td>0.x</td><td>アイコンセット</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══ 11. DBマイグレーション ══ -->
+  <section id="sec11">
+    <h2 class="sec-title">11. DBマイグレーション履歴</h2>
+    <div class="migration">
+      <div class="mig-item">
+        <div class="mig-title">001_initial_schema.sql</div>
+        <div class="mig-desc">初期スキーマ。<code class="code-inline">users</code> / <code class="code-inline">games</code> / <code class="code-inline">at_bats</code> テーブル作成。RLS・インデックス・DBトリガー（on_auth_user_created）設定</div>
+      </div>
+      <div class="mig-item">
+        <div class="mig-title">002_add_direction.sql</div>
+        <div class="mig-desc"><code class="code-inline">at_bats</code> に <code class="code-inline">direction</code> カラム追加。打球方向・守備位置の記録に対応</div>
+      </div>
+      <div class="mig-item">
+        <div class="mig-title">003_add_stolen_base.sql</div>
+        <div class="mig-desc"><code class="code-inline">at_bats</code> に盗塁数・盗塁死フラグを追加。複数盗塁の記録に対応</div>
+      </div>
+      <div class="mig-item">
+        <div class="mig-title">004_add_pitching_stats.sql</div>
+        <div class="mig-desc"><code class="code-inline">pitching_stats</code> テーブル新設。イニング（1/3単位整数）・勝敗・奪三振・自責点・球数等を記録。RLS有効化</div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /main -->
+
+<script>
+  // Active sidebar link on scroll
+  const sections = document.querySelectorAll('section[id], div[id]');
+  const navLinks = document.querySelectorAll('#sidebar nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`#sidebar nav a[href="#${entry.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
