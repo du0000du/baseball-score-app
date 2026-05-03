@@ -39,7 +39,7 @@ function StatRow({ left, right }: {
   right?: { label: string; value: string | number }
 }) {
   return (
-    <div className="grid grid-cols-2 divide-x divide-gray-100 odd:bg-white even:bg-gray-50 dark:odd:bg-night-800 dark:even:bg-night-750 dark:odd:bg-gray-800 dark:even:bg-gray-750/50">
+    <div className="grid grid-cols-2 divide-x divide-gray-100 odd:bg-white even:bg-gray-50 dark:odd:bg-night-800 dark:even:bg-night-750 dark:odd:bg-night-800 dark:even:bg-night-750 ">
       <div className="flex items-center justify-between px-5 py-3.5">
         <span className="text-sm text-gray-500 dark:text-night-400">{left.label}</span>
         <span className="text-xl font-bold text-crimson-700 dark:text-crimson-400">{left.value}</span>
@@ -123,7 +123,7 @@ export default function StatsPage() {
         <select
           value={season}
           onChange={(e) => setSeason(parseInt(e.target.value))}
-          className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500 transition-shadow duration-150"
+          className="border border-gray-200 dark:border-night-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-night-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-crimson-500 dark:focus:ring-crimson-400 transition-shadow duration-150"
         >
           {years.map((y) => (
             <option key={y} value={y}>{y}年</option>
@@ -132,7 +132,7 @@ export default function StatsPage() {
       </div>
 
       {/* タブ */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-night-600">
         <div className="flex overflow-x-auto">
           {TAB_LIST.map(({ key, label }) => (
             <button
@@ -140,8 +140,8 @@ export default function StatsPage() {
               onClick={() => handleTabChange(key)}
               className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px outline-none transition-colors duration-150 ${
                 tab === key
-                  ? 'text-crimson-500 border-crimson-500'
-                  : 'text-gray-500 hover:text-gray-700 border-transparent'
+                  ? 'text-crimson-500 dark:text-crimson-400 border-crimson-500 dark:border-crimson-400'
+                  : 'text-gray-500 dark:text-night-400 hover:text-gray-700 dark:hover:text-night-200 border-transparent'
               }`}
             >
               {label}
@@ -154,9 +154,9 @@ export default function StatsPage() {
         <div className="space-y-3 min-h-[520px]">
           {[1,2,3].map(i => (
             <div key={i} className="bg-white rounded-xl border border-gray-100 p-6 animate-pulse">
-              <div className="h-4 bg-gray-100 rounded w-1/4 mb-4" />
+              <div className="h-4 bg-gray-100 dark:bg-night-700 rounded w-1/4 mb-4" />
               <div className="grid grid-cols-4 gap-3">
-                {[1,2,3,4].map(j => <div key={j} className="h-10 bg-gray-100 rounded" />)}
+                {[1,2,3,4].map(j => <div key={j} className="h-10 bg-gray-100 dark:bg-night-700 rounded" />)}
               </div>
             </div>
           ))}
