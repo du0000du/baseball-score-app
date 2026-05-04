@@ -116,6 +116,7 @@ export default function EditGameForm({ game }: { game: Game }) {
             value={form.opponent}
             onChange={(v) => set('opponent', v)}
             suggestions={pastOpponents}
+            title="対戦相手の選択"
             required
             className={INPUT}
           />
@@ -164,6 +165,7 @@ export default function EditGameForm({ game }: { game: Game }) {
             value={form.stadium}
             onChange={(v) => set('stadium', v)}
             suggestions={pastStadiums}
+            title="球場の選択"
             className={INPUT}
           />
         </div>

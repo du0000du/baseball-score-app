@@ -118,6 +118,7 @@ export default function NewGamePage() {
             onChange={(v) => set('opponent', v)}
             suggestions={pastOpponents}
             placeholder="例：○○ファイターズ"
+            title="対戦相手の選択"
             required
             className={INPUT}
           />
@@ -167,6 +168,7 @@ export default function NewGamePage() {
             onChange={(v) => set('stadium', v)}
             suggestions={pastStadiums}
             placeholder="例：○○公園野球場"
+            title="球場の選択"
             className={INPUT}
           />
         </div>
