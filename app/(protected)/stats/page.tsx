@@ -75,7 +75,6 @@ export default function StatsPage() {
   const [pitchingStats, setPitchingStats] = useState<PitchingStat[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('season')
-  const [tabVisible, setTabVisible] = useState(true)
 
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i)
 
@@ -93,9 +92,7 @@ export default function StatsPage() {
 
   const handleTabChange = (newTab: Tab) => {
     if (newTab === tab) return
-    setTabVisible(false)
     setTab(newTab)
-    requestAnimationFrame(() => requestAnimationFrame(() => setTabVisible(true)))
   }
 
   const allAtBats = games.flatMap((g) => g.at_bats)
@@ -150,7 +147,7 @@ export default function StatsPage() {
           ))}
         </div>
       ) : (
-        <div className="space-y-4 min-h-[520px]" style={{ opacity: tabVisible ? 1 : 0, transition: tabVisible ? 'opacity 0.14s ease-out' : 'none' }}>
+        <div className="space-y-4 min-h-[520px]">
 
           {/* 累計-打撃成績 */}
           {tab === 'season' && (

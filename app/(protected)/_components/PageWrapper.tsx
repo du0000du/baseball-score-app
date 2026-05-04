@@ -7,7 +7,6 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
   const pathname = usePathname()
   const prevPathname = useRef<string | null>(null)
   const [visible, setVisible] = useState(true)
-  const [displayedChildren, setDisplayedChildren] = useState(children)
 
   useEffect(() => {
     if (prevPathname.current === null) {
@@ -18,14 +17,10 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
     if (prevPathname.current !== pathname) {
       prevPathname.current = pathname
       setVisible(false)
-      const t = setTimeout(() => {
-        setDisplayedChildren(children)
-        setVisible(true)
-      }, 60)
+      const t = setTimeout(() => setVisible(true), 60)
       return () => clearTimeout(t)
     }
-    setDisplayedChildren(children)
-  }, [pathname, children])
+  }, [pathname])
 
   return (
     <div
@@ -38,7 +33,7 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
           : 'none',
       }}
     >
-      {displayedChildren}
+      {children}
     </div>
   )
 }
