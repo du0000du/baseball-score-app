@@ -78,6 +78,33 @@ export default function StatsPage() {
 
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i)
 
+  // DEBUG: scroll reset tracker
+  useEffect(() => {
+    let lastScrollY = window.scrollY
+    const onScroll = () => {
+      const y = window.scrollY
+      if (lastScrollY > 50 && y === 0) {
+        console.trace('[SCROLL RESET DETECTED] was:', lastScrollY, '→ 0')
+      }
+      lastScrollY = y
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+
+    const origScrollTo = window.scrollTo.bind(window)
+    const patchedScrollTo = (...args: Parameters<typeof window.scrollTo>) => {
+      const first = args[0]
+      const isTopReset = (typeof first === 'number' && first === 0) ||
+        (typeof first === 'object' && first !== null && (first as ScrollToOptions).top === 0)
+      if (isTopReset) { console.trace('[scrollTo(0) called!]') }
+      return origScrollTo(...args)
+    }
+    window.scrollTo = patchedScrollTo as typeof window.scrollTo
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.scrollTo = origScrollTo
+    }
+  }, [])
+
   useEffect(() => {
     const load = async () => {
       setLoading(true)
