@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -17,6 +17,9 @@ export default function EditGameForm({ game }: { game: Game }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  const [pastOpponents, setPastOpponents] = useState<string[]>([])
+  const [pastStadiums, setPastStadiums] = useState<string[]>([])
+
   const [form, setForm] = useState({
     game_date: game.game_date,
     opponent: game.opponent,
@@ -26,6 +29,25 @@ export default function EditGameForm({ game }: { game: Game }) {
     stadium: game.stadium ?? '',
     notes: game.notes ?? '',
   })
+
+  // 過去の対戦相手・球場を候補として取得
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('games')
+        .select('opponent, stadium')
+        .eq('user_id', user.id)
+      if (data) {
+        const opponents = Array.from(new Set(data.map((g) => g.opponent).filter(Boolean))) as string[]
+        const stadiums  = Array.from(new Set(data.map((g) => g.stadium).filter(Boolean))) as string[]
+        setPastOpponents(opponents.sort())
+        setPastStadiums(stadiums.sort())
+      }
+    }
+    fetchSuggestions()
+  }, [supabase])
 
   const set = (key: keyof typeof form, value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -70,6 +92,15 @@ export default function EditGameForm({ game }: { game: Game }) {
 
   return (
     <div className="max-w-lg mx-auto">
+      {/* datalist: 対戦相手候補 */}
+      <datalist id="opponents-list">
+        {pastOpponents.map((o) => <option key={o} value={o} />)}
+      </datalist>
+      {/* datalist: 球場候補 */}
+      <datalist id="stadiums-list">
+        {pastStadiums.map((s) => <option key={s} value={s} />)}
+      </datalist>
+
       <div className="flex items-center gap-3 mb-6">
         <Link href="/games" className="text-gray-400 dark:text-night-400 hover:text-gray-600 dark:hover:text-night-200 transition-colors">
           ← 試合一覧
@@ -89,7 +120,7 @@ export default function EditGameForm({ game }: { game: Game }) {
 
         <div>
           <label className={LABEL}>対戦相手 *</label>
-          <input type="text" value={form.opponent} onChange={(e) => set('opponent', e.target.value)} required className={INPUT} />
+          <input type="text" list="opponents-list" value={form.opponent} onChange={(e) => set('opponent', e.target.value)} required className={INPUT} />
         </div>
 
         <div>
@@ -131,7 +162,7 @@ export default function EditGameForm({ game }: { game: Game }) {
 
         <div>
           <label className={LABEL}>球場・グラウンド</label>
-          <input type="text" value={form.stadium} onChange={(e) => set('stadium', e.target.value)} className={INPUT} />
+          <input type="text" list="stadiums-list" value={form.stadium} onChange={(e) => set('stadium', e.target.value)} className={INPUT} />
         </div>
 
         <div>

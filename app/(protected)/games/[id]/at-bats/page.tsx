@@ -25,28 +25,28 @@ const SHOW_FC_POSITION: ResultType[] = ['fc']
 const RESULT_GROUPS: { label: string; color: string; activeColor: string; cols: string; items: ResultType[] }[] = [
   {
     label: '安打',
-    color: 'bg-green-50 border-green-200 text-green-800 hover:bg-green-100',
+    color: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/40',
     activeColor: 'bg-green-600 border-green-600 text-white',
     cols: 'grid-cols-4',
     items: ['hit', 'double', 'triple', 'hr'],
   },
   {
     label: 'アウト',
-    color: 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100',
-    activeColor: 'bg-gray-600 border-gray-600 text-white',
+    color: 'bg-gray-50 dark:bg-night-750 border-gray-200 dark:border-night-600 text-gray-700 dark:text-night-200 hover:bg-gray-100 dark:hover:bg-night-700',
+    activeColor: 'bg-gray-600 dark:bg-night-500 border-gray-600 dark:border-night-500 text-white',
     cols: 'grid-cols-4',
     items: ['strikeout', 'groundout', 'flyout', 'infield_flyout'],
   },
   {
     label: '出塁',
-    color: 'bg-blue-50 border-blue-200 text-blue-800 hover:bg-blue-100',
+    color: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40',
     activeColor: 'bg-blue-600 border-blue-600 text-white',
     cols: 'grid-cols-2',
     items: ['walk', 'hbp'],
   },
   {
     label: 'その他',
-    color: 'bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100',
+    color: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800 text-purple-800 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40',
     activeColor: 'bg-purple-600 border-purple-600 text-white',
     cols: 'grid-cols-4',
     items: ['sac_bunt', 'sac_fly', 'error', 'fc'],
@@ -126,9 +126,9 @@ function formatDate(dateStr: string) {
 }
 
 function ResultBadge({ result }: { result: Game['result'] }) {
-  if (result === 'win') return <span className="text-green-600 font-bold">勝</span>
-  if (result === 'loss') return <span className="text-red-600 font-bold">負</span>
-  return <span className="text-yellow-600 font-bold">分</span>
+  if (result === 'win')  return <span className="text-green-600 dark:text-green-400 font-bold">勝</span>
+  if (result === 'loss') return <span className="text-red-600 dark:text-red-400 font-bold">負</span>
+  return <span className="text-yellow-600 dark:text-yellow-400 font-bold">分</span>
 }
 
 // 数量選択ボタン（打点・盗塁用）
@@ -146,7 +146,7 @@ function CountSelector({
   const options = Array.from({ length: max + 1 }, (_, i) => i)
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-gray-600 w-8 shrink-0">{label}</span>
+      <span className="text-sm text-gray-600 dark:text-night-300 w-8 shrink-0">{label}</span>
       <div className="flex gap-1">
         {options.map((n) => (
           <button
@@ -155,8 +155,8 @@ function CountSelector({
             onClick={() => onChange(n)}
             className={`w-9 h-9 rounded-lg border text-sm font-medium transition-all ${
               value === n
-                ? 'bg-navy-500 border-navy-500 text-white'
-                : 'border-gray-200 text-gray-600 hover:border-navy-300 hover:bg-navy-50'
+                ? 'bg-crimson-500 border-crimson-500 dark:bg-crimson-600 dark:border-crimson-600 text-white'
+                : 'border-gray-200 dark:border-night-600 text-gray-600 dark:text-night-300 hover:border-crimson-300 dark:hover:border-crimson-700 hover:bg-crimson-50 dark:hover:bg-night-700'
             }`}
           >
             {n === 0 ? 'なし' : n}
@@ -324,14 +324,14 @@ export default function AtBatsPage() {
   }
 
   if (loading) {
-    return <div className="min-h-[520px] flex items-center justify-center text-gray-400">読み込み中...</div>
+    return <div className="min-h-[520px] flex items-center justify-center text-gray-400 dark:text-night-400">読み込み中...</div>
   }
 
   if (!game) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-400">試合が見つかりません</p>
-        <Link href="/games" className="text-navy-500 hover:underline mt-2 block">試合一覧へ</Link>
+        <p className="text-gray-400 dark:text-night-400">試合が見つかりません</p>
+        <Link href="/games" className="text-crimson-500 dark:text-crimson-400 hover:underline mt-2 block">試合一覧へ</Link>
       </div>
     )
   }
@@ -345,15 +345,15 @@ export default function AtBatsPage() {
     <div className="max-w-2xl mx-auto space-y-5">
       {/* ヘッダー */}
       <div className="flex items-center gap-3">
-        <Link href="/games" className="text-gray-400 hover:text-gray-600 transition-colors text-sm">
+        <Link href="/games" className="text-gray-400 dark:text-night-400 hover:text-gray-600 dark:hover:text-night-200 transition-colors text-sm">
           ← 試合一覧
         </Link>
       </div>
 
-      <div className="bg-navy-500 text-white rounded-xl p-4">
+      <div className="bg-crimson-700 dark:bg-night-800 border border-crimson-600 dark:border-night-600 text-white rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm text-blue-200">{formatDate(game.game_date)}</div>
+            <div className="text-sm text-crimson-100 dark:text-night-300">{formatDate(game.game_date)}</div>
             <div className="text-xl font-bold mt-0.5">vs {game.opponent}</div>
           </div>
           <div className="text-right">
@@ -365,17 +365,17 @@ export default function AtBatsPage() {
             </div>
           </div>
         </div>
-        <div className="mt-2 text-sm text-blue-200">
+        <div className="mt-2 text-sm text-crimson-100 dark:text-night-300">
           {atBats.length}打席記録済み
         </div>
       </div>
 
       {/* 打席入力フォーム */}
-      <div ref={formRef} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-5">
+      <div ref={formRef} className="bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600 p-5 space-y-5">
         {/* 編集モードバナー */}
         {editingAtBatId ? (
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-blue-700 flex items-center gap-2">
+            <h2 className="font-semibold text-blue-700 dark:text-blue-400 flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
@@ -384,22 +384,22 @@ export default function AtBatsPage() {
             <button
               type="button"
               onClick={resetForm}
-              className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-sm text-gray-400 dark:text-night-400 hover:text-gray-600 dark:hover:text-night-200 transition-colors"
             >
               キャンセル
             </button>
           </div>
         ) : (
-          <h2 className="font-semibold text-gray-700">打席を追加</h2>
+          <h2 className="font-semibold text-gray-700 dark:text-night-200">打席を追加</h2>
         )}
 
         {submitError && (
-          <div className="bg-red-50 text-red-700 text-sm p-3 rounded-lg">{submitError}</div>
+          <div className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm p-3 rounded-lg">{submitError}</div>
         )}
 
         {/* 打順 */}
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-2">
+          <label className="block text-sm font-medium text-gray-600 dark:text-night-300 mb-2">
             打順 <span className="text-red-500">*</span>
           </label>
           <div className="grid grid-cols-9 gap-1">
@@ -410,8 +410,8 @@ export default function AtBatsPage() {
                 onClick={() => setBattingOrder(n)}
                 className={`py-3 rounded-lg text-sm font-bold border-2 transition-all ${
                   battingOrder === n
-                    ? 'bg-navy-500 border-navy-500 text-white'
-                    : 'border-gray-200 text-gray-600 hover:border-navy-100 hover:bg-navy-50'
+                    ? 'bg-crimson-500 dark:bg-crimson-600 border-crimson-500 dark:border-crimson-600 text-white'
+                    : 'border-gray-200 dark:border-night-600 text-gray-600 dark:text-night-300 hover:border-crimson-300 dark:hover:border-crimson-700 hover:bg-crimson-50 dark:hover:bg-night-700'
                 }`}
               >
                 {n}
@@ -422,7 +422,7 @@ export default function AtBatsPage() {
 
         {/* 結果 */}
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-2">
+          <label className="block text-sm font-medium text-gray-600 dark:text-night-300 mb-2">
             結果 <span className="text-red-500">*</span>
           </label>
           <div className="space-y-2">
@@ -448,9 +448,9 @@ export default function AtBatsPage() {
         {/* 内野ゴロ守備位置 */}
         {showInfieldPosition && resultType === 'groundout' && (
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">
+            <label className="block text-sm font-medium text-gray-600 dark:text-night-300 mb-2">
               守備位置
-              <span className="text-gray-400 font-normal ml-1">（任意）</span>
+              <span className="text-gray-400 dark:text-night-500 font-normal ml-1">（任意）</span>
             </label>
             <div className="grid grid-cols-3 gap-1.5">
               {GROUNDOUT_POSITIONS.map((pos) => (
@@ -461,7 +461,7 @@ export default function AtBatsPage() {
                   className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${
                     direction === pos.value
                       ? 'bg-gray-600 border-gray-600 text-white'
-                      : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+                      : 'bg-gray-50 dark:bg-night-750 border-gray-200 dark:border-night-600 text-gray-700 dark:text-night-200 hover:bg-gray-100 dark:hover:bg-night-700'
                   }`}
                 >
                   {pos.label}
@@ -474,9 +474,9 @@ export default function AtBatsPage() {
         {/* 内野フライ守備位置 */}
         {showInfieldPosition && resultType === 'infield_flyout' && (
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">
+            <label className="block text-sm font-medium text-gray-600 dark:text-night-300 mb-2">
               守備位置
-              <span className="text-gray-400 font-normal ml-1">（任意）</span>
+              <span className="text-gray-400 dark:text-night-500 font-normal ml-1">（任意）</span>
             </label>
             <div className="grid grid-cols-3 gap-1.5">
               {INFIELD_FLY_POSITIONS.map((pos) => (
@@ -487,7 +487,7 @@ export default function AtBatsPage() {
                   className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${
                     direction === pos.value
                       ? 'bg-gray-600 border-gray-600 text-white'
-                      : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+                      : 'bg-gray-50 dark:bg-night-750 border-gray-200 dark:border-night-600 text-gray-700 dark:text-night-200 hover:bg-gray-100 dark:hover:bg-night-700'
                   }`}
                 >
                   {pos.label}
@@ -500,9 +500,9 @@ export default function AtBatsPage() {
         {/* エラー守備位置（全9ポジション） */}
         {showErrorPosition && (
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">
+            <label className="block text-sm font-medium text-gray-600 dark:text-night-300 mb-2">
               守備位置
-              <span className="text-gray-400 font-normal ml-1">（任意）</span>
+              <span className="text-gray-400 dark:text-night-500 font-normal ml-1">（任意）</span>
             </label>
             <div className="grid grid-cols-3 gap-1.5">
               {ERROR_POSITIONS.map((pos) => (
@@ -513,7 +513,7 @@ export default function AtBatsPage() {
                   className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${
                     direction === pos.value
                       ? 'bg-purple-600 border-purple-600 text-white'
-                      : 'bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100'
+                      : 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800 text-purple-800 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40'
                   }`}
                 >
                   {pos.label}
@@ -526,9 +526,9 @@ export default function AtBatsPage() {
         {/* FC守備位置（内野6ポジション） */}
         {showFCPosition && (
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">
+            <label className="block text-sm font-medium text-gray-600 dark:text-night-300 mb-2">
               守備位置
-              <span className="text-gray-400 font-normal ml-1">（任意）</span>
+              <span className="text-gray-400 dark:text-night-500 font-normal ml-1">（任意）</span>
             </label>
             <div className="grid grid-cols-3 gap-1.5">
               {FC_POSITIONS.map((pos) => (
@@ -539,7 +539,7 @@ export default function AtBatsPage() {
                   className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${
                     direction === pos.value
                       ? 'bg-purple-600 border-purple-600 text-white'
-                      : 'bg-purple-50 border-purple-200 text-purple-800 hover:bg-purple-100'
+                      : 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800 text-purple-800 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40'
                   }`}
                 >
                   {pos.label}
@@ -552,9 +552,9 @@ export default function AtBatsPage() {
         {/* 内野安打守備位置（単打のみ） */}
         {resultType === 'hit' && (
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">
+            <label className="block text-sm font-medium text-gray-600 dark:text-night-300 mb-2">
               内野安打方向
-              <span className="text-gray-400 font-normal ml-1">（任意）</span>
+              <span className="text-gray-400 dark:text-night-500 font-normal ml-1">（任意）</span>
             </label>
             <div className="grid grid-cols-3 gap-1.5">
               {INFIELD_HIT_POSITIONS.map((pos) => (
@@ -565,7 +565,7 @@ export default function AtBatsPage() {
                   className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${
                     direction === pos.value
                       ? 'bg-green-600 border-green-600 text-white'
-                      : 'bg-green-50 border-green-200 text-green-800 hover:bg-green-100'
+                      : 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/40'
                   }`}
                 >
                   {pos.label}
@@ -578,9 +578,9 @@ export default function AtBatsPage() {
         {/* 外野打球方向（安打・外野フライなど） */}
         {showOutfieldDirection && (
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">
+            <label className="block text-sm font-medium text-gray-600 dark:text-night-300 mb-2">
               {resultType === 'hit' ? '外野安打方向' : '打球方向'}
-              <span className="text-gray-400 font-normal ml-1">（任意）</span>
+              <span className="text-gray-400 dark:text-night-500 font-normal ml-1">（任意）</span>
             </label>
             <div className="grid grid-cols-5 gap-1.5">
               {OUTFIELD_DIRECTIONS.map((dir) => (
@@ -591,7 +591,7 @@ export default function AtBatsPage() {
                   className={`py-3 rounded-lg border text-xs font-medium transition-all ${
                     direction === dir.value
                       ? 'bg-field-500 border-field-500 text-white'
-                      : 'bg-green-50 border-green-200 text-green-800 hover:bg-green-100'
+                      : 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/40'
                   }`}
                 >
                   {dir.label}
@@ -603,7 +603,7 @@ export default function AtBatsPage() {
 
         {/* 付加情報 */}
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-3">付加情報</label>
+          <label className="block text-sm font-medium text-gray-600 dark:text-night-300 mb-3">付加情報</label>
           <div className="space-y-3">
             {/* 打点（1〜4選択） */}
             <CountSelector
@@ -615,13 +615,13 @@ export default function AtBatsPage() {
 
             {/* 得点（チェックボックス） */}
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 w-8 shrink-0">得点</span>
+              <span className="text-sm text-gray-600 dark:text-night-300 w-8 shrink-0">得点</span>
               <div
                 onClick={() => setIsRun(!isRun)}
                 className={`w-9 h-9 rounded-lg border flex items-center justify-center cursor-pointer transition-all ${
                   isRun
-                    ? 'bg-navy-500 border-navy-500 text-white'
-                    : 'border-gray-200 text-gray-400 hover:border-navy-300 hover:bg-navy-50'
+                    ? 'bg-crimson-500 dark:bg-crimson-600 border-crimson-500 dark:border-crimson-600 text-white'
+                    : 'border-gray-200 dark:border-night-600 text-gray-400 dark:text-night-400 hover:border-crimson-300 dark:hover:border-crimson-700 hover:bg-crimson-50 dark:hover:bg-night-700'
                 }`}
               >
                 {isRun ? (
@@ -649,7 +649,7 @@ export default function AtBatsPage() {
             <button
               type="button"
               onClick={resetForm}
-              className="flex-none px-6 py-4 rounded-xl border-2 border-gray-200 text-gray-600 font-bold text-base transition-colors hover:bg-gray-50"
+              className="flex-none px-6 py-4 rounded-xl border-2 border-gray-200 dark:border-night-600 text-gray-600 dark:text-night-300 font-bold text-base transition-colors hover:bg-gray-50 dark:hover:bg-night-750"
             >
               キャンセル
             </button>
@@ -660,8 +660,8 @@ export default function AtBatsPage() {
             disabled={submitting || !battingOrder || !resultType}
             className={`flex-1 text-white py-4 rounded-xl font-bold text-lg transition-colors disabled:opacity-40 ${
               editingAtBatId
-                ? 'bg-blue-600 hover:bg-blue-700'
-                : 'bg-navy-500 hover:bg-navy-600'
+                ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600'
+                : 'bg-crimson-500 hover:bg-crimson-600 dark:bg-crimson-600 dark:hover:bg-crimson-500'
             }`}
           >
             {submitting
@@ -673,8 +673,8 @@ export default function AtBatsPage() {
 
       {/* 打席一覧 */}
       {atBats.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-          <h2 className="font-semibold text-gray-700 mb-4">打席記録</h2>
+        <div className="bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600 p-5">
+          <h2 className="font-semibold text-gray-700 dark:text-night-200 mb-4">打席記録</h2>
           <div className="space-y-2">
             {atBats.map((ab) => {
               const label = getAtBatLabel(ab.result_type as ResultType, ab.direction as Direction | null)
@@ -694,15 +694,15 @@ export default function AtBatsPage() {
                   }`}
                 >
                   <div className="flex items-center gap-2 flex-wrap min-w-0">
-                    <span className="text-xs text-gray-400 w-7 shrink-0">#{ab.at_bat_number}</span>
-                    <span className="text-xs bg-navy-100 text-navy-600 px-1.5 py-0.5 rounded font-medium shrink-0">
+                    <span className="text-xs text-gray-400 dark:text-night-400 w-7 shrink-0">#{ab.at_bat_number}</span>
+                    <span className="text-xs bg-crimson-100 dark:bg-crimson-900/40 text-crimson-700 dark:text-crimson-300 px-1.5 py-0.5 rounded font-medium shrink-0">
                       {ab.batting_order}番
                     </span>
-                    <span className="text-sm font-medium text-gray-800">
+                    <span className="text-sm font-medium text-gray-800 dark:text-white">
                       {label}
                     </span>
                     {ab.direction && !isPositionInLabel && (
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-500 dark:text-night-400">
                         → {DIRECTION_LABELS[ab.direction as Direction]}
                       </span>
                     )}
@@ -713,7 +713,7 @@ export default function AtBatsPage() {
                         </span>
                       )}
                       {ab.is_run && (
-                        <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium">得点</span>
+                        <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-medium">得点</span>
                       )}
                       {sbVal > 0 && (
                         <span className="text-xs bg-green-100 text-green-600 px-1.5 py-0.5 rounded font-medium">
@@ -726,15 +726,15 @@ export default function AtBatsPage() {
                     <button
                       onClick={() => handleEditAtBat(ab)}
                       disabled={!!deletingId}
-                      className="text-blue-400 hover:text-blue-600 transition-colors text-xs disabled:opacity-50"
+                      className="text-blue-400 dark:text-blue-500 hover:text-blue-600 dark:hover:text-blue-300 transition-colors text-xs disabled:opacity-50"
                     >
                       編集
                     </button>
-                    <span className="text-gray-200">|</span>
+                    <span className="text-gray-200 dark:text-night-600">|</span>
                     <button
                       onClick={() => handleDeleteAtBat(ab.id)}
                       disabled={deletingId === ab.id}
-                      className="text-red-400 hover:text-red-600 transition-colors text-xs disabled:opacity-50"
+                      className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 transition-colors text-xs disabled:opacity-50"
                     >
                       {deletingId === ab.id ? '削除中' : '削除'}
                     </button>
