@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import SuggestInput from '@/app/(protected)/_components/SuggestInput'
 
 const INPUT  = 'w-full border border-gray-200 dark:border-night-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-night-750 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-night-400 focus:outline-none focus:ring-2 focus:ring-crimson-500 dark:focus:ring-crimson-400'
 const LABEL  = 'block text-sm font-medium text-gray-700 dark:text-night-200 mb-1'
@@ -93,15 +94,6 @@ export default function NewGamePage() {
 
   return (
     <div className="max-w-lg mx-auto">
-      {/* datalist: 対戦相手候補 */}
-      <datalist id="opponents-list">
-        {pastOpponents.map((o) => <option key={o} value={o} />)}
-      </datalist>
-      {/* datalist: 球場候補 */}
-      <datalist id="stadiums-list">
-        {pastStadiums.map((s) => <option key={s} value={s} />)}
-      </datalist>
-
       <div className="flex items-center gap-3 mb-6">
         <Link href="/games" className="text-gray-400 dark:text-night-400 hover:text-gray-600 dark:hover:text-night-200 transition-colors">
           ← 試合一覧
@@ -121,8 +113,14 @@ export default function NewGamePage() {
 
         <div>
           <label className={LABEL}>対戦相手 *</label>
-          <input type="text" list="opponents-list" value={form.opponent} onChange={(e) => set('opponent', e.target.value)}
-            placeholder="例：○○ファイターズ" required className={INPUT} />
+          <SuggestInput
+            value={form.opponent}
+            onChange={(v) => set('opponent', v)}
+            suggestions={pastOpponents}
+            placeholder="例：○○ファイターズ"
+            required
+            className={INPUT}
+          />
         </div>
 
         <div>
@@ -164,8 +162,13 @@ export default function NewGamePage() {
 
         <div>
           <label className={LABEL}>球場・グラウンド</label>
-          <input type="text" list="stadiums-list" value={form.stadium} onChange={(e) => set('stadium', e.target.value)}
-            placeholder="例：○○公園野球場" className={INPUT} />
+          <SuggestInput
+            value={form.stadium}
+            onChange={(v) => set('stadium', v)}
+            suggestions={pastStadiums}
+            placeholder="例：○○公園野球場"
+            className={INPUT}
+          />
         </div>
 
         <div>
