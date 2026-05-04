@@ -15,6 +15,9 @@
     --border: #e2e8f0;
     --code-bg: #0d1117;
     --code-fg: #c9d1d9;
+    /* crimson accent */
+    --crimson: #b83227;
+    --crimson-pale: #fff1f0;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -217,7 +220,7 @@
     font-size: 12px;
   }
 
-  /* ── Code block (diagram) ── */
+  /* ── Code block ── */
   .code-block {
     background: var(--code-bg);
     color: var(--code-fg);
@@ -255,6 +258,8 @@
   .tag.green  { background: #dcfce7; color: #15803d; }
   .tag.purple { background: #f3e8ff; color: #7e22ce; }
   .tag.orange { background: #fff7ed; color: #c2410c; }
+  .tag.red    { background: #ffe0da; color: #9d2a1e; }
+  .tag.new    { background: #fef9c3; color: #854d0e; font-size: 10.5px; padding: 1px 7px; vertical-align: middle; }
 
   /* ── Grid cards ── */
   .card-grid {
@@ -279,6 +284,37 @@
     font-size: 12.5px;
     color: var(--muted);
     line-height: 1.5;
+  }
+
+  /* ── Color swatch grid ── */
+  .swatch-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .swatch {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    min-width: 120px;
+    flex: 1 1 120px;
+  }
+  .swatch .swatch-color {
+    height: 44px;
+  }
+  .swatch .swatch-label {
+    background: white;
+    padding: 6px 10px;
+    font-size: 11.5px;
+    font-family: 'Consolas', monospace;
+    color: #374151;
+    line-height: 1.4;
+  }
+  .swatch .swatch-label strong {
+    display: block;
+    color: var(--navy);
+    font-size: 12px;
   }
 
   /* ── Directory tree ── */
@@ -443,6 +479,33 @@
     font-size: 13.5px;
     margin-bottom: 20px;
   }
+  .note-box.crimson {
+    background: #fff1f0;
+    border-color: #f4907e;
+    border-left-color: #b83227;
+  }
+
+  /* ── Changelog badge ── */
+  .changelog {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 28px;
+    font-size: 13px;
+  }
+  .changelog h4 {
+    color: #15803d;
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .changelog ul {
+    list-style: disc;
+    padding-left: 18px;
+    color: #374151;
+    line-height: 1.8;
+  }
 
   /* ── Scrollbar ── */
   #sidebar::-webkit-scrollbar { width: 4px; }
@@ -466,26 +529,32 @@
 <div id="sidebar">
   <div class="logo">
     <div class="app-name">⚾ 草野球成績管理アプリ</div>
-    <div class="doc-type">システム設計書 v1.0.0</div>
+    <div class="doc-type">システム設計書 v1.1.0</div>
   </div>
   <nav>
-    <a href="#cover" class="section-link">表紙</a>
-    <a href="#sec1"  class="section-link">1. システム概要</a>
+    <a href="#cover"  class="section-link">表紙</a>
+    <a href="#changelog" class="sub-link">変更履歴</a>
+    <a href="#sec1"   class="section-link">1. システム概要</a>
     <a href="#sec1-1" class="sub-link">1.1 主要機能</a>
-    <a href="#sec2"  class="section-link">2. システム構成図</a>
-    <a href="#sec3"  class="section-link">3. アーキテクチャ詳細</a>
+    <a href="#sec2"   class="section-link">2. システム構成図</a>
+    <a href="#sec3"   class="section-link">3. アーキテクチャ詳細</a>
     <a href="#sec3-1" class="sub-link">3.1 フロントエンド</a>
     <a href="#sec3-2" class="sub-link">3.2 認証・セキュリティ</a>
     <a href="#sec3-3" class="sub-link">3.3 データ層</a>
     <a href="#sec3-4" class="sub-link">3.4 ホスティング・CI/CD</a>
-    <a href="#sec4"  class="section-link">4. ディレクトリ構成</a>
-    <a href="#sec5"  class="section-link">5. 画面・ルート一覧</a>
-    <a href="#sec6"  class="section-link">6. 型システム</a>
-    <a href="#sec7"  class="section-link">7. 成績計算ロジック</a>
-    <a href="#sec8"  class="section-link">8. 認証フロー</a>
-    <a href="#sec9"  class="section-link">9. 環境変数</a>
-    <a href="#sec10" class="section-link">10. 主要ライブラリ</a>
-    <a href="#sec11" class="section-link">11. DBマイグレーション</a>
+    <a href="#sec4"   class="section-link">4. カラーシステム</a>
+    <a href="#sec4-1" class="sub-link">4.1 Crimsonパレット</a>
+    <a href="#sec4-2" class="sub-link">4.2 Nightパレット（ダーク）</a>
+    <a href="#sec4-3" class="sub-link">4.3 テーマ切替</a>
+    <a href="#sec5"   class="section-link">5. ナビゲーション設計</a>
+    <a href="#sec6"   class="section-link">6. ディレクトリ構成</a>
+    <a href="#sec7"   class="section-link">7. 画面・ルート一覧</a>
+    <a href="#sec8"   class="section-link">8. 型システム</a>
+    <a href="#sec9"   class="section-link">9. 成績計算ロジック</a>
+    <a href="#sec10"  class="section-link">10. 認証フロー</a>
+    <a href="#sec11"  class="section-link">11. 環境変数</a>
+    <a href="#sec12"  class="section-link">12. 主要ライブラリ</a>
+    <a href="#sec13"  class="section-link">13. DBマイグレーション</a>
   </nav>
 </div>
 
@@ -498,18 +567,45 @@
     <h1>草野球成績管理アプリ</h1>
     <div class="subtitle">Baseball Score App — システム設計書</div>
     <div class="cover-meta">
-      <span class="key">バージョン</span>   <span class="val">v1.0.0</span>
-      <span class="key">作成日</span>       <span class="val">2026年5月2日</span>
+      <span class="key">バージョン</span>   <span class="val">v1.1.0</span>
+      <span class="key">作成日</span>       <span class="val">2026年5月4日</span>
+      <span class="key">初版</span>         <span class="val">2026年5月2日 (v1.0.0)</span>
       <span class="key">リポジトリ</span>   <span class="val">github.com/du0000du/baseball-score-app</span>
       <span class="key">デプロイ先</span>   <span class="val">Vercel (自動デプロイ)</span>
-      <span class="key">技術スタック</span> <span class="val">Next.js 14 / Supabase / Vercel</span>
+      <span class="key">技術スタック</span> <span class="val">Next.js 14 / Supabase / Vercel / Tailwind CSS</span>
     </div>
   </div>
+
+  <!-- CHANGELOG -->
+  <section id="changelog">
+    <h2 class="sec-title">変更履歴</h2>
+    <div class="changelog">
+      <h4>v1.1.0 — 2026年5月4日</h4>
+      <ul>
+        <li>カラーシステム刷新: <code class="code-inline">navy</code> パレット廃止 → <code class="code-inline">crimson</code>（赤）＋ <code class="code-inline">night</code>（ダーク用）へ変更。全カラーコード追記</li>
+        <li>ダークモード実装: <code class="code-inline">ThemeProvider</code> による light / dark / system 3択切替、<code class="code-inline">localStorage</code> 永続化</li>
+        <li>ナビゲーション刷新: モバイル上部バー ＋ デスクトップ左サイドバーのレスポンシブ対応</li>
+        <li>試合編集画面追加: <code class="code-inline">/games/[id]/edit</code> ルート新設</li>
+        <li>設定画面追加: <code class="code-inline">/settings</code>（テーマ切替 ＋ プロフィール編集を統合）</li>
+        <li>型定義更新: <code class="code-inline">infield_flyout</code> 追加、<code class="code-inline">PitchingStat</code> に <code class="code-inline">home_runs_allowed</code> / <code class="code-inline">hit_batsmen</code> 等追加</li>
+        <li>DBマイグレーション履歴を実際のファイルに合わせて修正</li>
+        <li>ページ遷移アニメーション: <code class="code-inline">transform</code> を廃止しopacityのみに変更（スクロール位置バグ対策）</li>
+      </ul>
+    </div>
+
+    <table class="data-table">
+      <thead><tr><th>バージョン</th><th>日付</th><th>主な変更</th></tr></thead>
+      <tbody>
+        <tr><td>v1.0.0</td><td>2026-05-02</td><td>初版リリース。基本機能・認証・打席/投手記録・成績集計</td></tr>
+        <tr><td>v1.1.0</td><td>2026-05-04</td><td>カラーシステム刷新・ダークモード・ナビ刷新・試合編集・設定画面</td></tr>
+      </tbody>
+    </table>
+  </section>
 
   <!-- ══ 1. システム概要 ══ -->
   <section id="sec1">
     <h2 class="sec-title">1. システム概要</h2>
-    <p>本アプリは、草野球プレイヤーが試合ごとの打席・投手成績を記録・集計するためのWebアプリケーションである。モバイルファーストのUIで設計されており、試合当日のリアルタイム入力から、シーズン通算成績の分析まで一貫して対応する。</p>
+    <p>本アプリは、草野球プレイヤーが試合ごとの打席・投手成績を記録・集計するためのWebアプリケーションである。モバイルファーストのUIで設計されており、試合当日のリアルタイム入力から、シーズン通算成績の分析まで一貫して対応する。ダークモード・ライトモードをユーザーが自由に切替可能。</p>
 
     <h3 class="sub-title" id="sec1-1">1.1 主要機能</h3>
     <div class="card-grid">
@@ -519,11 +615,11 @@
       </div>
       <div class="card">
         <div class="card-title">⚾ 投手成績記録</div>
-        <div class="card-body">登板イニング数、勝敗・セーブ・ホールド、被安打・奪三振・四球・自責点等を記録</div>
+        <div class="card-body">登板イニング数、勝敗・セーブ・ホールド、被安打・被本塁打・奪三振・四球・死球・自責点・球数を記録</div>
       </div>
       <div class="card">
         <div class="card-title">📊 成績集計（打撃）</div>
-        <div class="card-body">打率・出塁率・長打率・OPS・IsoD・IsoP・RC27など高度な指標を自動算出</div>
+        <div class="card-body">打率・出塁率・長打率・OPS・IsoD・IsoP・RC27など高度な指標を自動算出。5タブで多角的に表示</div>
       </div>
       <div class="card">
         <div class="card-title">📊 成績集計（投手）</div>
@@ -540,6 +636,14 @@
       <div class="card">
         <div class="card-title">📅 マルチシーズン</div>
         <div class="card-body">シーズン単位での成績管理・切り替え</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🌙 テーマ切替 <span class="tag new">NEW</span></div>
+        <div class="card-body">ライト・ダーク・システム設定に対応。設定画面から切替可能</div>
+      </div>
+      <div class="card">
+        <div class="card-title">✏️ 試合編集 <span class="tag new">NEW</span></div>
+        <div class="card-body">登録済み試合の日付・対戦相手・スコア・メモを後から編集可能</div>
       </div>
     </div>
   </section>
@@ -601,9 +705,11 @@
       <tr><th>フレームワーク</th><td>Next.js 14.2.29（App Router）</td></tr>
       <tr><th>UIライブラリ</th><td>React 18</td></tr>
       <tr><th>言語</th><td>TypeScript 5</td></tr>
-      <tr><th>スタイリング</th><td>Tailwind CSS 3.4（カスタムカラー: navy / field）</td></tr>
+      <tr><th>スタイリング</th><td>Tailwind CSS 3.4（カスタムカラー: <code class="code-inline">crimson</code> / <code class="code-inline">night</code> / <code class="code-inline">field</code>、<code class="code-inline">darkMode: 'class'</code>）</td></tr>
       <tr><th>レンダリング</th><td>Server Components（データ取得）+ Client Components（インタラクション）混在</td></tr>
       <tr><th>ルーティング</th><td>App Router + Route Groups（<code class="code-inline">/(protected)</code> で認証保護）</td></tr>
+      <tr><th>テーマ管理</th><td><code class="code-inline">ThemeProvider</code>（Context API）による light / dark / system 切替。<code class="code-inline">localStorage</code> 永続化</td></tr>
+      <tr><th>レイアウト</th><td>モバイル: 上部ナビバー、デスクトップ (<code class="code-inline">lg:</code>): 左固定サイドバー <code class="code-inline">w-60</code>、コンテンツ <code class="code-inline">lg:pl-60 max-w-5xl</code></td></tr>
     </table>
 
     <h3 class="sub-title" id="sec3-2">3.2 認証・セキュリティ層</h3>
@@ -623,7 +729,7 @@
 
     <h4 class="sub-sub">テーブル構成</h4>
     <table class="data-table">
-      <thead><tr><th style="width:18%">テーブル名</th><th style="width:38%">主なカラム</th><th>説明</th></tr></thead>
+      <thead><tr><th style="width:18%">テーブル名</th><th style="width:40%">主なカラム</th><th>説明</th></tr></thead>
       <tbody>
         <tr>
           <td><code>users</code></td>
@@ -632,18 +738,18 @@
         </tr>
         <tr>
           <td><code>games</code></td>
-          <td><code>id</code>, <code>user_id</code>, <code>game_date</code>, <code>opponent</code>, <code>result</code>, <code>score_us</code>, <code>score_them</code>, <code>stadium</code>, <code>season</code></td>
-          <td>試合記録。シーズン管理対応</td>
+          <td><code>id</code>, <code>user_id</code>, <code>game_date</code>, <code>opponent</code>, <code>result</code>, <code>score_us</code>, <code>score_them</code>, <code>stadium</code>, <code>notes</code>, <code>season</code></td>
+          <td>試合記録。シーズン管理対応。<code>notes</code> で試合メモを記録</td>
         </tr>
         <tr>
           <td><code>at_bats</code></td>
-          <td><code>id</code>, <code>game_id</code>, <code>user_id</code>, <code>at_bat_number</code>, <code>batting_order</code>, <code>result_type</code>, <code>hit_type</code>, <code>direction</code>, <code>is_rbi</code>, <code>rbi_count</code>, <code>is_run</code>, <code>stolen_base_count</code>, <code>is_error</code>, <code>input_method</code></td>
-          <td>打席記録。打球方向・守備位置含む</td>
+          <td><code>id</code>, <code>game_id</code>, <code>user_id</code>, <code>at_bat_number</code>, <code>batting_order</code>, <code>result_type</code>, <code>hit_type</code>, <code>direction</code>, <code>is_rbi</code>, <code>rbi_count</code>, <code>is_run</code>, <code>is_stolen_base</code>, <code>stolen_base_count</code>, <code>is_caught_stealing</code>, <code>is_error</code>, <code>input_method</code></td>
+          <td>打席記録。打球方向・守備位置含む。盗塁死フラグあり</td>
         </tr>
         <tr>
           <td><code>pitching_stats</code></td>
-          <td><code>id</code>, <code>game_id</code>, <code>user_id</code>, <code>innings_pitched</code>, <code>result</code>, <code>hits_allowed</code>, <code>strikeouts</code>, <code>walks</code>, <code>earned_runs</code>, <code>complete_game</code>, <code>pitch_count</code></td>
-          <td>投手成績。イニングは1/3単位の整数で保存</td>
+          <td><code>id</code>, <code>game_id</code>, <code>user_id</code>, <code>innings_pitched</code>, <code>result</code>, <code>hits_allowed</code>, <code>home_runs_allowed</code>, <code>strikeouts</code>, <code>walks</code>, <code>hit_batsmen</code>, <code>runs_allowed</code>, <code>earned_runs</code>, <code>complete_game</code>, <code>pitch_count</code></td>
+          <td>投手成績。イニングは1/3単位の整数。被本塁打・死球・失点・完投フラグ・球数も記録</td>
         </tr>
       </tbody>
     </table>
@@ -670,268 +776,120 @@
     </table>
   </section>
 
-  <!-- ══ 4. ディレクトリ構成 ══ -->
+  <!-- ══ 4. カラーシステム ══ -->
   <section id="sec4">
-    <h2 class="sec-title">4. ディレクトリ構成</h2>
-    <div class="dir-tree"><span class="dir">app/</span>                          <span class="note"># Next.js プロジェクトルート</span>
-├── <span class="dir">app/</span>                       <span class="note"># App Router</span>
-│   ├── <span class="file">layout.tsx</span>            <span class="note"># ルートレイアウト</span>
-│   ├── <span class="file">page.tsx</span>              <span class="note"># / → /dashboard リダイレクト</span>
-│   ├── <span class="dir">(protected)/</span>          <span class="note"># 認証保護ルートグループ</span>
-│   │   ├── <span class="dir">dashboard/</span>
-│   │   │   └── <span class="file">page.tsx</span>       <span class="note"># ダッシュボード</span>
-│   │   ├── <span class="dir">games/</span>
-│   │   │   ├── <span class="file">page.tsx</span>       <span class="note"># 試合一覧</span>
-│   │   │   ├── <span class="file">new/page.tsx</span>   <span class="note"># 試合登録</span>
-│   │   │   └── <span class="dir">[id]/</span>
-│   │   │       ├── <span class="file">page.tsx</span>   <span class="note"># 試合詳細</span>
-│   │   │       └── <span class="dir">at-bats/</span>
-│   │   │           └── <span class="file">page.tsx</span> <span class="note"># 打席記録</span>
-│   │   ├── <span class="dir">stats/</span>
-│   │   │   └── <span class="file">page.tsx</span>       <span class="note"># 成績サマリー（打撃＋投手）</span>
-│   │   ├── <span class="dir">pitching/</span>
-│   │   │   └── <span class="file">page.tsx</span>       <span class="note"># 投手成績記録</span>
-│   │   └── <span class="dir">profile/</span>
-│   │       └── <span class="file">page.tsx</span>       <span class="note"># プロフィール設定</span>
-│   ├── <span class="dir">auth/callback/</span>
-│   │   └── <span class="file">route.ts</span>          <span class="note"># OAuth コールバック</span>
-│   └── <span class="dir">login/</span>
-│       └── <span class="file">page.tsx</span>          <span class="note"># ログイン画面</span>
-├── <span class="dir">components/</span>                <span class="note"># 共通コンポーネント</span>
-│   ├── <span class="file">navigation.tsx</span>        <span class="note"># ボトムナビゲーション</span>
-│   └── <span class="file">direction-chart.tsx</span>   <span class="note"># 打球方向チャート</span>
-├── <span class="dir">lib/</span>                       <span class="note"># ユーティリティ</span>
-│   ├── <span class="dir">supabase/</span>
-│   │   ├── <span class="file">client.ts</span>         <span class="note"># ブラウザ用 Supabase クライアント</span>
-│   │   ├── <span class="file">server.ts</span>         <span class="note"># サーバー用 Supabase クライアント</span>
-│   │   └── <span class="file">types.ts</span>          <span class="note"># 型定義・定数 (ResultType, Direction等)</span>
-│   └── <span class="file">stats.ts</span>              <span class="note"># 成績計算ロジック</span>
-├── <span class="dir">supabase/migrations/</span>       <span class="note"># DBマイグレーション</span>
-│   ├── <span class="file">001_initial_schema.sql</span>
-│   ├── <span class="file">002_add_direction.sql</span>
-│   ├── <span class="file">003_add_stolen_base.sql</span>
-│   └── <span class="file">004_add_pitching_stats.sql</span>
-├── <span class="file">middleware.ts</span>              <span class="note"># 認証ガード</span>
-├── <span class="file">tailwind.config.ts</span>        <span class="note"># Tailwind カスタム設定</span>
-└── <span class="file">next.config.ts</span>            <span class="note"># Next.js 設定</span></div>
-  </section>
+    <h2 class="sec-title">4. カラーシステム <span class="tag new">v1.1.0 改訂</span></h2>
+    <p>v1.1.0よりカラーパレットを刷新。旧 <code class="code-inline">navy</code> パレットを廃止し、野球赤をイメージした <code class="code-inline">crimson</code> をメインアクセントとして採用。ダークモード専用に深い赤黒系の <code class="code-inline">night</code> パレットを追加した。Tailwind CSS の <code class="code-inline">darkMode: 'class'</code> を使用し、<code class="code-inline">dark:</code> プレフィックスで全コンポーネントのライト/ダーク両対応を実装する。</p>
 
-  <!-- ══ 5. 画面・ルート一覧 ══ -->
-  <section id="sec5">
-    <h2 class="sec-title">5. 画面・ルート一覧</h2>
-    <table class="data-table">
-      <thead><tr><th>パス</th><th>画面名</th><th>認証</th><th>コンポーネント種別</th></tr></thead>
-      <tbody>
-        <tr><td><code>/</code></td><td>ルート（リダイレクト）</td><td><span class="tag green">不要</span></td><td>Server</td></tr>
-        <tr><td><code>/login</code></td><td>ログイン</td><td><span class="tag green">不要</span></td><td>Client</td></tr>
-        <tr><td><code>/auth/callback</code></td><td>OAuthコールバック</td><td><span class="tag green">不要</span></td><td>Route Handler</td></tr>
-        <tr><td><code>/dashboard</code></td><td>ダッシュボード</td><td><span class="tag">必要</span></td><td>Server</td></tr>
-        <tr><td><code>/games</code></td><td>試合一覧</td><td><span class="tag">必要</span></td><td>Server</td></tr>
-        <tr><td><code>/games/new</code></td><td>試合登録</td><td><span class="tag">必要</span></td><td>Client</td></tr>
-        <tr><td><code>/games/[id]</code></td><td>試合詳細</td><td><span class="tag">必要</span></td><td>Server</td></tr>
-        <tr><td><code>/games/[id]/at-bats</code></td><td>打席記録</td><td><span class="tag">必要</span></td><td>Client</td></tr>
-        <tr><td><code>/stats</code></td><td>成績サマリー</td><td><span class="tag">必要</span></td><td>Server + Client</td></tr>
-        <tr><td><code>/pitching</code></td><td>投手成績記録</td><td><span class="tag">必要</span></td><td>Client</td></tr>
-        <tr><td><code>/profile</code></td><td>プロフィール設定</td><td><span class="tag">必要</span></td><td>Client</td></tr>
-      </tbody>
-    </table>
-  </section>
-
-  <!-- ══ 6. 型システム ══ -->
-  <section id="sec6">
-    <h2 class="sec-title">6. 型システム</h2>
-    <p><code class="code-inline">lib/supabase/types.ts</code> で定義されたユニオン型・定数が型安全性を保証する。</p>
-
-    <h3 class="sub-title">主要型定義</h3>
-    <table class="data-table">
-      <thead><tr><th style="width:28%">型名</th><th>値</th></tr></thead>
-      <tbody>
-        <tr>
-          <td><code>ResultType</code></td>
-          <td><code>hit</code> / <code>double</code> / <code>triple</code> / <code>hr</code> / <code>walk</code> / <code>hbp</code> / <code>strikeout</code> / <code>groundout</code> / <code>flyout</code> / <code>sac_bunt</code> / <code>sac_fly</code> / <code>error</code> / <code>fc</code> / <code>other</code></td>
-        </tr>
-        <tr>
-          <td><code>OutfieldDirection</code></td>
-          <td><code>left</code> / <code>center_left</code> / <code>center</code> / <code>center_right</code> / <code>right</code></td>
-        </tr>
-        <tr>
-          <td><code>InfieldPosition</code></td>
-          <td><code>pitcher</code> / <code>catcher</code> / <code>first_base</code> / <code>second_base</code> / <code>third_base</code> / <code>shortstop</code></td>
-        </tr>
-        <tr>
-          <td><code>Direction</code></td>
-          <td>OutfieldDirection | InfieldPosition のユニオン</td>
-        </tr>
-        <tr>
-          <td><code>PitchingResult</code></td>
-          <td><code>win</code> / <code>loss</code> / <code>save</code> / <code>hold</code> / <code>none</code></td>
-        </tr>
-        <tr>
-          <td><code>GameResult</code></td>
-          <td><code>win</code> / <code>loss</code> / <code>draw</code></td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h3 class="sub-title">主要定数</h3>
-    <table class="data-table">
-      <thead><tr><th>定数名</th><th>説明</th></tr></thead>
-      <tbody>
-        <tr><td><code>RESULT_TYPE_LABELS</code></td><td>ResultType → 日本語表示名のマッピング</td></tr>
-        <tr><td><code>HIT_DIRECTION_LABELS</code></td><td>外野方向 → 日本語ラベル（例: <code>left</code> → "レフト"）</td></tr>
-        <tr><td><code>INFIELD_HIT_POSITION_LABELS</code></td><td>内野安打守備位置 → ラベル（ピッチャー〜ショートの5ポジション）</td></tr>
-        <tr><td><code>FC_POSITIONS</code></td><td>フィールダーズチョイス時の守備位置一覧</td></tr>
-        <tr><td><code>ERROR_POSITIONS</code></td><td>エラー時の守備位置一覧（全9ポジション）</td></tr>
-        <tr><td><code>getAtBatLabel()</code></td><td>ResultType + Direction から表示ラベルを生成するユーティリティ関数</td></tr>
-      </tbody>
-    </table>
-  </section>
-
-  <!-- ══ 7. 成績計算ロジック ══ -->
-  <section id="sec7">
-    <h2 class="sec-title">7. 成績計算ロジック</h2>
-    <p><code class="code-inline">lib/stats.ts</code> に実装。すべてクライアントサイドで計算される純粋関数。</p>
-
-    <h3 class="sub-title">打撃成績（calcBattingStats）</h3>
-    <div class="formula-list">
-      <div class="fl-key">打数 (AB)</div><div class="fl-val">PA − BB − HBP − 犠打 − 犠飛</div>
-      <div class="fl-key">打率 (AVG)</div><div class="fl-val">H / AB</div>
-      <div class="fl-key">出塁率 (OBP)</div><div class="fl-val">(H + BB + HBP) / (AB + BB + HBP + 犠飛)</div>
-      <div class="fl-key">長打率 (SLG)</div><div class="fl-val">塁打 / AB　（1B×1 + 2B×2 + 3B×3 + HR×4）</div>
-      <div class="fl-key">OPS</div><div class="fl-val">OBP + SLG</div>
-      <div class="fl-key">IsoD</div><div class="fl-val">OBP − AVG</div>
-      <div class="fl-key">IsoP</div><div class="fl-val">SLG − AVG</div>
-      <div class="fl-key">RC27</div><div class="fl-val">((H+BB+HBP) × TB / (AB+BB+HBP)) × 27 / (AB − H + CS)</div>
+    <h3 class="sub-title" id="sec4-1">4.1 Crimson パレット（メインアクセント）</h3>
+    <p>UIの主要アクセント色。ナビゲーション背景・ボタン・ページタイトルに使用。</p>
+    <div class="swatch-grid">
+      <div class="swatch"><div class="swatch-color" style="background:#fff1f0"></div><div class="swatch-label"><strong>crimson-50</strong>#fff1f0</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#ffe0da"></div><div class="swatch-label"><strong>crimson-100</strong>#ffe0da</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#ffc5bc"></div><div class="swatch-label"><strong>crimson-200</strong>#ffc5bc</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#f4907e"></div><div class="swatch-label"><strong>crimson-300</strong>#f4907e</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#e05252"></div><div class="swatch-label"><strong>crimson-400</strong>#e05252</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#b83227"></div><div class="swatch-label"><strong>crimson-500</strong>#b83227 ★主要</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#9d2a1e"></div><div class="swatch-label"><strong>crimson-600</strong>#9d2a1e</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#7f2117"></div><div class="swatch-label"><strong>crimson-700</strong>#7f2117 ★Nav</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#641810"></div><div class="swatch-label"><strong>crimson-800</strong>#641810</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#4a1009"></div><div class="swatch-label"><strong>crimson-900</strong>#4a1009</div></div>
     </div>
-
-    <h3 class="sub-title">投手成績（calcPitchingStats）</h3>
-    <div class="note-box">
-      投球回（innings_pitched）は <strong>1/3イニング単位の整数</strong>で保存。例: 3回0/3 = 9、3回1/3 = 10、3回2/3 = 11。
-      ERA等の計算時は <code class="code-inline">outsToIPDecimal()</code> で小数換算してから使用する。
-    </div>
-    <div class="formula-list">
-      <div class="fl-key">ERA</div><div class="fl-val">(自責点 / IP) × 9</div>
-      <div class="fl-key">WHIP</div><div class="fl-val">(被安打 + 四球) / IP</div>
-      <div class="fl-key">K/9</div><div class="fl-val">(奪三振 / IP) × 9</div>
-      <div class="fl-key">K/BB</div><div class="fl-val">奪三振 / 四球</div>
-      <div class="fl-key">FIP</div><div class="fl-val">(13×HR + 3×(BB+HBP) − 2×K) / IP + 3.10</div>
-      <div class="fl-key">勝率</div><div class="fl-val">勝 / (勝 + 敗)</div>
-    </div>
-  </section>
-
-  <!-- ══ 8. 認証フロー ══ -->
-  <section id="sec8">
-    <h2 class="sec-title">8. 認証フロー</h2>
-    <p>Supabase Auth の OAuth / Magic Link フローを Next.js Middleware と組み合わせて実装。</p>
-
-    <h3 class="sub-title">ログインフロー</h3>
-    <div class="flow">
-      <div class="flow-step" data-n="1">
-        <div class="step-label">ユーザー操作</div>
-        <div class="step-desc"><code class="code-inline">/login</code> でOAuth / Magic Link を選択してボタンをクリック</div>
-      </div>
-      <div class="flow-step" data-n="2">
-        <div class="step-label">Supabase認証</div>
-        <div class="step-desc">Supabase Auth がプロバイダー認証ページへリダイレクト</div>
-      </div>
-      <div class="flow-step" data-n="3">
-        <div class="step-label">コールバック受信</div>
-        <div class="step-desc"><code class="code-inline">/auth/callback</code> に認証コードが届く。<code class="code-inline">exchangeCodeForSession()</code> でセッションCookieを発行</div>
-      </div>
-      <div class="flow-step" data-n="4">
-        <div class="step-label">ユーザーテーブル作成</div>
-        <div class="step-desc">初回ログイン時、DBトリガー <code class="code-inline">on_auth_user_created</code> が <code class="code-inline">public.users</code> レコードを自動生成</div>
-      </div>
-      <div class="flow-step" data-n="5">
-        <div class="step-label">ダッシュボードへ</div>
-        <div class="step-desc"><code class="code-inline">/dashboard</code> へリダイレクト。以降はCookieでセッション維持</div>
-      </div>
-    </div>
-
-    <h3 class="sub-title">ミドルウェア認証ガード</h3>
     <table class="info-table">
-      <tr><th>保護対象</th><td><code class="code-inline">/(protected)</code> 配下の全ルート</td></tr>
-      <tr><th>未認証リクエスト</th><td><code class="code-inline">/login</code> へ自動リダイレクト</td></tr>
-      <tr><th>認証済み → /login</th><td><code class="code-inline">/dashboard</code> へリダイレクト</td></tr>
-      <tr><th>セッション更新</th><td>Middleware でリクエストのたびにCookieを自動更新（@supabase/ssr）</td></tr>
+      <tr><th>ナビゲーション背景</th><td><code class="code-inline">bg-crimson-700</code> (#7f2117) — モバイル上部バー・デスクトップサイドバーのライトモード背景</td></tr>
+      <tr><th>ページタイトル</th><td><code class="code-inline">text-crimson-500</code> (#b83227) — ライトモード時</td></tr>
+      <tr><th>プライマリボタン</th><td><code class="code-inline">bg-crimson-500</code> hover: <code class="code-inline">bg-crimson-600</code></td></tr>
+      <tr><th>フォーカスリング</th><td><code class="code-inline">focus:ring-crimson-500</code></td></tr>
     </table>
-  </section>
 
-  <!-- ══ 9. 環境変数 ══ -->
-  <section id="sec9">
-    <h2 class="sec-title">9. 環境変数</h2>
-    <table class="env-table">
-      <thead><tr><th>変数名</th><th>説明</th><th>設定場所</th></tr></thead>
-      <tbody>
-        <tr><td>NEXT_PUBLIC_SUPABASE_URL</td><td>Supabase プロジェクトURL</td><td>.env.local / Vercel</td></tr>
-        <tr><td>NEXT_PUBLIC_SUPABASE_ANON_KEY</td><td>Supabase Anon Key（公開可）</td><td>.env.local / Vercel</td></tr>
-        <tr><td>SUPABASE_SERVICE_ROLE_KEY</td><td>管理者キー（サーバーサイドのみ・非公開）</td><td>Vercel環境変数のみ</td></tr>
-      </tbody>
-    </table>
-    <div class="note-box">
-      <code class="code-inline">.env.local</code> は <code class="code-inline">.gitignore</code> に含まれており、リポジトリには含まれない。本番環境はVercelの環境変数設定で管理する。
+    <h3 class="sub-title" id="sec4-2">4.2 Night パレット（ダークモード用）</h3>
+    <p>ダークモード時のベース色。深い赤黒系で野球夜間照明をイメージしたパレット。<code class="code-inline">dark:</code> プレフィックスと組み合わせて使用する。</p>
+    <div class="swatch-grid">
+      <div class="swatch"><div class="swatch-color" style="background:#0b0808"></div><div class="swatch-label"><strong>night-950</strong>#0b0808 ★メインbg</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#120d0d"></div><div class="swatch-label"><strong>night-900</strong>#120d0d ★サイドバーbg</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#1c1414"></div><div class="swatch-label"><strong>night-800</strong>#1c1414 ★カード</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#231b1b"></div><div class="swatch-label"><strong>night-750</strong>#231b1b ★テーブルヘッダ</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#2c2020"></div><div class="swatch-label"><strong>night-700</strong>#2c2020 ★elevated</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#3d2828"></div><div class="swatch-label"><strong>night-600</strong>#3d2828 ★ボーダー</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#523535"></div><div class="swatch-label"><strong>night-500</strong>#523535 ★subtle境界</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#a08888"></div><div class="swatch-label"><strong>night-400</strong>#a08888 ★セカンダリ文字</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#c4b0b0"></div><div class="swatch-label"><strong>night-300</strong>#c4b0b0 ★muted文字</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#e0d0d0"></div><div class="swatch-label"><strong>night-200</strong>#e0d0d0 ★subdued文字</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#f2eaea"></div><div class="swatch-label"><strong>night-100</strong>#f2eaea ★準白文字</div></div>
     </div>
-  </section>
+    <table class="info-table">
+      <tr><th>ページ背景</th><td><code class="code-inline">dark:bg-night-950</code> (#0b0808)</td></tr>
+      <tr><th>ナビゲーション背景</th><td><code class="code-inline">dark:bg-night-900</code> (#120d0d)</td></tr>
+      <tr><th>カード・フォーム背景</th><td><code class="code-inline">dark:bg-night-800</code> (#1c1414)</td></tr>
+      <tr><th>入力フィールド背景</th><td><code class="code-inline">dark:bg-night-750</code> (#231b1b)</td></tr>
+      <tr><th>ボーダー</th><td><code class="code-inline">dark:border-night-600</code> (#3d2828)</td></tr>
+      <tr><th>主要テキスト</th><td><code class="code-inline">dark:text-white</code></td></tr>
+      <tr><th>セカンダリテキスト</th><td><code class="code-inline">dark:text-night-300</code> (#c4b0b0)</td></tr>
+      <tr><th>ラベル・見出し</th><td><code class="code-inline">dark:text-night-200</code> (#e0d0d0)</td></tr>
+    </table>
 
-  <!-- ══ 10. 主要ライブラリ ══ -->
-  <section id="sec10">
-    <h2 class="sec-title">10. 主要ライブラリ</h2>
+    <h4 class="sub-sub">フォームスタイリング定数（共通パターン）</h4>
+    <p>全フォーム画面（試合登録・試合編集）でライト/ダーク両対応のための定数を定義し、コンポーネント内で再利用する。</p>
+    <div class="code-block">// 入力フィールド
+const INPUT = 'w-full border border-gray-200 dark:border-night-600 rounded-lg px-3 py-2 text-sm
+              bg-white dark:bg-night-750 text-gray-900 dark:text-white
+              placeholder-gray-400 dark:placeholder-night-400
+              focus:outline-none focus:ring-2 focus:ring-crimson-500 dark:focus:ring-crimson-400'
+
+// 単行ラベル
+const LABEL  = 'block text-sm font-medium text-gray-700 dark:text-night-200 mb-1'
+
+// 複数ボタン選択肢向けラベル
+const LABEL2 = 'block text-sm font-medium text-gray-700 dark:text-night-200 mb-2'</div>
+
+    <h3 class="sub-title" id="sec4-3">4.3 テーマ切替システム</h3>
+    <p><code class="code-inline">ThemeProvider</code>（<code class="code-inline">app/(protected)/_components/ThemeProvider.tsx</code>）が Context API でテーマ状態を管理する。</p>
+    <table class="info-table">
+      <tr><th>管理する状態</th><td><code class="code-inline">theme: 'light' | 'dark' | 'system'</code></td></tr>
+      <tr><th>永続化</th><td><code class="code-inline">localStorage</code>（キー: <code class="code-inline">'theme'</code>）</td></tr>
+      <tr><th>適用方法</th><td><code class="code-inline">document.documentElement.classList</code> の <code class="code-inline">dark</code> クラス追加/削除</td></tr>
+      <tr><th>system設定</th><td><code class="code-inline">window.matchMedia('prefers-color-scheme: dark')</code> を監視し、OS設定変化にリアルタイム追従</td></tr>
+      <tr><th>設定画面</th><td><code class="code-inline">/settings</code> のテーマセクションから切替。☀️ ライト / 🌙 ダーク / 💻 システム設定の3択ボタン</td></tr>
+    </table>
+
+    <h4 class="sub-sub">Field パレット（グラウンド緑、補助）</h4>
     <table class="data-table">
-      <thead><tr><th>ライブラリ</th><th>バージョン</th><th>用途</th></tr></thead>
+      <thead><tr><th>トークン</th><th>カラーコード</th><th>用途</th></tr></thead>
       <tbody>
-        <tr><td>next</td><td>14.2.29</td><td>Webフレームワーク（App Router）</td></tr>
-        <tr><td>react / react-dom</td><td>18</td><td>UIライブラリ</td></tr>
-        <tr><td>typescript</td><td>5</td><td>型付きJavaScript</td></tr>
-        <tr><td>@supabase/supabase-js</td><td>2.x</td><td>SupabaseクライアントSDK</td></tr>
-        <tr><td>@supabase/ssr</td><td>0.x</td><td>SSR対応Supabaseクライアント（Cookie管理）</td></tr>
-        <tr><td>tailwindcss</td><td>3.4</td><td>ユーティリティファーストCSS</td></tr>
-        <tr><td>recharts</td><td>2.x</td><td>打球方向チャート描画</td></tr>
-        <tr><td>lucide-react</td><td>0.x</td><td>アイコンセット</td></tr>
+        <tr><td><code>field-50</code></td><td>#f0fdf4</td><td>成功状態の薄い背景など</td></tr>
+        <tr><td><code>field-500</code></td><td>#16a34a</td><td>勝利・成功テキスト</td></tr>
+        <tr><td><code>field-600</code></td><td>#15803d</td><td>緑系アクセントhover</td></tr>
+        <tr><td><code>field-700</code></td><td>#166534</td><td>濃い緑</td></tr>
       </tbody>
     </table>
   </section>
 
-  <!-- ══ 11. DBマイグレーション ══ -->
-  <section id="sec11">
-    <h2 class="sec-title">11. DBマイグレーション履歴</h2>
-    <div class="migration">
-      <div class="mig-item">
-        <div class="mig-title">001_initial_schema.sql</div>
-        <div class="mig-desc">初期スキーマ。<code class="code-inline">users</code> / <code class="code-inline">games</code> / <code class="code-inline">at_bats</code> テーブル作成。RLS・インデックス・DBトリガー（on_auth_user_created）設定</div>
-      </div>
-      <div class="mig-item">
-        <div class="mig-title">002_add_direction.sql</div>
-        <div class="mig-desc"><code class="code-inline">at_bats</code> に <code class="code-inline">direction</code> カラム追加。打球方向・守備位置の記録に対応</div>
-      </div>
-      <div class="mig-item">
-        <div class="mig-title">003_add_stolen_base.sql</div>
-        <div class="mig-desc"><code class="code-inline">at_bats</code> に盗塁数・盗塁死フラグを追加。複数盗塁の記録に対応</div>
-      </div>
-      <div class="mig-item">
-        <div class="mig-title">004_add_pitching_stats.sql</div>
-        <div class="mig-desc"><code class="code-inline">pitching_stats</code> テーブル新設。イニング（1/3単位整数）・勝敗・奪三振・自責点・球数等を記録。RLS有効化</div>
-      </div>
-    </div>
+  <!-- ══ 5. ナビゲーション設計 ══ -->
+  <section id="sec5">
+    <h2 class="sec-title">5. ナビゲーション設計 <span class="tag new">v1.1.0 改訂</span></h2>
+    <p><code class="code-inline">app/(protected)/_components/Nav.tsx</code> に実装。モバイルとデスクトップで異なるレイアウトを提供する。</p>
+
+    <h3 class="sub-title">モバイル（〜lg未満）: 上部ナビバー</h3>
+    <table class="info-table">
+      <tr><th>配置</th><td>画面上部固定（スティッキーではなくページフローに乗る）</td></tr>
+      <tr><th>背景色</th><td><code class="code-inline">bg-crimson-700</code> ライト / <code class="code-inline">dark:bg-night-900</code> ダーク</td></tr>
+      <tr><th>ボーダー</th><td><code class="code-inline">border-b border-crimson-600</code> / <code class="code-inline">dark:border-night-600</code></td></tr>
+      <tr><th>リンクテキスト</th><td>通常: <code class="code-inline">text-crimson-100</code> / <code class="code-inline">dark:text-night-300</code>、アクティブ: <code class="code-inline">bg-white/20 text-white</code></td></tr>
+      <tr><th>表示項目</th><td>⚾ロゴ、ダッシュボード、試合、成績（左側）＋ 設定、ログアウト（右側）</td></tr>
+    </table>
+
+    <h3 class="sub-title">デスクトップ（lg以上）: 左固定サイドバー</h3>
+    <table class="info-table">
+      <tr><th>配置</th><td>左固定 <code class="code-inline">lg:fixed lg:inset-y-0 lg:left-0 lg:w-60</code></td></tr>
+      <tr><th>背景色</th><td><code class="code-inline">bg-crimson-700</code> ライト / <code class="code-inline">dark:bg-night-900</code> ダーク</td></tr>
+      <tr><th>コンテンツ左余白</th><td>メインコンテンツ側に <code class="code-inline">lg:pl-60</code> を指定してサイドバー幅分をクリア</td></tr>
+      <tr><th>アイコン付きリンク</th><td>絵文字アイコン + テキストラベル（🏠 ダッシュボード / ⚾ 試合 / 📊 成績 / ⚙️ 設定 / 🚪 ログアウト）</td></tr>
+      <tr><th>アクティブ状態</th><td><code class="code-inline">bg-white/20 text-white</code>（両テーマ共通）</td></tr>
+    </table>
   </section>
 
-</div><!-- /main -->
-
-<script>
-  // Active sidebar link on scroll
-  const sections = document.querySelectorAll('section[id], div[id]');
-  const navLinks = document.querySelectorAll('#sidebar nav a');
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        navLinks.forEach(l => l.classList.remove('active'));
-        const link = document.querySelector(`#sidebar nav a[href="#${entry.target.id}"]`);
-        if (link) link.classList.add('active');
-      }
-    });
-  }, { rootMargin: '-20% 0px -70% 0px' });
-
-  sections.forEach(s => observer.observe(s));
-</script>
-</body>
-</html>
+  <!-- ══ 6. ディレクトリ構成 ══ -->
+  <section id="sec6">
+    <h2 class="sec-title">6. ディレクトリ構成</h2>
+    <div class="dir-tree"><span class="dir">app/</span>                              <span class="note"># Next.js プロジェクトルート</span>
+├�
