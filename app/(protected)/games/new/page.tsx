@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
+const INPUT  = 'w-full border border-gray-200 dark:border-night-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-night-750 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-night-400 focus:outline-none focus:ring-2 focus:ring-crimson-500 dark:focus:ring-crimson-400'
+const LABEL  = 'block text-sm font-medium text-gray-700 dark:text-night-200 mb-1'
+const LABEL2 = 'block text-sm font-medium text-gray-700 dark:text-night-200 mb-2'
+
 export default function NewGamePage() {
   const router = useRouter()
   const supabaseRef = useRef(createClient())
@@ -28,20 +32,12 @@ export default function NewGamePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.opponent.trim()) {
-      setError('対戦相手を入力してください')
-      return
-    }
+    if (!form.opponent.trim()) { setError('対戦相手を入力してください'); return }
     setLoading(true)
     setError('')
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) {
-      router.push('/login')
-      return
-    }
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { router.push('/login'); return }
 
     const season = new Date(form.game_date).getFullYear()
     const { error: dbError } = await supabase.from('games').insert({
@@ -56,61 +52,50 @@ export default function NewGamePage() {
       season,
     })
 
-    if (dbError) {
-      setError('登録に失敗しました: ' + dbError.message)
-      setLoading(false)
-      return
-    }
-
+    if (dbError) { setError('登録に失敗しました: ' + dbError.message); setLoading(false); return }
     router.push('/games')
     router.refresh()
   }
 
   const resultOptions = [
-    { value: 'win', label: '勝利 ○', color: 'bg-green-50 border-green-300 text-green-700' },
-    { value: 'loss', label: '敗北 ●', color: 'bg-red-50 border-red-300 text-red-700' },
-    { value: 'draw', label: '引分 △', color: 'bg-yellow-50 border-yellow-300 text-yellow-700' },
+    { value: 'win',  label: '勝利 ○',
+      active: 'bg-green-50 dark:bg-green-900/40 border-green-400 dark:border-green-500 text-green-700 dark:text-green-300',
+    },
+    { value: 'loss', label: '敗北 ●',
+      active: 'bg-red-50 dark:bg-red-900/40 border-red-400 dark:border-red-500 text-red-700 dark:text-red-300',
+    },
+    { value: 'draw', label: '引分 △',
+      active: 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-400 dark:border-yellow-500 text-yellow-700 dark:text-yellow-300',
+    },
   ] as const
 
   return (
     <div className="max-w-lg mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/games" className="text-gray-400 hover:text-gray-600 transition-colors">
+        <Link href="/games" className="text-gray-400 dark:text-night-400 hover:text-gray-600 dark:hover:text-night-200 transition-colors">
           ← 試合一覧
         </Link>
-        <h1 className="text-2xl font-bold text-crimson-500">試合を登録</h1>
+        <h1 className="text-2xl font-bold text-crimson-500 dark:text-crimson-400">試合を登録</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600 p-6 space-y-5">
         {error && (
-          <div className="bg-red-50 text-red-700 text-sm p-3 rounded-lg">{error}</div>
+          <div className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm p-3 rounded-lg">{error}</div>
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">試合日 *</label>
-          <input
-            type="date"
-            value={form.game_date}
-            onChange={(e) => set('game_date', e.target.value)}
-            required
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500"
-          />
+          <label className={LABEL}>試合日 *</label>
+          <input type="date" value={form.game_date} onChange={(e) => set('game_date', e.target.value)} required className={INPUT} />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">対戦相手 *</label>
-          <input
-            type="text"
-            value={form.opponent}
-            onChange={(e) => set('opponent', e.target.value)}
-            placeholder="例：○○ファイターズ"
-            required
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500"
-          />
+          <label className={LABEL}>対戦相手 *</label>
+          <input type="text" value={form.opponent} onChange={(e) => set('opponent', e.target.value)}
+            placeholder="例：○○ファイターズ" required className={INPUT} />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">試合結果 *</label>
+          <label className={LABEL2}>試合結果 *</label>
           <div className="grid grid-cols-3 gap-2">
             {resultOptions.map((opt) => (
               <button
@@ -119,8 +104,8 @@ export default function NewGamePage() {
                 onClick={() => set('result', opt.value)}
                 className={`py-2 rounded-lg border-2 text-sm font-medium transition-all ${
                   form.result === opt.value
-                    ? opt.color + ' border-2'
-                    : 'border-gray-200 text-gray-400 hover:border-gray-300'
+                    ? opt.active
+                    : 'border-gray-200 dark:border-night-600 text-gray-400 dark:text-night-400 hover:border-gray-300 dark:hover:border-night-500'
                 }`}
               >
                 {opt.label}
@@ -130,59 +115,37 @@ export default function NewGamePage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">スコア</label>
+          <label className={LABEL2}>スコア</label>
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <label className="text-xs text-gray-400 mb-1 block">自チーム</label>
-              <input
-                type="number"
-                min="0"
-                value={form.score_us}
-                onChange={(e) => set('score_us', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-crimson-500"
-              />
+              <label className="text-xs text-gray-400 dark:text-night-400 mb-1 block">自チーム</label>
+              <input type="number" min="0" value={form.score_us} onChange={(e) => set('score_us', e.target.value)}
+                className={`${INPUT} text-center text-lg font-bold`} />
             </div>
-            <span className="text-gray-400 font-bold mt-5">-</span>
+            <span className="text-gray-400 dark:text-night-400 font-bold mt-5">-</span>
             <div className="flex-1">
-              <label className="text-xs text-gray-400 mb-1 block">相手チーム</label>
-              <input
-                type="number"
-                min="0"
-                value={form.score_them}
-                onChange={(e) => set('score_them', e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-crimson-500"
-              />
+              <label className="text-xs text-gray-400 dark:text-night-400 mb-1 block">相手チーム</label>
+              <input type="number" min="0" value={form.score_them} onChange={(e) => set('score_them', e.target.value)}
+                className={`${INPUT} text-center text-lg font-bold`} />
             </div>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">球場・グラウンド</label>
-          <input
-            type="text"
-            value={form.stadium}
-            onChange={(e) => set('stadium', e.target.value)}
-            placeholder="例：○○公園野球場"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500"
-          />
+          <label className={LABEL}>球場・グラウンド</label>
+          <input type="text" value={form.stadium} onChange={(e) => set('stadium', e.target.value)}
+            placeholder="例：○○公園野球場" className={INPUT} />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">メモ</label>
-          <textarea
-            value={form.notes}
-            onChange={(e) => set('notes', e.target.value)}
-            rows={2}
+          <label className={LABEL}>メモ</label>
+          <textarea value={form.notes} onChange={(e) => set('notes', e.target.value)} rows={2}
             placeholder="試合の感想など"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500 resize-none"
-          />
+            className={`${INPUT} resize-none`} />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-crimson-500 hover:bg-crimson-600 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
-        >
+        <button type="submit" disabled={loading}
+          className="w-full bg-crimson-500 hover:bg-crimson-600 dark:bg-crimson-600 dark:hover:bg-crimson-500 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50">
           {loading ? '登録中...' : '試合を登録する'}
         </button>
       </form>

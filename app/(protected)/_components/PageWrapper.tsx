@@ -24,13 +24,10 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
 
   return (
     <div
-      className="min-h-[calc(100vh-5rem)]"
+      className="min-h-0"
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(5px)',
-        transition: visible
-          ? 'opacity 0.18s ease-out, transform 0.18s ease-out'
-          : 'none',
+        transition: visible ? 'opacity 0.15s ease-out' : 'none',
       }}
     >
       {children}
