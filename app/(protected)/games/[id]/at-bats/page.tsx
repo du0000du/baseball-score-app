@@ -690,7 +690,7 @@ export default function AtBatsPage() {
                 <div
                   key={ab.id}
                   className={`flex items-center justify-between py-2 px-3 rounded-lg transition-colors ${
-                    isEditing ? 'bg-blue-50 ring-2 ring-blue-300' : 'bg-gray-50'
+                    isEditing ? 'bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-300 dark:ring-blue-700' : 'bg-gray-50 dark:bg-night-750'
                   }`}
                 >
                   <div className="flex items-center gap-2 flex-wrap min-w-0">
@@ -708,7 +708,7 @@ export default function AtBatsPage() {
                     )}
                     <div className="flex gap-1 flex-wrap">
                       {rbiVal > 0 && (
-                        <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-medium">
+                        <span className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded font-medium">
                           打点{rbiVal > 1 ? rbiVal : ''}
                         </span>
                       )}
@@ -716,7 +716,7 @@ export default function AtBatsPage() {
                         <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-medium">得点</span>
                       )}
                       {sbVal > 0 && (
-                        <span className="text-xs bg-green-100 text-green-600 px-1.5 py-0.5 rounded font-medium">
+                        <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded font-medium">
                           盗塁{sbVal > 1 ? sbVal : ''}
                         </span>
                       )}
