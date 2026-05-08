@@ -155,6 +155,46 @@ ALTER TABLE at_bats ADD CONSTRAINT at_bats_batting_order_check CHECK (batting_or
 
 ---
 
+## 再発防止：デザイントークン必須ファイル
+
+ダークモード崩れの根本原因は「ローカル修正済みファイルがデプロイスクリプトに含まれていなかった」こと。
+新しいデプロイスクリプトを作るときは、以下のファイルを**常に含める**。
+
+| ファイル | 理由 |
+|---|---|
+| `app/(protected)/layout.tsx` | ページ全体の背景色を定義 (`bg-lv2`)。抜けると全画面が白背景になる |
+| `app/globals.css` | CSS変数（カラートークン定義）の本体 |
+| `tailwind.config.ts` | Tailwindトークン定義。これが古いとクラスが無効になる |
+
+### 禁止パターン（過去のバグ原因）
+
+```tsx
+// ❌ NG: 存在しないカラー `night` を使用 → dark: 上書きが無効になる
+<div className="min-h-screen bg-gray-50 dark:bg-night-950">
+
+// ✅ OK: デザイントークンを使う
+<div className="min-h-screen bg-lv2">
+```
+
+```tsx
+// ❌ NG: ハードコードされたカラー → ダーク/ライト切り替え時に色が変わらない
+<span className="text-green-500">○</span>
+<span className="text-yellow-500">△</span>
+
+// ✅ OK: セマンティックトークン
+<span className="text-pos-t">○</span>
+<span className="text-neu-t">△</span>
+```
+
+### 新機能を追加するときのチェックリスト
+
+1. `bg-gray-*`, `bg-white`, `bg-black` などのハードコードカラーを使っていないか？
+2. `dark:bg-*` で存在しないカラー名（`night` など）を使っていないか？
+3. `tailwind.config.ts` にないカラーを `dark:` バリアントで使っていないか？
+4. デプロイスクリプトに `layout.tsx` / `globals.css` / `tailwind.config.ts` を含めたか？
+
+---
+
 ## 主要ファイルマップ
 
 ```
