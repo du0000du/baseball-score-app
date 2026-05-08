@@ -87,9 +87,9 @@ export default async function DashboardPage() {
               <h2 className={`${sectionTitle} mb-3`}>チーム戦績</h2>
               <div className="grid grid-cols-5 gap-2 text-center text-sm">
                 <div><div className={bigStat}>{typedGames.length}</div><div className={subLabel}>試合</div></div>
-                <div><div className="text-xl font-bold text-green-500">{wins}</div><div className={subLabel}>勝</div></div>
-                <div><div className="text-xl font-bold text-red-500">{losses}</div><div className={subLabel}>負</div></div>
-                <div><div className="text-xl font-bold text-yellow-500">{draws}</div><div className={subLabel}>分</div></div>
+                <div><div className="text-xl font-bold text-accent">{wins}</div><div className={subLabel}>勝</div></div>
+                <div><div className="text-xl font-bold text-accent">{losses}</div><div className={subLabel}>負</div></div>
+                <div><div className="text-xl font-bold text-accent">{draws}</div><div className={subLabel}>分</div></div>
                 <div><div className={bigStat}>{winRate}</div><div className={subLabel}>勝率</div></div>
               </div>
             </div>
