@@ -26,23 +26,20 @@ export default function Nav() {
     { href: '/stats',     label: '成績',           icon: '📊' },
   ]
 
-  // モバイル上部ナビ（crimson-700 / dark:night-900 背景）
   const mobileLinkClass = (href: string) =>
     isActive(href)
       ? 'bg-white/20 text-white'
-      : 'text-crimson-100 dark:text-night-300 hover:text-white hover:bg-white/10'
+      : 'text-white/70 hover:text-white hover:bg-white/10'
 
-  // デスクトップ左サイドバー（crimson-700 / dark:night-900 背景）
-  // ライトモードも背景が濃い赤なので文字は明るい crimson-100 を使う
   const sidebarLinkClass = (href: string) =>
     isActive(href)
-      ? 'bg-white/20 text-white'
-      : 'text-crimson-100 dark:text-night-300 hover:bg-white/10 dark:hover:bg-night-700 hover:text-white dark:hover:text-white'
+      ? 'bg-theme text-white'
+      : 'text-sub1 hover:bg-lv2 hover:text-main'
 
   return (
     <>
       {/* モバイル: 上部ナビ */}
-      <nav className="lg:hidden bg-crimson-700 dark:bg-night-900 shadow-lg border-b border-crimson-600 dark:border-night-600">
+      <nav className="lg:hidden bg-theme dark:bg-lv2 shadow-lg border-b border-theme/30 dark:border-s2">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-1">
             <span className="text-white font-bold text-lg mr-3">⚾</span>
@@ -65,7 +62,7 @@ export default function Nav() {
             </Link>
             <button
               onClick={handleSignOut}
-              className="text-sm text-crimson-100 dark:text-night-400 hover:text-white transition-all duration-150"
+              className="text-sm text-white/70 hover:text-white transition-all duration-150"
             >
               ログアウト
             </button>
@@ -74,8 +71,8 @@ export default function Nav() {
       </nav>
 
       {/* デスクトップ: 左サイドバー */}
-      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-60 bg-crimson-700 dark:bg-night-900 border-r border-crimson-600 dark:border-night-600 shadow-xl z-10">
-        <div className="px-6 py-5 border-b border-crimson-600 dark:border-night-700">
+      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-60 bg-theme dark:bg-lv2 border-r border-theme/30 dark:border-s2 shadow-xl z-10">
+        <div className="px-6 py-5 border-b border-theme/30 dark:border-s2">
           <span className="text-white font-bold text-xl tracking-tight">⚾ 草野球記録</span>
         </div>
 
@@ -92,7 +89,7 @@ export default function Nav() {
           ))}
         </nav>
 
-        <div className="px-3 py-4 border-t border-crimson-600 dark:border-night-700 space-y-1">
+        <div className="px-3 py-4 border-t border-theme/30 dark:border-s2 space-y-1">
           <Link
             href="/settings"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 active:scale-[0.98] ${sidebarLinkClass('/settings')}`}
@@ -102,7 +99,7 @@ export default function Nav() {
           </Link>
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-crimson-100 dark:text-night-400 hover:bg-white/10 dark:hover:bg-night-700 hover:text-white transition-all duration-150"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white transition-all duration-150"
           >
             <span className="text-base">🚪</span>
             ログアウト

@@ -11,7 +11,7 @@ function formatDate(dateStr: string) {
 function ScoreDisplay({ game }: { game: Game }) {
   const score = (
     <span className="text-white dark:text-white">
-      {game.score_us}<span className="text-gray-400 dark:text-night-400 font-normal mx-0.5">-</span>{game.score_them}
+      {game.score_us}<span className="text-sub2 font-normal mx-0.5">-</span>{game.score_them}
     </span>
   )
   if (game.result === 'win') return (
@@ -21,7 +21,7 @@ function ScoreDisplay({ game }: { game: Game }) {
   )
   if (game.result === 'loss') return (
     <span className="flex items-center gap-1 text-base font-bold leading-none">
-      <span className="text-gray-400 dark:text-night-400">●</span>{score}
+      <span className="text-sub2">●</span>{score}
     </span>
   )
   return (
@@ -58,22 +58,22 @@ export default async function DashboardPage() {
   const pitchingStats = (pitchingData ?? []) as PitchingStat[]
   const pStats = calcPitchingStats(pitchingStats)
 
-  const card = "bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600"
-  const sectionTitle = "text-sm font-semibold text-gray-500 dark:text-night-400 uppercase tracking-wide"
-  const bigStat = "text-2xl font-bold text-crimson-500 dark:text-crimson-400 truncate"
-  const subLabel = "text-xs text-gray-400 dark:text-night-400 mt-1"
-  const smallVal = "font-semibold text-gray-700 dark:text-white"
-  const smallLabel = "text-xs text-gray-400 dark:text-night-400"
-  const divider = "border-t border-gray-100 dark:border-night-700"
+  const card = "bg-lv1 rounded-xl shadow-sm border border-s2"
+  const sectionTitle = "text-sm font-semibold text-sub1 uppercase tracking-wide"
+  const bigStat = "text-2xl font-bold text-accent truncate"
+  const subLabel = "text-xs text-sub2 mt-1"
+  const smallVal = "font-semibold text-main"
+  const smallLabel = "text-xs text-sub2"
+  const divider = "border-t border-s2"
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-crimson-500 dark:text-crimson-400">{currentYear}年 シーズン</h1>
-          {typedProfile?.team_name && <p className="text-sm text-gray-500 dark:text-night-400 mt-0.5">{typedProfile.team_name}</p>}
+          <h1 className="text-2xl font-bold text-accent">{currentYear}年 シーズン</h1>
+          {typedProfile?.team_name && <p className="text-sm text-sub1 mt-0.5">{typedProfile.team_name}</p>}
         </div>
-        <Link href="/games/new" className="btn bg-crimson-500 hover:bg-crimson-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
+        <Link href="/games/new" className="btn bg-theme hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium">
           ＋ 試合を登録
         </Link>
       </div>
@@ -99,7 +99,7 @@ export default async function DashboardPage() {
           <div className={`${card} p-6`}>
             <h2 className={`${sectionTitle} mb-4`}>シーズン打撃成績</h2>
             {allAtBats.length === 0 ? (
-              <p className="text-gray-400 dark:text-night-400 text-center py-4">まだ打席記録がありません</p>
+              <p className="text-sub2 text-center py-4">まだ打席記録がありません</p>
             ) : (
               <>
                 <div className="grid grid-cols-4 gap-2 mb-4">
@@ -147,12 +147,12 @@ export default async function DashboardPage() {
           <div className={`${card} p-6`}>
             <div className="flex items-center justify-between mb-4">
               <h2 className={sectionTitle}>直近の試合</h2>
-              <Link href="/games" className="text-sm text-crimson-500 dark:text-crimson-400 hover:underline">全て →</Link>
+              <Link href="/games" className="text-sm text-accent hover:underline">全て →</Link>
             </div>
             {recentGames.length === 0 ? (
-              <p className="text-gray-400 dark:text-night-400 text-center py-4">試合が登録されていません</p>
+              <p className="text-sub2 text-center py-4">試合が登録されていません</p>
             ) : (
-              <div className="divide-y divide-gray-50 dark:divide-night-700">
+              <div className="divide-y divide-s2">
                 {recentGames.map((game) => {
                   const gameStats = calcBattingStats(game.at_bats)
                   return (
@@ -160,20 +160,20 @@ export default async function DashboardPage() {
                       <div className="flex items-center gap-2">
                         <ScoreDisplay game={game} />
                         <div>
-                          <span className="text-sm font-medium text-gray-800 dark:text-white">vs {game.opponent}</span>
-                          <div className="text-xs text-gray-400 dark:text-night-400 mt-0.5">{formatDate(game.game_date)}</div>
+                          <span className="text-sm font-medium text-main">vs {game.opponent}</span>
+                          <div className="text-xs text-sub2 mt-0.5">{formatDate(game.game_date)}</div>
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1 text-sm">
                         {game.at_bats.length > 0 ? (
-                          <span className="font-medium text-gray-700 dark:text-white">
+                          <span className="font-medium text-main">
                             {gameStats.hits}/{gameStats.ab}
                             {gameStats.hrs > 0 && <span className="text-red-500 ml-1">{gameStats.hrs}HR</span>}
                           </span>
                         ) : (
-                          <span className="text-gray-300 dark:text-night-600">記録なし</span>
+                          <span className="text-sub2">記録なし</span>
                         )}
-                        <Link href={`/games/${game.id}/at-bats`} className="btn text-crimson-500 dark:text-crimson-400 hover:underline text-xs">
+                        <Link href={`/games/${game.id}/at-bats`} className="btn text-accent hover:underline text-xs">
                           打席入力
                         </Link>
                       </div>

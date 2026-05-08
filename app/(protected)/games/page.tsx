@@ -19,13 +19,13 @@ function formatDate(dateStr: string) {
 function ScoreDisplay({ game }: { game: Game }) {
   const marker =
     game.result === 'win'  ? <span className="text-green-500 text-lg">○</span> :
-    game.result === 'loss' ? <span className="text-gray-400 dark:text-night-500 text-lg">●</span> :
+    game.result === 'loss' ? <span className="text-sub2 text-lg">●</span> :
                              <span className="text-yellow-500 text-lg">△</span>
   return (
     <span className="flex items-center gap-1 font-bold leading-none shrink-0">
       {marker}
-      <span className="text-gray-800 dark:text-white text-lg">
-        {game.score_us}<span className="text-gray-400 dark:text-night-400 font-normal mx-0.5">-</span>{game.score_them}
+      <span className="text-main text-lg">
+        {game.score_us}<span className="text-sub2 font-normal mx-0.5">-</span>{game.score_them}
       </span>
     </span>
   )
@@ -35,10 +35,10 @@ function SkeletonRow() {
   return (
     <div className="px-4 py-4 animate-pulse">
       <div className="flex items-center gap-3 mb-2">
-        <div className="w-12 h-5 bg-gray-100 dark:bg-night-700 rounded" />
-        <div className="h-5 bg-gray-100 dark:bg-night-700 rounded w-40" />
+        <div className="w-12 h-5 bg-lv2 rounded" />
+        <div className="h-5 bg-lv2 rounded w-40" />
       </div>
-      <div className="h-3 bg-gray-100 dark:bg-night-700 rounded w-28" />
+      <div className="h-3 bg-lv2 rounded w-28" />
     </div>
   )
 }
@@ -77,26 +77,26 @@ export default function GamesPage() {
     setConfirmId(null)
   }
 
-  const card = "bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600"
+  const card = "bg-lv1 rounded-xl shadow-sm border border-s2"
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-crimson-500 dark:text-crimson-400">試合一覧</h1>
-        <Link href="/games/new" className="btn bg-crimson-500 hover:bg-crimson-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
+        <h1 className="text-2xl font-bold text-accent">試合一覧</h1>
+        <Link href="/games/new" className="btn bg-theme hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium">
           ＋ 試合を登録
         </Link>
       </div>
 
       {loading ? (
-        <div className={`min-h-[520px] ${card} divide-y divide-gray-100 dark:divide-night-700`}>
+        <div className={`min-h-[520px] ${card} divide-y divide-s2`}>
           {[1,2,3].map(i => <SkeletonRow key={i} />)}
         </div>
       ) : games.length === 0 ? (
         <div className={`${card} p-12 text-center`}>
           <div className="text-5xl mb-4">⚾</div>
-          <p className="text-gray-400 dark:text-night-400 mb-4">試合が登録されていません</p>
-          <Link href="/games/new" className="btn inline-block bg-crimson-500 hover:bg-crimson-600 text-white px-6 py-2 rounded-lg text-sm font-medium">
+          <p className="text-sub2 mb-4">試合が登録されていません</p>
+          <Link href="/games/new" className="btn inline-block bg-theme hover:opacity-90 text-white px-6 py-2 rounded-lg text-sm font-medium">
             最初の試合を登録する
           </Link>
         </div>
@@ -114,20 +114,20 @@ export default function GamesPage() {
                 <button
                   type="button"
                   onClick={() => toggleExpand(game.id)}
-                  className="w-full px-4 py-4 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-night-750 transition-colors"
+                  className="w-full px-4 py-4 flex items-center justify-between text-left hover:bg-lv2 transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <ScoreDisplay game={game} />
                     <div className="min-w-0">
-                      <div className="text-base font-semibold text-gray-800 dark:text-white truncate">vs {game.opponent}</div>
-                      <div className="text-xs text-gray-400 dark:text-night-400 mt-0.5">
+                      <div className="text-base font-semibold text-main truncate">vs {game.opponent}</div>
+                      <div className="text-xs text-sub2 mt-0.5">
                         {formatDate(game.game_date)}
                         {game.stadium && <span className="ml-1.5">・ {game.stadium}</span>}
                       </div>
                     </div>
                   </div>
                   <svg
-                    className={`w-4 h-4 text-gray-400 dark:text-night-400 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 text-sub2 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
                     fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -136,66 +136,66 @@ export default function GamesPage() {
 
                 {/* 展開エリア */}
                 {isExpanded && (
-                  <div className="border-t border-gray-100 dark:border-night-700 px-4 pb-4 pt-3 space-y-4">
+                  <div className="border-t border-s2 px-4 pb-4 pt-3 space-y-4">
                     {/* 打撃成績サマリ */}
                     {game.at_bats.length > 0 ? (
                       <div>
-                        <div className="text-xs font-semibold text-gray-400 dark:text-night-400 uppercase tracking-wide mb-2">打撃成績</div>
-                        <div className="grid grid-cols-7 gap-1 text-center text-xs bg-gray-50 dark:bg-night-750 rounded-lg p-3">
+                        <div className="text-xs font-semibold text-sub2 uppercase tracking-wide mb-2">打撃成績</div>
+                        <div className="grid grid-cols-7 gap-1 text-center text-xs bg-lv2 rounded-lg p-3">
                           <div>
-                            <div className="font-bold text-sm text-crimson-500 dark:text-crimson-400">{fmtAvg(batting.avg)}</div>
-                            <div className="text-gray-400 dark:text-night-400 mt-0.5">打率</div>
+                            <div className="font-bold text-sm text-accent">{fmtAvg(batting.avg)}</div>
+                            <div className="text-sub2 mt-0.5">打率</div>
                           </div>
                           <div>
-                            <div className="font-semibold text-gray-700 dark:text-white text-sm">{batting.pa}</div>
-                            <div className="text-gray-400 dark:text-night-400 mt-0.5">打席</div>
+                            <div className="font-semibold text-main text-sm">{batting.pa}</div>
+                            <div className="text-sub2 mt-0.5">打席</div>
                           </div>
                           <div>
-                            <div className="font-semibold text-gray-700 dark:text-white text-sm">{batting.ab}</div>
-                            <div className="text-gray-400 dark:text-night-400 mt-0.5">打数</div>
+                            <div className="font-semibold text-main text-sm">{batting.ab}</div>
+                            <div className="text-sub2 mt-0.5">打数</div>
                           </div>
                           <div>
-                            <div className="font-semibold text-gray-700 dark:text-white text-sm">{batting.hits}</div>
-                            <div className="text-gray-400 dark:text-night-400 mt-0.5">安打</div>
+                            <div className="font-semibold text-main text-sm">{batting.hits}</div>
+                            <div className="text-sub2 mt-0.5">安打</div>
                           </div>
                           <div>
-                            <div className="font-semibold text-gray-700 dark:text-white text-sm">{batting.hrs}</div>
-                            <div className="text-gray-400 dark:text-night-400 mt-0.5">本塁打</div>
+                            <div className="font-semibold text-main text-sm">{batting.hrs}</div>
+                            <div className="text-sub2 mt-0.5">本塁打</div>
                           </div>
                           <div>
-                            <div className="font-semibold text-gray-700 dark:text-white text-sm">{batting.rbi}</div>
-                            <div className="text-gray-400 dark:text-night-400 mt-0.5">打点</div>
+                            <div className="font-semibold text-main text-sm">{batting.rbi}</div>
+                            <div className="text-sub2 mt-0.5">打点</div>
                           </div>
                           <div>
-                            <div className="font-semibold text-gray-700 dark:text-white text-sm">{batting.sb}</div>
-                            <div className="text-gray-400 dark:text-night-400 mt-0.5">盗塁</div>
+                            <div className="font-semibold text-main text-sm">{batting.sb}</div>
+                            <div className="text-sub2 mt-0.5">盗塁</div>
                           </div>
                         </div>
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-400 dark:text-night-400 text-center py-1">打席記録なし</p>
+                      <p className="text-xs text-sub2 text-center py-1">打席記録なし</p>
                     )}
 
                     {/* 投手成績サマリ */}
                     {pitching && (
                       <div>
-                        <div className="text-xs font-semibold text-gray-400 dark:text-night-400 uppercase tracking-wide mb-2">投手成績</div>
-                        <div className="grid grid-cols-4 gap-1 text-center text-xs bg-gray-50 dark:bg-night-750 rounded-lg p-3">
+                        <div className="text-xs font-semibold text-sub2 uppercase tracking-wide mb-2">投手成績</div>
+                        <div className="grid grid-cols-4 gap-1 text-center text-xs bg-lv2 rounded-lg p-3">
                           <div>
-                            <div className="font-bold text-sm text-crimson-500 dark:text-crimson-400">{fmtERA(pitching.era)}</div>
-                            <div className="text-gray-400 dark:text-night-400 mt-0.5">防御率</div>
+                            <div className="font-bold text-sm text-accent">{fmtERA(pitching.era)}</div>
+                            <div className="text-sub2 mt-0.5">防御率</div>
                           </div>
                           <div>
-                            <div className="font-semibold text-gray-700 dark:text-white text-sm">{formatIP(pitching.innings_pitched)}</div>
-                            <div className="text-gray-400 dark:text-night-400 mt-0.5">投球回</div>
+                            <div className="font-semibold text-main text-sm">{formatIP(pitching.innings_pitched)}</div>
+                            <div className="text-sub2 mt-0.5">投球回</div>
                           </div>
                           <div>
-                            <div className="font-semibold text-gray-700 dark:text-white text-sm">{pitching.strikeouts}</div>
-                            <div className="text-gray-400 dark:text-night-400 mt-0.5">奪三振</div>
+                            <div className="font-semibold text-main text-sm">{pitching.strikeouts}</div>
+                            <div className="text-sub2 mt-0.5">奪三振</div>
                           </div>
                           <div>
-                            <div className="font-semibold text-gray-700 dark:text-white text-sm">{pitching.earned_runs}</div>
-                            <div className="text-gray-400 dark:text-night-400 mt-0.5">自責点</div>
+                            <div className="font-semibold text-main text-sm">{pitching.earned_runs}</div>
+                            <div className="text-sub2 mt-0.5">自責点</div>
                           </div>
                         </div>
                       </div>
@@ -206,7 +206,7 @@ export default function GamesPage() {
                       <div>
                         <p className="text-xs text-red-400 font-medium mb-2">この試合と全打席記録を削除しますか？</p>
                         <div className="flex gap-2">
-                          <button onClick={() => setConfirmId(null)} className="btn flex-1 py-2 text-xs text-gray-600 dark:text-night-300 bg-gray-100 dark:bg-night-700 hover:bg-gray-200 dark:hover:bg-night-600 rounded-lg font-medium">
+                          <button onClick={() => setConfirmId(null)} className="btn flex-1 py-2 text-xs text-sub1 bg-lv2 hover:bg-lv2 rounded-lg font-medium">
                             キャンセル
                           </button>
                           <button onClick={() => handleDelete(game.id)} disabled={deletingId === game.id} className="btn flex-1 py-2 text-xs bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium disabled:opacity-50">
@@ -218,7 +218,7 @@ export default function GamesPage() {
                       <div className="flex gap-2">
                         <Link href={`/games/${game.id}/at-bats`} className="btn flex-1 text-center py-2 text-xs font-medium bg-field-500 hover:bg-field-600 text-white rounded-lg">打席入力</Link>
                         <Link href={`/games/${game.id}/pitching`} className="btn flex-1 text-center py-2 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg">投手成績</Link>
-                        <Link href={`/games/${game.id}/edit`} className="btn flex-1 text-center py-2 text-xs font-medium bg-gray-100 dark:bg-night-700 hover:bg-gray-200 dark:hover:bg-night-600 text-gray-700 dark:text-night-200 rounded-lg">編集</Link>
+                        <Link href={`/games/${game.id}/edit`} className="btn flex-1 text-center py-2 text-xs font-medium bg-lv2 hover:bg-lv2 text-main rounded-lg">編集</Link>
                         <button onClick={() => setConfirmId(game.id)} className="btn flex-1 py-2 text-xs font-medium text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">削除</button>
                       </div>
                     )}

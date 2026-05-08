@@ -64,22 +64,22 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[520px] flex items-center justify-center text-gray-400 dark:text-night-400">
+      <div className="min-h-[520px] flex items-center justify-center text-sub2">
         読み込み中...
       </div>
     )
   }
 
-  const inputClass = "w-full border border-gray-200 dark:border-night-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-night-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-night-400 focus:outline-none focus:ring-2 focus:ring-crimson-500"
-  const labelClass = "block text-sm font-medium text-gray-700 dark:text-night-200 mb-1.5"
+  const inputClass = "w-full border border-s2 rounded-lg px-3 py-2 text-sm bg-lv1 text-main placeholder-sub2 focus:outline-none focus:ring-2 focus:ring-theme"
+  const labelClass = "block text-sm font-medium text-main mb-1.5"
 
   return (
     <div className="max-w-lg space-y-6">
-      <h1 className="text-2xl font-bold text-crimson-500 dark:text-crimson-400">プロフィール設定</h1>
+      <h1 className="text-2xl font-bold text-accent">プロフィール設定</h1>
 
       {/* テーマ設定 */}
-      <div className="bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600 p-6">
-        <h2 className="text-sm font-semibold text-gray-500 dark:text-night-400 uppercase tracking-wide mb-4">
+      <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-6">
+        <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-4">
           表示テーマ
         </h2>
         <div className="grid grid-cols-3 gap-3">
@@ -89,8 +89,8 @@ export default function SettingsPage() {
               onClick={() => setTheme(value)}
               className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-150 text-sm font-medium btn ${
                 theme === value
-                  ? 'border-crimson-500 bg-crimson-50 dark:bg-crimson-900/30 text-crimson-600 dark:text-crimson-400'
-                  : 'border-gray-200 dark:border-night-600 text-gray-600 dark:text-night-300 hover:border-gray-300 dark:hover:border-night-500 dark:hover:bg-night-700'
+                  ? 'border-theme bg-theme/10 dark:bg-theme/10 text-accent'
+                  : 'border-s2 text-sub1 hover:border-s1'
               }`}
             >
               <span className="text-2xl">{icon}</span>
@@ -101,8 +101,8 @@ export default function SettingsPage() {
       </div>
 
       {/* プロフィール */}
-      <div className="bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600 p-6 space-y-5">
-        <h2 className="text-sm font-semibold text-gray-500 dark:text-night-400 uppercase tracking-wide">
+      <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-6 space-y-5">
+        <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide">
           プロフィール
         </h2>
         <div>
@@ -124,7 +124,7 @@ export default function SettingsPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="w-full bg-crimson-500 hover:bg-crimson-600 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition-colors text-sm btn"
+          className="w-full bg-theme hover:opacity-90 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition-colors text-sm btn"
         >
           {saving ? '保存中...' : '保存する'}
         </button>

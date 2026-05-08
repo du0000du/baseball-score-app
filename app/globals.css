@@ -2,14 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Design token CSS variables ──────────────────────────────────── */
+:root {
+  --bg_lv1:       #FFFFFF;
+  --bg_lv2:       #E5EAEE;
+  --theme:        #3474CE;
+  --accent:       #FF6B6A;
+  --main_text:    #444444;
+  --sub_text_lv1: #777777;
+  --sub_text_lv2: #999999;
+  --stroke_lv1:   #BBBBBB;
+  --stroke_lv2:   #D8D8D8;
+}
+
+.dark {
+  --bg_lv1:       #23282F;
+  --bg_lv2:       #141920;
+  --theme:        #719DDC;
+  --accent:       #FF9796;
+  --main_text:    #E6E6E6;
+  --sub_text_lv1: #C0C0C0;
+  --sub_text_lv2: #898989;
+  --stroke_lv1:   #777777;
+  --stroke_lv2:   #555555;
+}
+
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900;
-  }
-  .dark body,
-  .dark {
-    background-color: #0b0808;
-    color: #ffffff;
+    background-color: var(--bg_lv2);
+    color: var(--main_text);
   }
 }
 

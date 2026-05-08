@@ -7,9 +7,9 @@ import { createClient } from '@/lib/supabase/client'
 import type { Game } from '@/lib/supabase/types'
 import SuggestInput from '@/app/(protected)/_components/SuggestInput'
 
-const INPUT  = 'w-full border border-gray-200 dark:border-night-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-night-750 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-night-400 focus:outline-none focus:ring-2 focus:ring-crimson-500 dark:focus:ring-crimson-400'
-const LABEL  = 'block text-sm font-medium text-gray-700 dark:text-night-200 mb-1'
-const LABEL2 = 'block text-sm font-medium text-gray-700 dark:text-night-200 mb-2'
+const INPUT  = 'w-full border border-s2 rounded-lg px-3 py-2 text-sm bg-lv1 text-main placeholder-sub2 focus:outline-none focus:ring-2 focus:ring-theme'
+const LABEL  = 'block text-sm font-medium text-main mb-1'
+const LABEL2 = 'block text-sm font-medium text-main mb-2'
 
 export default function EditGameForm({ game }: { game: Game }) {
   const router = useRouter()
@@ -94,13 +94,13 @@ export default function EditGameForm({ game }: { game: Game }) {
   return (
     <div className="max-w-lg mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/games" className="text-gray-400 dark:text-night-400 hover:text-gray-600 dark:hover:text-night-200 transition-colors">
+        <Link href="/games" className="text-sub2 hover:text-main transition-colors">
           ← 試合一覧
         </Link>
-        <h1 className="text-2xl font-bold text-crimson-500 dark:text-crimson-400">試合を編集</h1>
+        <h1 className="text-2xl font-bold text-accent">試合を編集</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600 p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="bg-lv1 rounded-xl shadow-sm border border-s2 p-6 space-y-5">
         {error && (
           <div className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm p-3 rounded-lg">{error}</div>
         )}
@@ -133,7 +133,7 @@ export default function EditGameForm({ game }: { game: Game }) {
                 className={`py-2 rounded-lg border-2 text-sm font-medium transition-all ${
                   form.result === opt.value
                     ? opt.active
-                    : 'border-gray-200 dark:border-night-600 text-gray-400 dark:text-night-400 hover:border-gray-300 dark:hover:border-night-500'
+                    : 'border-s2 text-sub2 hover:border-s1'
                 }`}
               >
                 {opt.label}
@@ -146,13 +146,13 @@ export default function EditGameForm({ game }: { game: Game }) {
           <label className={LABEL2}>スコア</label>
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <label className="text-xs text-gray-400 dark:text-night-400 mb-1 block">自チーム</label>
+              <label className="text-xs text-sub2 mb-1 block">自チーム</label>
               <input type="number" min="0" value={form.score_us} onChange={(e) => set('score_us', e.target.value)}
                 className={`${INPUT} text-center text-lg font-bold`} />
             </div>
-            <span className="text-gray-400 dark:text-night-400 font-bold mt-5">-</span>
+            <span className="text-sub2 font-bold mt-5">-</span>
             <div className="flex-1">
-              <label className="text-xs text-gray-400 dark:text-night-400 mb-1 block">相手チーム</label>
+              <label className="text-xs text-sub2 mb-1 block">相手チーム</label>
               <input type="number" min="0" value={form.score_them} onChange={(e) => set('score_them', e.target.value)}
                 className={`${INPUT} text-center text-lg font-bold`} />
             </div>
@@ -177,7 +177,7 @@ export default function EditGameForm({ game }: { game: Game }) {
         </div>
 
         <button type="submit" disabled={loading}
-          className="w-full bg-crimson-500 hover:bg-crimson-600 dark:bg-crimson-600 dark:hover:bg-crimson-500 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50">
+          className="w-full bg-theme hover:opacity-90 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50">
           {loading ? '更新中...' : '試合を更新する'}
         </button>
       </form>

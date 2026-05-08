@@ -27,8 +27,8 @@ function ResultBadge({ result }: { result: Game['result'] }) {
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="text-center">
-      <div className="text-2xl font-bold text-crimson-500 dark:text-crimson-400">{value}</div>
-      <div className="text-xs text-gray-400 dark:text-night-400 mt-0.5">{label}</div>
+      <div className="text-2xl font-bold text-accent">{value}</div>
+      <div className="text-xs text-sub2 mt-0.5">{label}</div>
     </div>
   )
 }
@@ -39,15 +39,15 @@ function StatRow({ left, right }: {
   right?: { label: string; value: string | number }
 }) {
   return (
-    <div className="grid grid-cols-2 divide-x divide-gray-100 odd:bg-white even:bg-gray-50 dark:odd:bg-night-800 dark:even:bg-night-750 dark:odd:bg-gray-800 dark:even:bg-gray-750/50">
+    <div className="grid grid-cols-2 divide-x divide-gray-100 odd:bg-lv1 even:bg-lv2 dark:odd:bg-lv1 dark:even:bg-lv2 ">
       <div className="flex items-center justify-between px-5 py-3.5">
-        <span className="text-sm text-gray-500 dark:text-night-400">{left.label}</span>
-        <span className="text-xl font-bold text-crimson-700 dark:text-crimson-400">{left.value}</span>
+        <span className="text-sm text-sub1">{left.label}</span>
+        <span className="text-xl font-bold text-accent">{left.value}</span>
       </div>
       {right ? (
         <div className="flex items-center justify-between px-5 py-3.5">
-          <span className="text-sm text-gray-500 dark:text-night-400">{right.label}</span>
-          <span className="text-xl font-bold text-crimson-700 dark:text-crimson-400">{right.value}</span>
+          <span className="text-sm text-sub1">{right.label}</span>
+          <span className="text-xl font-bold text-accent">{right.value}</span>
         </div>
       ) : (
         <div />
@@ -119,11 +119,11 @@ export default function StatsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-crimson-500 dark:text-crimson-400">成績</h1>
+        <h1 className="text-2xl font-bold text-accent">成績</h1>
         <select
           value={season}
           onChange={(e) => setSeason(parseInt(e.target.value))}
-          className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-crimson-500 transition-shadow duration-150"
+          className="border border-s2 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-theme transition-shadow duration-150"
         >
           {years.map((y) => (
             <option key={y} value={y}>{y}年</option>
@@ -132,7 +132,7 @@ export default function StatsPage() {
       </div>
 
       {/* タブ */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-s2">
         <div className="flex overflow-x-auto">
           {TAB_LIST.map(({ key, label }) => (
             <button
@@ -140,8 +140,8 @@ export default function StatsPage() {
               onClick={() => handleTabChange(key)}
               className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px outline-none transition-colors duration-150 ${
                 tab === key
-                  ? 'text-crimson-500 border-crimson-500'
-                  : 'text-gray-500 hover:text-gray-700 border-transparent'
+                  ? 'text-theme border-theme'
+                  : 'text-sub2 hover:text-main border-transparent'
               }`}
             >
               {label}
@@ -153,10 +153,10 @@ export default function StatsPage() {
       {loading ? (
         <div className="space-y-3 min-h-[520px]">
           {[1,2,3].map(i => (
-            <div key={i} className="bg-white rounded-xl border border-gray-100 p-6 animate-pulse">
-              <div className="h-4 bg-gray-100 rounded w-1/4 mb-4" />
+            <div key={i} className="bg-lv1 rounded-xl border border-s2 p-6 animate-pulse">
+              <div className="h-4 bg-lv2 rounded w-1/4 mb-4" />
               <div className="grid grid-cols-4 gap-3">
-                {[1,2,3,4].map(j => <div key={j} className="h-10 bg-gray-100 rounded" />)}
+                {[1,2,3,4].map(j => <div key={j} className="h-10 bg-lv2 rounded" />)}
               </div>
             </div>
           ))}
@@ -174,43 +174,43 @@ export default function StatsPage() {
           {tab === 'season' && (
             <div className="space-y-4">
               {games.length > 0 && (
-                <div className="bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600 p-5">
-                  <h2 className="text-sm font-semibold text-gray-500 dark:text-night-400 uppercase tracking-wide mb-3">チーム戦績</h2>
+                <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-5">
+                  <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">チーム戦績</h2>
                   <div className="grid grid-cols-5 gap-2 text-center text-sm">
                     <div>
-                      <div className="text-xl font-bold text-crimson-500 dark:text-crimson-400">{games.length}</div>
-                      <div className="text-xs text-gray-400 dark:text-night-400 mt-0.5">試合</div>
+                      <div className="text-xl font-bold text-accent">{games.length}</div>
+                      <div className="text-xs text-sub2 mt-0.5">試合</div>
                     </div>
                     <div>
                       <div className="text-xl font-bold text-green-600">{wins}</div>
-                      <div className="text-xs text-gray-400 dark:text-night-400 mt-0.5">勝</div>
+                      <div className="text-xs text-sub2 mt-0.5">勝</div>
                     </div>
                     <div>
                       <div className="text-xl font-bold text-red-500">{losses}</div>
-                      <div className="text-xs text-gray-400 dark:text-night-400 mt-0.5">負</div>
+                      <div className="text-xs text-sub2 mt-0.5">負</div>
                     </div>
                     <div>
                       <div className="text-xl font-bold text-yellow-500">{draws}</div>
-                      <div className="text-xs text-gray-400 dark:text-night-400 mt-0.5">分</div>
+                      <div className="text-xs text-sub2 mt-0.5">分</div>
                     </div>
                     <div>
-                      <div className="text-xl font-bold text-crimson-500 dark:text-crimson-400">{winRate}</div>
-                      <div className="text-xs text-gray-400 dark:text-night-400 mt-0.5">勝率</div>
+                      <div className="text-xl font-bold text-accent">{winRate}</div>
+                      <div className="text-xs text-sub2 mt-0.5">勝率</div>
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600 overflow-hidden">
-                <div className="px-5 py-4 border-b border-gray-100">
-                  <h2 className="text-sm font-semibold text-gray-500 dark:text-night-400 uppercase tracking-wide">打撃成績</h2>
+              <div className="bg-lv1 rounded-xl shadow-sm border border-s2 overflow-hidden">
+                <div className="px-5 py-4 border-b border-s2">
+                  <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide">打撃成績</h2>
                 </div>
                 {allAtBats.length === 0 ? (
-                  <p className="text-gray-400 dark:text-night-400 text-center py-8">まだ打席記録がありません</p>
+                  <p className="text-sub2 text-center py-8">まだ打席記録がありません</p>
                 ) : (
                   <>
                     {/* 主要指標ハイライト */}
-                    <div className="grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100">
+                    <div className="grid grid-cols-4 divide-x divide-s2 border-b border-s2">
                       {[
                         { label: '打率', value: fmtAvg(stats.avg) },
                         { label: '出塁率', value: fmtAvg(stats.obp) },
@@ -218,13 +218,13 @@ export default function StatsPage() {
                         { label: 'OPS', value: fmtDec(stats.ops, 3).replace(/^0/, '') },
                       ].map(({ label, value }) => (
                         <div key={label} className="flex flex-col items-center py-4 px-2">
-                          <span className="text-xs text-gray-400 dark:text-night-400 mb-1">{label}</span>
-                          <span className="text-2xl font-bold text-crimson-500 dark:text-crimson-400">{value}</span>
+                          <span className="text-xs text-sub2 mb-1">{label}</span>
+                          <span className="text-2xl font-bold text-accent">{value}</span>
                         </div>
                       ))}
                     </div>
                     {/* 詳細成績 2カラムリスト */}
-                    <div className="divide-y divide-gray-100 dark:divide-night-700">
+                    <div className="divide-y divide-s2">
                       <StatRow left={{ label: '打席', value: stats.pa }}        right={{ label: '打数', value: stats.ab }} />
                       <StatRow left={{ label: '安打', value: stats.hits }}      right={{ label: '本塁打', value: stats.hrs }} />
                       <StatRow left={{ label: '二塁打', value: stats.doubles }} right={{ label: '三塁打', value: stats.triples }} />
@@ -243,14 +243,14 @@ export default function StatsPage() {
 
           {/* タブ2: 試合別 */}
           {tab === 'per-game' && (
-            <div className="bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600 overflow-hidden">
+            <div className="bg-lv1 rounded-xl shadow-sm border border-s2 overflow-hidden">
               {games.length === 0 ? (
-                <div className="p-12 text-center text-gray-400">試合データがありません</div>
+                <div className="p-12 text-center text-sub2">試合データがありません</div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-gray-50 text-gray-500 text-xs">
+                      <tr className="bg-lv2 text-sub2 text-xs">
                         <th className="text-left px-4 py-3 font-medium">日付</th>
                         <th className="text-left px-4 py-3 font-medium">相手</th>
                         <th className="px-3 py-3 font-medium">勝敗</th>
@@ -264,22 +264,22 @@ export default function StatsPage() {
                         <th className="px-3 py-3 font-medium">四球</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50 dark:divide-night-700">
+                    <tbody className="divide-y divide-s2">
                       {games.map((game) => {
                         const gs = calcBattingStats(game.at_bats)
                         return (
-                          <tr key={game.id} className="hover:bg-gray-50 dark:hover:bg-night-750 dark:hover:bg-gray-700/50 transition-colors duration-100">
-                            <td className="px-4 py-3 text-gray-600 dark:text-night-200">{formatDate(game.game_date)}</td>
-                            <td className="px-4 py-3 font-medium text-gray-800 dark:text-white">{game.opponent}</td>
+                          <tr key={game.id} className="hover:bg-lv2 dark:hover:bg-lv1 transition-colors duration-100">
+                            <td className="px-4 py-3 text-sub1">{formatDate(game.game_date)}</td>
+                            <td className="px-4 py-3 font-medium text-main">{game.opponent}</td>
                             <td className="px-3 py-3 text-center"><ResultBadge result={game.result} /></td>
-                            <td className="px-3 py-3 text-center text-gray-700 dark:text-night-100">{gs.pa}</td>
-                            <td className="px-3 py-3 text-center text-gray-700 dark:text-night-100">{gs.ab}</td>
-                            <td className="px-3 py-3 text-center text-gray-700 dark:text-night-100">{gs.hits}</td>
-                            <td className="px-3 py-3 text-center font-medium text-crimson-500 dark:text-crimson-400">{fmtAvg(gs.avg)}</td>
-                            <td className="px-3 py-3 text-center text-gray-700 dark:text-night-100">{gs.rbi}</td>
-                            <td className="px-3 py-3 text-center text-gray-700 dark:text-night-100">{gs.sb}</td>
-                            <td className="px-3 py-3 text-center text-gray-700 dark:text-night-100">{gs.strikeouts}</td>
-                            <td className="px-3 py-3 text-center text-gray-700 dark:text-night-100">{gs.walks}</td>
+                            <td className="px-3 py-3 text-center text-main">{gs.pa}</td>
+                            <td className="px-3 py-3 text-center text-main">{gs.ab}</td>
+                            <td className="px-3 py-3 text-center text-main">{gs.hits}</td>
+                            <td className="px-3 py-3 text-center font-medium text-accent">{fmtAvg(gs.avg)}</td>
+                            <td className="px-3 py-3 text-center text-main">{gs.rbi}</td>
+                            <td className="px-3 py-3 text-center text-main">{gs.sb}</td>
+                            <td className="px-3 py-3 text-center text-main">{gs.strikeouts}</td>
+                            <td className="px-3 py-3 text-center text-main">{gs.walks}</td>
                           </tr>
                         )
                       })}
@@ -292,14 +292,14 @@ export default function StatsPage() {
 
           {/* タブ3: 全打席ログ */}
           {tab === 'log' && (
-            <div className="bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600 overflow-hidden">
+            <div className="bg-lv1 rounded-xl shadow-sm border border-s2 overflow-hidden">
               {allAtBats.length === 0 ? (
-                <div className="p-12 text-center text-gray-400">打席データがありません</div>
+                <div className="p-12 text-center text-sub2">打席データがありません</div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-gray-50 text-gray-500 text-xs">
+                      <tr className="bg-lv2 text-sub2 text-xs">
                         <th className="text-left px-4 py-3 font-medium">日付</th>
                         <th className="text-left px-4 py-3 font-medium">相手</th>
                         <th className="px-3 py-3 font-medium">打席</th>
@@ -311,14 +311,14 @@ export default function StatsPage() {
                         <th className="px-3 py-3 font-medium">得点</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50 dark:divide-night-700">
+                    <tbody className="divide-y divide-s2">
                       {games.flatMap((game) =>
                         game.at_bats.map((ab) => (
-                          <tr key={ab.id} className="hover:bg-gray-50 dark:hover:bg-night-750 dark:hover:bg-gray-700/50 transition-colors duration-100">
-                            <td className="px-4 py-2.5 text-gray-600 whitespace-nowrap">{formatDate(game.game_date)}</td>
-                            <td className="px-4 py-2.5 text-gray-700 whitespace-nowrap">{game.opponent}</td>
-                            <td className="px-3 py-2.5 text-center text-gray-500">#{ab.at_bat_number}</td>
-                            <td className="px-3 py-2.5 text-center text-gray-700 dark:text-night-100">{ab.batting_order}番</td>
+                          <tr key={ab.id} className="hover:bg-lv2 dark:hover:bg-lv1 transition-colors duration-100">
+                            <td className="px-4 py-2.5 text-sub1 whitespace-nowrap">{formatDate(game.game_date)}</td>
+                            <td className="px-4 py-2.5 text-main whitespace-nowrap">{game.opponent}</td>
+                            <td className="px-3 py-2.5 text-center text-sub2">#{ab.at_bat_number}</td>
+                            <td className="px-3 py-2.5 text-center text-main">{ab.batting_order}番</td>
                             <td className="px-3 py-2.5">
                               <span className={`text-xs font-medium px-2 py-0.5 rounded ${
                                 ['hit','double','triple','hr'].includes(ab.result_type)
@@ -326,13 +326,13 @@ export default function StatsPage() {
                                   : ab.result_type === 'strikeout'
                                   ? 'bg-red-100 text-red-700'
                                   : ['walk','hbp'].includes(ab.result_type)
-                                  ? 'bg-blue-100 text-blue-700'
-                                  : 'bg-gray-100 text-gray-600'
+                                  ? 'bg-theme/15 text-theme'
+                                  : 'bg-lv2 text-sub1'
                               }`}>
                                 {RESULT_TYPE_LABELS[ab.result_type as ResultType] ?? ab.result_type}
                               </span>
                             </td>
-                            <td className="px-3 py-2.5 text-gray-500 text-xs">
+                            <td className="px-3 py-2.5 text-sub2 text-xs">
                               {ab.direction ? DIRECTION_LABELS[ab.direction as Direction] : '-'}
                             </td>
                             <td className="px-3 py-2.5 text-center">
@@ -340,7 +340,7 @@ export default function StatsPage() {
                                 const cnt = ab.rbi_count ?? (ab.is_rbi ? 1 : 0)
                                 return cnt > 0
                                   ? <span className="text-orange-500 font-bold">{cnt}</span>
-                                  : <span className="text-gray-200">-</span>
+                                  : <span className="text-s2">-</span>
                               })()}
                             </td>
                             <td className="px-3 py-2.5 text-center">
@@ -348,11 +348,11 @@ export default function StatsPage() {
                                 const sb = ab.stolen_base_count ?? (ab.is_stolen_base ? 1 : 0)
                                 return sb > 0
                                   ? <span className="text-green-500 font-bold">{sb}</span>
-                                  : <span className="text-gray-200">-</span>
+                                  : <span className="text-s2">-</span>
                               })()}
                             </td>
                             <td className="px-3 py-2.5 text-center">
-                              {ab.is_run ? <span className="text-blue-500 font-bold">●</span> : <span className="text-gray-200">-</span>}
+                              {ab.is_run ? <span className="text-blue-500 font-bold">●</span> : <span className="text-s2">-</span>}
                             </td>
                           </tr>
                         ))
@@ -368,17 +368,17 @@ export default function StatsPage() {
           {tab === 'pitching' && (
             <div className="space-y-4">
               {pitchingStats.length === 0 ? (
-                <div className="bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600 p-12 text-center text-gray-400">
+                <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-12 text-center text-sub2">
                   投手成績が登録されていません
                 </div>
               ) : (
                 <>
-                  <div className="bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600 overflow-hidden">
-                    <div className="px-5 py-4 border-b border-gray-100">
-                      <h2 className="text-sm font-semibold text-gray-500 dark:text-night-400 uppercase tracking-wide">シーズン投手成績</h2>
+                  <div className="bg-lv1 rounded-xl shadow-sm border border-s2 overflow-hidden">
+                    <div className="px-5 py-4 border-b border-s2">
+                      <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide">シーズン投手成績</h2>
                     </div>
                     {/* 主要指標ハイライト */}
-                    <div className="grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100">
+                    <div className="grid grid-cols-4 divide-x divide-s2 border-b border-s2">
                       {[
                         { label: '防御率', value: fmtERA(pStats.era) },
                         { label: 'WHIP', value: fmtDec(pStats.whip, 2) },
@@ -386,13 +386,13 @@ export default function StatsPage() {
                         { label: 'K/BB', value: fmtDec(pStats.kbb, 2) },
                       ].map(({ label, value }) => (
                         <div key={label} className="flex flex-col items-center py-4 px-2">
-                          <span className="text-xs text-gray-400 dark:text-night-400 mb-1">{label}</span>
-                          <span className="text-2xl font-bold text-crimson-500 dark:text-crimson-400">{value}</span>
+                          <span className="text-xs text-sub2 mb-1">{label}</span>
+                          <span className="text-2xl font-bold text-accent">{value}</span>
                         </div>
                       ))}
                     </div>
                     {/* 詳細成績 2カラムリスト */}
-                    <div className="divide-y divide-gray-100 dark:divide-night-700">
+                    <div className="divide-y divide-s2">
                       <StatRow left={{ label: '登板', value: pStats.games }}          right={{ label: '投球回', value: formatIP(pStats.innings_pitched) }} />
                       <StatRow left={{ label: '勝', value: pStats.wins }}             right={{ label: '敗', value: pStats.losses }} />
                       <StatRow left={{ label: 'セーブ', value: pStats.saves }}        right={{ label: 'ホールド', value: pStats.holds }} />
@@ -404,14 +404,14 @@ export default function StatsPage() {
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600 overflow-hidden">
-                    <div className="px-5 py-3 border-b border-gray-100">
-                      <h2 className="text-sm font-semibold text-gray-500 dark:text-night-400 uppercase tracking-wide">試合別投手成績</h2>
+                  <div className="bg-lv1 rounded-xl shadow-sm border border-s2 overflow-hidden">
+                    <div className="px-5 py-3 border-b border-s2">
+                      <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide">試合別投手成績</h2>
                     </div>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="bg-gray-50 text-gray-500 text-xs">
+                          <tr className="bg-lv2 text-sub2 text-xs">
                             <th className="text-left px-4 py-3 font-medium">日付</th>
                             <th className="text-left px-4 py-3 font-medium">相手</th>
                             <th className="px-3 py-3 font-medium">結果</th>
@@ -423,26 +423,26 @@ export default function StatsPage() {
                             <th className="px-3 py-3 font-medium">自責</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50 dark:divide-night-700">
+                        <tbody className="divide-y divide-s2">
                           {games.map((game) => {
                             const ps = pitchingStats.find(p => p.game_id === game.id)
                             if (!ps) return null
                             const resultLabels: Record<string, string> = { win: '勝', loss: '敗', save: 'S', hold: 'H', none: '-' }
                             const resultColors: Record<string, string> = {
                               win: 'text-green-600 font-bold', loss: 'text-red-500 font-bold',
-                              save: 'text-blue-600 font-bold', hold: 'text-purple-600 font-bold', none: 'text-gray-400'
+                              save: 'text-green-500 font-bold', hold: 'text-theme font-bold', none: 'text-sub2'
                             }
                             return (
-                              <tr key={game.id} className="hover:bg-gray-50 dark:hover:bg-night-750 dark:hover:bg-gray-700/50 transition-colors duration-100">
-                                <td className="px-4 py-3 text-gray-600 dark:text-night-200">{formatDate(game.game_date)}</td>
-                                <td className="px-4 py-3 font-medium text-gray-800 dark:text-white">{game.opponent}</td>
+                              <tr key={game.id} className="hover:bg-lv2 dark:hover:bg-lv1 transition-colors duration-100">
+                                <td className="px-4 py-3 text-sub1">{formatDate(game.game_date)}</td>
+                                <td className="px-4 py-3 font-medium text-main">{game.opponent}</td>
                                 <td className={`px-3 py-3 text-center ${resultColors[ps.result]}`}>{resultLabels[ps.result]}</td>
-                                <td className="px-3 py-3 text-center text-gray-700 dark:text-night-100">{formatIP(ps.innings_pitched)}</td>
-                                <td className="px-3 py-3 text-center text-gray-700 dark:text-night-100">{ps.hits_allowed}</td>
-                                <td className="px-3 py-3 text-center text-gray-700 dark:text-night-100">{ps.strikeouts}</td>
-                                <td className="px-3 py-3 text-center text-gray-700 dark:text-night-100">{ps.walks}</td>
-                                <td className="px-3 py-3 text-center text-gray-700 dark:text-night-100">{ps.runs_allowed}</td>
-                                <td className="px-3 py-3 text-center text-gray-700 dark:text-night-100">{ps.earned_runs}</td>
+                                <td className="px-3 py-3 text-center text-main">{formatIP(ps.innings_pitched)}</td>
+                                <td className="px-3 py-3 text-center text-main">{ps.hits_allowed}</td>
+                                <td className="px-3 py-3 text-center text-main">{ps.strikeouts}</td>
+                                <td className="px-3 py-3 text-center text-main">{ps.walks}</td>
+                                <td className="px-3 py-3 text-center text-main">{ps.runs_allowed}</td>
+                                <td className="px-3 py-3 text-center text-main">{ps.earned_runs}</td>
                               </tr>
                             )
                           })}
@@ -458,7 +458,7 @@ export default function StatsPage() {
           {/* タブ5: 打球方向 */}
           {tab === 'direction' && (
             allAtBats.length === 0 ? (
-              <div className="bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600 p-12 text-center text-gray-400">
+              <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-12 text-center text-sub2">
                 打席データがありません
               </div>
             ) : (

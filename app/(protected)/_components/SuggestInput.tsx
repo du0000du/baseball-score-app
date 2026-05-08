@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-const INPUT = 'w-full border border-gray-200 dark:border-night-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-night-750 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-night-400 focus:outline-none focus:ring-2 focus:ring-crimson-500 dark:focus:ring-crimson-400'
+const INPUT = 'w-full border border-s2 rounded-lg px-3 py-2 text-sm bg-lv1 text-main placeholder-sub2 focus:outline-none focus:ring-2 focus:ring-theme'
 
 interface SuggestInputProps {
   value: string
@@ -53,7 +53,7 @@ export default function SuggestInput({
             type="button"
             onClick={() => setSheetOpen(true)}
             aria-label="履歴から選択"
-            className="flex-shrink-0 w-9 h-9 rounded-full border-2 border-crimson-500 dark:border-crimson-400 text-crimson-500 dark:text-crimson-400 flex items-center justify-center hover:bg-crimson-50 dark:hover:bg-crimson-900/20 active:bg-crimson-100 dark:active:bg-crimson-900/40 transition-colors"
+            className="flex-shrink-0 w-9 h-9 rounded-full border-2 border-theme text-accent flex items-center justify-center hover:bg-theme/10 active:bg-theme/15 transition-colors"
           >
             {/* list icon */}
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
@@ -70,18 +70,18 @@ export default function SuggestInput({
 
       {/* フルスクリーン選択シート */}
       {sheetOpen && (
-        <div className="fixed inset-0 z-[100] bg-white dark:bg-night-900 flex flex-col">
+        <div className="fixed inset-0 z-[100] bg-lv1 flex flex-col">
           {/* ヘッダー */}
-          <div className="flex items-center px-4 py-3 border-b border-gray-200 dark:border-night-600 bg-white dark:bg-night-800">
+          <div className="flex items-center px-4 py-3 border-b border-s2 bg-lv1">
             <button
               type="button"
               onClick={() => setSheetOpen(false)}
-              className="text-crimson-500 dark:text-crimson-400 text-sm font-medium"
+              className="text-accent text-sm font-medium"
             >
               ← 戻る
             </button>
             {title && (
-              <h2 className="flex-1 text-center text-base font-semibold text-gray-800 dark:text-white pr-12">
+              <h2 className="flex-1 text-center text-base font-semibold text-main pr-12">
                 {title}
               </h2>
             )}
@@ -94,16 +94,16 @@ export default function SuggestInput({
                 key={s}
                 type="button"
                 onClick={() => handleSelect(s)}
-                className={`w-full text-left px-5 py-4 text-base border-b border-gray-100 dark:border-night-700 transition-colors ${
+                className={`w-full text-left px-5 py-4 text-base border-b border-s2 transition-colors ${
                   value === s
-                    ? 'text-crimson-600 dark:text-crimson-400 font-medium bg-crimson-50 dark:bg-crimson-900/20'
-                    : 'text-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-night-800 active:bg-gray-100 dark:active:bg-night-700'
+                    ? 'text-accent font-medium bg-theme/10 dark:bg-theme/10'
+                    : 'text-main hover:bg-lv2 dark:hover:bg-lv1 active:bg-lv2'
                 }`}
               >
                 <span className="flex items-center justify-between">
                   {s}
                   {value === s && (
-                    <span className="text-crimson-500 dark:text-crimson-400 text-lg leading-none">✓</span>
+                    <span className="text-accent text-lg leading-none">✓</span>
                   )}
                 </span>
               </button>

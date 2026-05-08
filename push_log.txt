@@ -8,3 +8,21 @@ Already up to date.
         1 file(s) copied.
         1 file(s) copied.
         1 file(s) copied.
+warning: in the working copy of 'app/(protected)/dashboard/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/(protected)/games/[id]/at-bats/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/(protected)/games/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/(protected)/stats/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/stats.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'push_log.txt', LF will be replaced by CRLF the next time Git touches it
+M  app/(protected)/dashboard/page.tsx
+M  app/(protected)/games/[id]/at-bats/page.tsx
+M  app/(protected)/games/page.tsx
+M  app/(protected)/stats/page.tsx
+M  lib/stats.ts
+AM push_log.txt
+[main 9dbd5da] feat: batting order 1-12, saved flash, ab column, SB columns, ERA x7, expandable game blocks
+ 6 files changed, 455 insertions(+), 332 deletions(-)
+ create mode 100644 push_log.txt
+To https://github.com/du0000du/baseball-score-app.git
+   f58c122..9dbd5da  main -> main
+== DONE == 

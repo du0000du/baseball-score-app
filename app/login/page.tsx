@@ -45,9 +45,9 @@ function LoginForm() {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm">
-      <h2 className="text-xl font-semibold text-gray-800 mb-2 text-center">ログイン</h2>
-      <p className="text-gray-400 text-sm text-center mb-6">
+    <div className="bg-lv1 rounded-2xl shadow-2xl p-8 w-full max-w-sm">
+      <h2 className="text-xl font-semibold text-main mb-2 text-center">ログイン</h2>
+      <p className="text-sub2 text-sm text-center mb-6">
         Googleアカウントでサインイン
       </p>
 
@@ -61,7 +61,7 @@ function LoginForm() {
       <button
         onClick={handleGoogleLogin}
         disabled={loading}
-        className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-crimson-500 hover:bg-gray-50 text-gray-700 font-medium py-3 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-3 bg-white border-2 border-s2 hover:border-theme hover:bg-lv2 text-main font-medium py-3 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <GoogleSvg />
         {loading ? 'リダイレクト中...' : 'Googleでログイン'}
@@ -72,11 +72,11 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-crimson-800 flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-theme flex flex-col items-center justify-center px-4">
       <div className="text-center mb-10">
         <div className="text-8xl mb-6">⚾</div>
         <h1 className="text-4xl font-bold text-white mb-3">草野球記録</h1>
-        <p className="text-blue-200 text-sm">あなたの打席を記録しよう</p>
+        <p className="text-white/70 text-sm">あなたの打席を記録しよう</p>
       </div>
       <Suspense fallback={<div className="animate-pulse text-white text-sm">読み込み中...</div>}>
         <LoginForm />
