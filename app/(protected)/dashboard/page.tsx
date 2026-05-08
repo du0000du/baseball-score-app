@@ -58,6 +58,13 @@ export default async function DashboardPage() {
   const pitchingStats = (pitchingData ?? []) as PitchingStat[]
   const pStats = calcPitchingStats(pitchingStats)
 
+  const recentAtBats = recentGames.flatMap((g) => g.at_bats)
+  const recentStats = calcBattingStats(recentAtBats)
+  const recentN = Math.min(5, typedGames.length)
+  const avgDiff = recentAtBats.length > 0 && stats.avg !== null ? (recentStats.avg ?? 0) - (stats.avg ?? 0) : null
+  const diffClass = avgDiff === null ? '' : avgDiff >= 0.010 ? 'text-pos-t' : avgDiff <= -0.010 ? 'text-neg-t' : 'text-sub2'
+  const diffLabel = avgDiff === null ? '' : avgDiff >= 0.010 ? `▲+${fmtAvg(avgDiff)}` : avgDiff <= -0.010 ? `▼${fmtAvg(avgDiff)}` : `→ ${fmtAvg(avgDiff)}`
+
   const card = "bg-lv1 rounded-xl shadow-sm border border-s2"
   const sectionTitle = "text-sm font-semibold text-sub1 uppercase tracking-wide"
   const bigStat = "text-2xl font-bold text-accent truncate"
@@ -120,6 +127,38 @@ export default async function DashboardPage() {
               </>
             )}
           </div>
+
+          {/* 直近5試合成績サマリー */}
+          {recentAtBats.length > 0 && (
+            <div className={`${card} p-5`}>
+              <h2 className={`${sectionTitle} mb-3`}>直近{recentN}試合</h2>
+              <div className="flex items-end gap-4 flex-wrap">
+                <div>
+                  <div className={bigStat}>{fmtAvg(recentStats.avg)}</div>
+                  <div className={subLabel}>打率</div>
+                </div>
+                {avgDiff !== null && (
+                  <div className={`text-sm font-semibold mb-1 ${diffClass}`}>{diffLabel}</div>
+                )}
+                <div className="text-center">
+                  <div className="text-lg font-bold text-main">{recentStats.hits}-{recentStats.ab}</div>
+                  <div className={subLabel}>安打-打数</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-main">{recentStats.hrs}</div>
+                  <div className={subLabel}>本塁打</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-main">{recentStats.rbi}</div>
+                  <div className={subLabel}>打点</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-main">{recentStats.sb}</div>
+                  <div className={subLabel}>盗塁</div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 投手成績 */}
           {pitchingStats.length > 0 && (

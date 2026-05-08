@@ -186,7 +186,13 @@ export default function AtBatsPage() {
   const [editingAtBatId, setEditingAtBatId] = useState<string | null>(null)
 
   // フォーム状態
-  const [battingOrder, setBattingOrder] = useState<number | null>(null)
+  const [battingOrder, setBattingOrder] = useState<number | null>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('baseball_preferred_order')
+      return saved ? parseInt(saved, 10) : 1
+    }
+    return 1
+  })
   const [resultType, setResultType] = useState<ResultType | null>(null)
   const [direction, setDirection] = useState<Direction | null>(null)
   const [rbiCount, setRbiCount] = useState<number>(0)
@@ -208,6 +214,22 @@ export default function AtBatsPage() {
   }, [fetchData])
 
   const resetForm = () => {
+    setEditingAtBatId(null)
+    setBattingOrder(() => {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('baseball_preferred_order')
+        return saved ? parseInt(saved, 10) : 1
+      }
+      return 1
+    })
+    setResultType(null)
+    setDirection(null)
+    setRbiCount(0)
+    setIsRun(false)
+    setStolenBaseCount(0)
+  }
+
+  const resetFormKeepOrder = () => {
     setEditingAtBatId(null)
     setResultType(null)
     setDirection(null)
@@ -311,7 +333,7 @@ export default function AtBatsPage() {
       }
     }
 
-    resetForm()
+    resetFormKeepOrder()
     setSubmitting(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
@@ -410,7 +432,12 @@ export default function AtBatsPage() {
               <button
                 key={n}
                 type="button"
-                onClick={() => setBattingOrder(n)}
+                onClick={() => {
+                setBattingOrder(n)
+                if (typeof window !== 'undefined') {
+                  localStorage.setItem('baseball_preferred_order', String(n))
+                }
+              }}
                 className={`py-3 rounded-lg text-sm font-bold border-2 transition-all ${
                   battingOrder === n
                     ? 'bg-theme border-theme dark:border-theme/30 text-white'
