@@ -19,9 +19,9 @@ function formatDate(dateStr: string) {
 }
 
 function ResultBadge({ result }: { result: Game['result'] }) {
-  if (result === 'win') return <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-bold">勝</span>
-  if (result === 'loss') return <span className="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-bold">負</span>
-  return <span className="text-xs px-1.5 py-0.5 rounded bg-yellow-100 text-yellow-700 font-bold">分</span>
+  if (result === 'win') return <span className="text-xs px-1.5 py-0.5 rounded bg-pos text-pos-t font-bold">勝</span>
+  if (result === 'loss') return <span className="text-xs px-1.5 py-0.5 rounded bg-neg text-neg-t font-bold">負</span>
+  return <span className="text-xs px-1.5 py-0.5 rounded bg-neu text-neu-t font-bold">分</span>
 }
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
@@ -39,7 +39,7 @@ function StatRow({ left, right }: {
   right?: { label: string; value: string | number }
 }) {
   return (
-    <div className="grid grid-cols-2 divide-x divide-gray-100 odd:bg-lv1 even:bg-lv2 dark:odd:bg-lv1 dark:even:bg-lv2 ">
+    <div className="grid grid-cols-2 divide-x divide-s2 odd:bg-lv1 even:bg-lv2 dark:odd:bg-lv1 dark:even:bg-lv2">
       <div className="flex items-center justify-between px-5 py-3.5">
         <span className="text-sm text-sub1">{left.label}</span>
         <span className="text-xl font-bold text-accent">{left.value}</span>
@@ -123,7 +123,7 @@ export default function StatsPage() {
         <select
           value={season}
           onChange={(e) => setSeason(parseInt(e.target.value))}
-          className="border border-s2 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-theme transition-shadow duration-150"
+          className="border border-s2 rounded-lg px-3 py-1.5 text-sm bg-lv1 text-main focus:outline-none focus:ring-2 focus:ring-theme transition-shadow duration-150"
         >
           {years.map((y) => (
             <option key={y} value={y}>{y}年</option>
@@ -182,15 +182,15 @@ export default function StatsPage() {
                       <div className="text-xs text-sub2 mt-0.5">試合</div>
                     </div>
                     <div>
-                      <div className="text-xl font-bold text-green-600">{wins}</div>
+                      <div className="text-xl font-bold text-accent">{wins}</div>
                       <div className="text-xs text-sub2 mt-0.5">勝</div>
                     </div>
                     <div>
-                      <div className="text-xl font-bold text-red-500">{losses}</div>
+                      <div className="text-xl font-bold text-accent">{losses}</div>
                       <div className="text-xs text-sub2 mt-0.5">負</div>
                     </div>
                     <div>
-                      <div className="text-xl font-bold text-yellow-500">{draws}</div>
+                      <div className="text-xl font-bold text-accent">{draws}</div>
                       <div className="text-xs text-sub2 mt-0.5">分</div>
                     </div>
                     <div>
@@ -322,9 +322,9 @@ export default function StatsPage() {
                             <td className="px-3 py-2.5">
                               <span className={`text-xs font-medium px-2 py-0.5 rounded ${
                                 ['hit','double','triple','hr'].includes(ab.result_type)
-                                  ? 'bg-green-100 text-green-700'
+                                  ? 'bg-pos text-pos-t'
                                   : ab.result_type === 'strikeout'
-                                  ? 'bg-red-100 text-red-700'
+                                  ? 'bg-neg text-neg-t'
                                   : ['walk','hbp'].includes(ab.result_type)
                                   ? 'bg-theme/15 text-theme'
                                   : 'bg-lv2 text-sub1'
@@ -339,7 +339,7 @@ export default function StatsPage() {
                               {(() => {
                                 const cnt = ab.rbi_count ?? (ab.is_rbi ? 1 : 0)
                                 return cnt > 0
-                                  ? <span className="text-orange-500 font-bold">{cnt}</span>
+                                  ? <span className="text-accent font-bold">{cnt}</span>
                                   : <span className="text-s2">-</span>
                               })()}
                             </td>
@@ -347,12 +347,12 @@ export default function StatsPage() {
                               {(() => {
                                 const sb = ab.stolen_base_count ?? (ab.is_stolen_base ? 1 : 0)
                                 return sb > 0
-                                  ? <span className="text-green-500 font-bold">{sb}</span>
+                                  ? <span className="text-pos-t font-bold">{sb}</span>
                                   : <span className="text-s2">-</span>
                               })()}
                             </td>
                             <td className="px-3 py-2.5 text-center">
-                              {ab.is_run ? <span className="text-blue-500 font-bold">●</span> : <span className="text-s2">-</span>}
+                              {ab.is_run ? <span className="text-theme font-bold">●</span> : <span className="text-s2">-</span>}
                             </td>
                           </tr>
                         ))
@@ -429,8 +429,8 @@ export default function StatsPage() {
                             if (!ps) return null
                             const resultLabels: Record<string, string> = { win: '勝', loss: '敗', save: 'S', hold: 'H', none: '-' }
                             const resultColors: Record<string, string> = {
-                              win: 'text-green-600 font-bold', loss: 'text-red-500 font-bold',
-                              save: 'text-green-500 font-bold', hold: 'text-theme font-bold', none: 'text-sub2'
+                              win: 'text-pos-t font-bold', loss: 'text-neg-t font-bold',
+                              save: 'text-pos-t font-bold', hold: 'text-theme font-bold', none: 'text-sub2'
                             }
                             return (
                               <tr key={game.id} className="hover:bg-lv2 dark:hover:bg-lv1 transition-colors duration-100">

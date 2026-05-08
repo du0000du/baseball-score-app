@@ -133,8 +133,8 @@ export default async function DashboardPage() {
               </div>
               <div className={`grid grid-cols-5 gap-2 pt-4 ${divider} text-center text-sm`}>
                 <div><div className={smallVal}>{pStats.games}</div><div className={smallLabel}>登板</div></div>
-                <div><div className="font-semibold text-green-500">{pStats.wins}</div><div className={smallLabel}>勝</div></div>
-                <div><div className="font-semibold text-red-500">{pStats.losses}</div><div className={smallLabel}>敗</div></div>
+                <div><div className={smallVal}>{pStats.wins}</div><div className={smallLabel}>勝</div></div>
+                <div><div className={smallVal}>{pStats.losses}</div><div className={smallLabel}>敗</div></div>
                 <div><div className={smallVal}>{pStats.saves}</div><div className={smallLabel}>S</div></div>
                 <div><div className={smallVal}>{pStats.holds}</div><div className={smallLabel}>H</div></div>
               </div>

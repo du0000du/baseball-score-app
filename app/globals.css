@@ -2,34 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Design token CSS variables ──────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────── */
+/* MECE Design Token System                                            */
+/*                                                                     */
+/* Surface:  lv1 = card/modal  |  lv2 = page canvas                   */
+/* Text:     main > sub1 > sub2  (3-level hierarchy)                   */
+/* Border:   s1 = prominent  |  s2 = subtle                           */
+/* Brand:    theme = interactive  |  accent = KPI / title emphasis     */
+/* State:    pos = positive(hit/win)  neg = negative(out/loss)         */
+/*           neu = neutral(draw)                                        */
+/* ─────────────────────────────────────────────────────────────────── */
+
+/* ── Light mode ──────────────────────────────────────────────────── */
 :root {
-  --bg_lv1:       #FFFFFF;
-  --bg_lv2:       #E5EAEE;
-  --theme:        #3474CE;
-  --accent:       #FF6B6A;
-  --main_text:    #444444;
-  --sub_text_lv1: #777777;
-  --sub_text_lv2: #999999;
-  --stroke_lv1:   #BBBBBB;
-  --stroke_lv2:   #D8D8D8;
+  /* Surface */
+  --bg_lv1:       #FFFFFF;    /* card, modal, form surface          */
+  --bg_lv2:       #EEF1F5;    /* page canvas                        */
+
+  /* Brand */
+  --theme:        #3474CE;    /* CTA / focus / active nav           */
+  --accent:       #FF6B6A;    /* titles / KPI numbers               */
+
+  /* Text */
+  --main_text:    #333333;    /* primary body                       */
+  --sub_text_lv1: #666666;    /* labels / secondary                 */
+  --sub_text_lv2: #999999;    /* captions / timestamps              */
+
+  /* Border */
+  --stroke_lv1:   #BBBBBB;    /* prominent dividers                 */
+  --stroke_lv2:   #DCDCDC;    /* card outlines / subtle             */
+
+  /* State — positive (hit, win, save) */
+  --pos_bg:       #D1FAE5;    /* green-100 equiv                    */
+  --pos_text:     #065F46;    /* green-800 — high contrast          */
+
+  /* State — negative (out, loss) */
+  --neg_bg:       #FEE2E2;    /* red-100 equiv                      */
+  --neg_text:     #991B1B;    /* red-800                            */
+
+  /* State — neutral (draw, hold) */
+  --neu_bg:       #FEF9C3;    /* yellow-100 equiv                   */
+  --neu_text:     #92400E;    /* yellow-800                         */
 }
 
+/* ── Dark mode ───────────────────────────────────────────────────── */
 .dark {
-  --bg_lv1:       #23282F;
-  --bg_lv2:       #141920;
-  --theme:        #719DDC;
-  --accent:       #FF9796;
-  --main_text:    #E6E6E6;
-  --sub_text_lv1: #C0C0C0;
-  --sub_text_lv2: #898989;
-  --stroke_lv1:   #777777;
-  --stroke_lv2:   #555555;
+  /* Surface */
+  --bg_lv1:       #1E2530;    /* card — slightly lighter than page  */
+  --bg_lv2:       #141920;    /* page canvas — deepest dark         */
+
+  /* Brand */
+  --theme:        #7AABDE;    /* lighter blue — readable on dark    */
+  --accent:       #FF9796;    /* lighter coral                      */
+
+  /* Text */
+  --main_text:    #E2E8F0;    /* primary — cool white               */
+  --sub_text_lv1: #A0AABA;    /* secondary                          */
+  --sub_text_lv2: #6E7888;    /* muted                              */
+
+  /* Border */
+  --stroke_lv1:   #4B5563;    /* prominent                          */
+  --stroke_lv2:   #2D3748;    /* subtle — tighter than light        */
+
+  /* State — positive (dark-safe tints) */
+  --pos_bg:       rgba(5, 150, 105, 0.18);
+  --pos_text:     #6EE7B7;    /* green-300 — readable on dark bg    */
+
+  /* State — negative */
+  --neg_bg:       rgba(185, 28, 28, 0.18);
+  --neg_text:     #FCA5A5;    /* red-300                            */
+
+  /* State — neutral */
+  --neu_bg:       rgba(146, 64, 14, 0.18);
+  --neu_text:     #FDE68A;    /* yellow-200                         */
 }
 
 @layer base {
   body {
     background-color: var(--bg_lv2);
+    color: var(--main_text);
+  }
+
+  /* ── Form elements: override browser-default white in dark mode ── */
+  .dark select,
+  .dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+  .dark textarea {
+    background-color: var(--bg_lv1);
+    color: var(--main_text);
+    color-scheme: dark;
+  }
+
+  .dark select option {
+    background-color: var(--bg_lv1);
     color: var(--main_text);
   }
 }
