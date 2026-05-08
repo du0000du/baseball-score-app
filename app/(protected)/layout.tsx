@@ -14,14 +14,11 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-night-950">
+    <div className="min-h-screen bg-lv2">
       <Nav />
-      {/* lg:pl-60 でサイドバー分をクリア、その中に px-6 lg:px-10 で余白を確保 */}
-      <main className="lg:pl-60">
-        <div className="px-4 py-6 lg:px-10 lg:py-8">
-          <div className="max-w-5xl mx-auto">
-            <PageWrapper>{children}</PageWrapper>
-          </div>
+      <main className="lg:pl-60 px-4 py-6">
+        <div className="max-w-5xl mx-auto">
+          <PageWrapper>{children}</PageWrapper>
         </div>
       </main>
     </div>

@@ -13,9 +13,9 @@ function formatDate(dateStr: string) {
 
 function ScoreDisplay({ game }: { game: Game }) {
   const marker =
-    game.result === 'win'  ? <span className="text-green-500 text-lg">○</span> :
+    game.result === 'win'  ? <span className="text-pos-t text-lg">○</span> :
     game.result === 'loss' ? <span className="text-sub2 text-lg">●</span> :
-                             <span className="text-yellow-500 text-lg">△</span>
+                             <span className="text-neu-t text-lg">△</span>
   return (
     <span className="flex items-center gap-1 font-bold leading-none shrink-0">
       {marker}
@@ -143,7 +143,7 @@ export default function GamesPage() {
                   </Link>
                   <Link
                     href={`/games/${game.id}/pitching`}
-                    className="btn flex-1 text-center py-1.5 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-lg"
+                    className="btn flex-1 text-center py-1.5 text-xs font-medium bg-theme hover:opacity-90 text-white rounded-lg"
                   >
                     投手成績
                   </Link>

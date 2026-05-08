@@ -82,13 +82,13 @@ export default function NewGamePage() {
 
   const resultOptions = [
     { value: 'win',  label: '勝利 ○',
-      active: 'bg-green-50 dark:bg-green-900/40 border-green-400 dark:border-green-500 text-green-700 dark:text-green-300',
+      active: 'bg-pos border-pos-t text-pos-t',
     },
     { value: 'loss', label: '敗北 ●',
-      active: 'bg-red-50 dark:bg-red-900/40 border-red-400 dark:border-red-500 text-red-700 dark:text-red-300',
+      active: 'bg-neg border-neg-t text-neg-t',
     },
     { value: 'draw', label: '引分 △',
-      active: 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-400 dark:border-yellow-500 text-yellow-700 dark:text-yellow-300',
+      active: 'bg-neu border-neu-t text-neu-t',
     },
   ] as const
 

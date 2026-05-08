@@ -16,7 +16,7 @@ function ScoreDisplay({ game }: { game: Game }) {
   )
   if (game.result === 'win') return (
     <span className="flex items-center gap-1 text-base font-bold leading-none">
-      <span className="text-green-500">○</span>{score}
+      <span className="text-pos-t">○</span>{score}
     </span>
   )
   if (game.result === 'loss') return (
@@ -26,7 +26,7 @@ function ScoreDisplay({ game }: { game: Game }) {
   )
   return (
     <span className="flex items-center gap-1 text-base font-bold leading-none">
-      <span className="text-yellow-500">△</span>{score}
+      <span className="text-neu-t">△</span>{score}
     </span>
   )
 }
@@ -168,7 +168,7 @@ export default async function DashboardPage() {
                         {game.at_bats.length > 0 ? (
                           <span className="font-medium text-main">
                             {gameStats.hits}/{gameStats.ab}
-                            {gameStats.hrs > 0 && <span className="text-red-500 ml-1">{gameStats.hrs}HR</span>}
+                            {gameStats.hrs > 0 && <span className="text-accent ml-1">{gameStats.hrs}HR</span>}
                           </span>
                         ) : (
                           <span className="text-sub2">記録なし</span>
