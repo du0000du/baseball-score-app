@@ -84,7 +84,7 @@ export function calcPitchingStats(stats: PitchingStat[]): PitchingStats {
     : null
 
   const ipDecimal = outsToIPDecimal(innings_pitched)
-  const era = ipDecimal > 0 ? (earned_runs / ipDecimal) * 9 : null
+  const era = ipDecimal > 0 ? (earned_runs / ipDecimal) * 7 : null
   const whip = ipDecimal > 0 ? (hits_allowed + walks) / ipDecimal : null
   const k9 = ipDecimal > 0 ? (strikeouts / ipDecimal) * 9 : null
   const kbb = walks > 0 ? strikeouts / walks : null

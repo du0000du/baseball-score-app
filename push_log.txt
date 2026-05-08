@@ -1,0 +1,10 @@
+== git pull == 
+From https://github.com/du0000du/baseball-score-app
+ * branch            main       -> FETCH_HEAD
+Already up to date.
+== copying files 
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.
+        1 file(s) copied.

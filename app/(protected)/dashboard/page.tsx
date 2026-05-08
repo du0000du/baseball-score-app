@@ -9,35 +9,29 @@ function formatDate(dateStr: string) {
 }
 
 function ScoreDisplay({ game }: { game: Game }) {
-  const marker =
-    game.result === 'win'  ? <span className="text-green-500 dark:text-green-400">○</span> :
-    game.result === 'loss' ? <span className="text-gray-400 dark:text-night-500">●</span> :
-                             <span className="text-yellow-500 dark:text-yellow-400">△</span>
+  const score = (
+    <span className="text-white dark:text-white">
+      {game.score_us}<span className="text-gray-400 dark:text-night-400 font-normal mx-0.5">-</span>{game.score_them}
+    </span>
+  )
+  if (game.result === 'win') return (
+    <span className="flex items-center gap-1 text-base font-bold leading-none">
+      <span className="text-green-500">○</span>{score}
+    </span>
+  )
+  if (game.result === 'loss') return (
+    <span className="flex items-center gap-1 text-base font-bold leading-none">
+      <span className="text-gray-400 dark:text-night-400">●</span>{score}
+    </span>
+  )
   return (
-    <span className="flex items-center gap-1 text-base font-bold leading-none shrink-0">
-      {marker}
-      <span className="text-gray-800 dark:text-white">
-        {game.score_us}<span className="text-gray-400 dark:text-night-400 font-normal mx-0.5">-</span>{game.score_them}
-      </span>
+    <span className="flex items-center gap-1 text-base font-bold leading-none">
+      <span className="text-yellow-500">△</span>{score}
     </span>
   )
 }
 
 interface GameWithAtBats extends Game { at_bats: AtBat[] }
-
-// ライトモード: 白カード / ダークモード: night-800
-const CARD = 'bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600'
-const SEC  = 'text-xs font-semibold text-gray-500 dark:text-night-300 uppercase tracking-wide'
-const SUB  = 'text-xs text-gray-400 dark:text-night-400 mt-1'
-
-function HighlightStat({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="flex flex-col items-center py-5 px-2 bg-gray-50 dark:bg-night-750">
-      <span className="text-xs text-gray-400 dark:text-night-300 mb-1.5 tracking-wide">{label}</span>
-      <span className="text-3xl font-bold text-crimson-500 dark:text-white">{value}</span>
-    </div>
-  )
-}
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -54,9 +48,9 @@ export default async function DashboardPage() {
   const stats = calcBattingStats(allAtBats)
   const recentGames = typedGames.slice(0, 5)
 
-  const wins   = typedGames.filter((g) => g.result === 'win').length
+  const wins = typedGames.filter((g) => g.result === 'win').length
   const losses = typedGames.filter((g) => g.result === 'loss').length
-  const draws  = typedGames.filter((g) => g.result === 'draw').length
+  const draws = typedGames.filter((g) => g.result === 'draw').length
   const winRate = (wins + losses) > 0 ? (wins / (wins + losses)).toFixed(3).replace(/^0/, '') : '---'
 
   const { data: pitchingData } = await supabase
@@ -64,14 +58,20 @@ export default async function DashboardPage() {
   const pitchingStats = (pitchingData ?? []) as PitchingStat[]
   const pStats = calcPitchingStats(pitchingStats)
 
+  const card = "bg-white dark:bg-night-800 rounded-xl shadow-sm border border-gray-100 dark:border-night-600"
+  const sectionTitle = "text-sm font-semibold text-gray-500 dark:text-night-400 uppercase tracking-wide"
+  const bigStat = "text-2xl font-bold text-crimson-500 dark:text-crimson-400 truncate"
+  const subLabel = "text-xs text-gray-400 dark:text-night-400 mt-1"
+  const smallVal = "font-semibold text-gray-700 dark:text-white"
+  const smallLabel = "text-xs text-gray-400 dark:text-night-400"
+  const divider = "border-t border-gray-100 dark:border-night-700"
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-crimson-500 dark:text-crimson-400">{currentYear}年 シーズン</h1>
-          {typedProfile?.team_name && (
-            <p className="text-sm text-gray-500 dark:text-night-400 mt-0.5">{typedProfile.team_name}</p>
-          )}
+          {typedProfile?.team_name && <p className="text-sm text-gray-500 dark:text-night-400 mt-0.5">{typedProfile.team_name}</p>}
         </div>
         <Link href="/games/new" className="btn bg-crimson-500 hover:bg-crimson-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
           ＋ 試合を登録
@@ -81,65 +81,41 @@ export default async function DashboardPage() {
       <div className="lg:grid lg:grid-cols-3 lg:gap-6 space-y-6 lg:space-y-0">
         {/* 左カラム */}
         <div className="lg:col-span-2 space-y-6">
-
           {/* チーム戦績 */}
           {typedGames.length > 0 && (
-            <div className={`${CARD} p-5`}>
-              <h2 className={`${SEC} mb-3`}>チーム戦績</h2>
-              <div className="grid grid-cols-5 gap-2 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-crimson-500 dark:text-white">{typedGames.length}</div>
-                  <div className={SUB}>試合</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">{wins}</div>
-                  <div className={SUB}>勝</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-red-500 dark:text-red-400">{losses}</div>
-                  <div className={SUB}>負</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-yellow-500 dark:text-yellow-400">{draws}</div>
-                  <div className={SUB}>分</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-crimson-500 dark:text-white">{winRate}</div>
-                  <div className={SUB}>勝率</div>
-                </div>
+            <div className={`${card} p-5`}>
+              <h2 className={`${sectionTitle} mb-3`}>チーム戦績</h2>
+              <div className="grid grid-cols-5 gap-2 text-center text-sm">
+                <div><div className={bigStat}>{typedGames.length}</div><div className={subLabel}>試合</div></div>
+                <div><div className="text-xl font-bold text-green-500">{wins}</div><div className={subLabel}>勝</div></div>
+                <div><div className="text-xl font-bold text-red-500">{losses}</div><div className={subLabel}>負</div></div>
+                <div><div className="text-xl font-bold text-yellow-500">{draws}</div><div className={subLabel}>分</div></div>
+                <div><div className={bigStat}>{winRate}</div><div className={subLabel}>勝率</div></div>
               </div>
             </div>
           )}
 
           {/* 打撃成績 */}
-          <div className={`${CARD} overflow-hidden`}>
-            <div className="px-5 py-3.5 border-b border-gray-100 dark:border-night-700">
-              <h2 className={SEC}>シーズン打撃成績</h2>
-            </div>
+          <div className={`${card} p-6`}>
+            <h2 className={`${sectionTitle} mb-4`}>シーズン打撃成績</h2>
             {allAtBats.length === 0 ? (
-              <p className="text-gray-400 dark:text-night-400 text-center py-8">まだ打席記録がありません</p>
+              <p className="text-gray-400 dark:text-night-400 text-center py-4">まだ打席記録がありません</p>
             ) : (
               <>
-                <div className="grid grid-cols-4 divide-x divide-gray-100 dark:divide-night-700 border-b border-gray-100 dark:border-night-700">
-                  <HighlightStat label="打率"  value={fmtAvg(stats.avg)} />
-                  <HighlightStat label="出塁率" value={fmtAvg(stats.obp)} />
-                  <HighlightStat label="長打率" value={fmtAvg(stats.slg)} />
-                  <HighlightStat label="OPS"   value={fmtDec(stats.ops, 3).replace(/^0/, '')} />
+                <div className="grid grid-cols-4 gap-2 mb-4">
+                  <div className="text-center min-w-0"><div className={bigStat}>{fmtAvg(stats.avg)}</div><div className={subLabel}>打率</div></div>
+                  <div className="text-center min-w-0"><div className={bigStat}>{fmtAvg(stats.obp)}</div><div className={subLabel}>出塁率</div></div>
+                  <div className="text-center min-w-0"><div className={bigStat}>{fmtAvg(stats.slg)}</div><div className={subLabel}>長打率</div></div>
+                  <div className="text-center min-w-0"><div className={bigStat}>{fmtDec(stats.ops, 3).replace(/^0/, '')}</div><div className={subLabel}>OPS</div></div>
                 </div>
-                <div className="grid grid-cols-6 divide-x divide-gray-100 dark:divide-night-700">
-                  {[
-                    { label: '試合',   value: typedGames.length },
-                    { label: '打席',   value: stats.pa },
-                    { label: '安打',   value: stats.hits },
-                    { label: '本塁打', value: stats.hrs },
-                    { label: '打点',   value: stats.rbi },
-                    { label: '盗塁',   value: stats.sb },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="text-center py-3">
-                      <div className="text-base font-semibold text-gray-800 dark:text-white">{value}</div>
-                      <div className="text-xs text-gray-400 dark:text-night-400">{label}</div>
-                    </div>
-                  ))}
+                <div className={`grid grid-cols-7 gap-2 pt-4 ${divider} text-center text-sm`}>
+                  <div><div className={smallVal}>{typedGames.length}</div><div className={smallLabel}>試合</div></div>
+                  <div><div className={smallVal}>{stats.pa}</div><div className={smallLabel}>打席</div></div>
+                  <div><div className={smallVal}>{stats.ab}</div><div className={smallLabel}>打数</div></div>
+                  <div><div className={smallVal}>{stats.hits}</div><div className={smallLabel}>安打</div></div>
+                  <div><div className={smallVal}>{stats.hrs}</div><div className={smallLabel}>本塁打</div></div>
+                  <div><div className={smallVal}>{stats.rbi}</div><div className={smallLabel}>打点</div></div>
+                  <div><div className={smallVal}>{stats.sb}</div><div className={smallLabel}>盗塁</div></div>
                 </div>
               </>
             )}
@@ -147,64 +123,55 @@ export default async function DashboardPage() {
 
           {/* 投手成績 */}
           {pitchingStats.length > 0 && (
-            <div className={`${CARD} overflow-hidden`}>
-              <div className="px-5 py-3.5 border-b border-gray-100 dark:border-night-700">
-                <h2 className={SEC}>シーズン投手成績</h2>
+            <div className={`${card} p-6`}>
+              <h2 className={`${sectionTitle} mb-4`}>シーズン投手成績</h2>
+              <div className="grid grid-cols-4 gap-2 mb-4">
+                <div className="text-center min-w-0"><div className={bigStat}>{fmtERA(pStats.era)}</div><div className={subLabel}>防御率</div></div>
+                <div className="text-center min-w-0"><div className={bigStat}>{fmtDec(pStats.whip, 2)}</div><div className={subLabel}>WHIP</div></div>
+                <div className="text-center min-w-0"><div className={bigStat}>{pStats.strikeouts}</div><div className={subLabel}>奪三振</div></div>
+                <div className="text-center min-w-0"><div className={bigStat}>{formatIP(pStats.innings_pitched)}</div><div className={subLabel}>投球回</div></div>
               </div>
-              <div className="grid grid-cols-4 divide-x divide-gray-100 dark:divide-night-700 border-b border-gray-100 dark:border-night-700">
-                <HighlightStat label="防御率" value={fmtERA(pStats.era)} />
-                <HighlightStat label="WHIP"   value={fmtDec(pStats.whip, 2)} />
-                <HighlightStat label="奪三振" value={pStats.strikeouts} />
-                <HighlightStat label="投球回" value={formatIP(pStats.innings_pitched)} />
-              </div>
-              <div className="grid grid-cols-5 divide-x divide-gray-100 dark:divide-night-700">
-                {[
-                  { label: '登板', value: pStats.games,  cls: 'text-gray-800 dark:text-white' },
-                  { label: '勝',   value: pStats.wins,   cls: 'text-green-600 dark:text-green-400' },
-                  { label: '敗',   value: pStats.losses, cls: 'text-red-500 dark:text-red-400' },
-                  { label: 'S',    value: pStats.saves,  cls: 'text-gray-800 dark:text-white' },
-                  { label: 'H',    value: pStats.holds,  cls: 'text-gray-800 dark:text-white' },
-                ].map(({ label, value, cls }) => (
-                  <div key={label} className="text-center py-3">
-                    <div className={`text-base font-semibold ${cls}`}>{value}</div>
-                    <div className="text-xs text-gray-400 dark:text-night-400">{label}</div>
-                  </div>
-                ))}
+              <div className={`grid grid-cols-5 gap-2 pt-4 ${divider} text-center text-sm`}>
+                <div><div className={smallVal}>{pStats.games}</div><div className={smallLabel}>登板</div></div>
+                <div><div className="font-semibold text-green-500">{pStats.wins}</div><div className={smallLabel}>勝</div></div>
+                <div><div className="font-semibold text-red-500">{pStats.losses}</div><div className={smallLabel}>敗</div></div>
+                <div><div className={smallVal}>{pStats.saves}</div><div className={smallLabel}>S</div></div>
+                <div><div className={smallVal}>{pStats.holds}</div><div className={smallLabel}>H</div></div>
               </div>
             </div>
           )}
         </div>
 
-        {/* 直近試合 */}
+        {/* 右カラム: 直近試合 */}
         <div className="lg:col-span-1">
-          <div className={`${CARD} overflow-hidden`}>
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 dark:border-night-700">
-              <h2 className={SEC}>直近の試合</h2>
-              <Link href="/games" className="text-xs text-crimson-500 dark:text-crimson-400 hover:underline">全て →</Link>
+          <div className={`${card} p-6`}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className={sectionTitle}>直近の試合</h2>
+              <Link href="/games" className="text-sm text-crimson-500 dark:text-crimson-400 hover:underline">全て →</Link>
             </div>
             {recentGames.length === 0 ? (
-              <p className="text-gray-400 dark:text-night-400 text-center py-8 text-sm">試合が登録されていません</p>
+              <p className="text-gray-400 dark:text-night-400 text-center py-4">試合が登録されていません</p>
             ) : (
               <div className="divide-y divide-gray-50 dark:divide-night-700">
                 {recentGames.map((game) => {
                   const gameStats = calcBattingStats(game.at_bats)
                   return (
-                    <div key={game.id} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-night-750 transition-colors">
-                      <div className="flex items-center gap-2 min-w-0">
+                    <div key={game.id} className="py-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
                         <ScoreDisplay game={game} />
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium text-gray-800 dark:text-white truncate">vs {game.opponent}</div>
+                        <div>
+                          <span className="text-sm font-medium text-gray-800 dark:text-white">vs {game.opponent}</span>
                           <div className="text-xs text-gray-400 dark:text-night-400 mt-0.5">{formatDate(game.game_date)}</div>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-1 ml-2 shrink-0">
+                      <div className="flex flex-col items-end gap-1 text-sm">
                         {game.at_bats.length > 0 ? (
-                          <span className="text-sm font-semibold text-gray-700 dark:text-white">
+                          <span className="font-medium text-gray-700 dark:text-white">
                             {gameStats.hits}/{gameStats.ab}
-                            {gameStats.hrs > 0 && <span className="text-crimson-500 dark:text-crimson-400 ml-1">{gameStats.hrs}HR</span>}
+                            {gameStats.hrs > 0 && <span className="text-red-500 ml-1">{gameStats.hrs}HR</span>}
                           </span>
                         ) : (
-                          <span className="text-xs text-gray-300 dark:text-night-600">記録なし</span>
+                          <span className="text-gray-300 dark:text-night-600">記録なし</span>
                         )}
                         <Link href={`/games/${game.id}/at-bats`} className="btn text-crimson-500 dark:text-crimson-400 hover:underline text-xs">
                           打席入力

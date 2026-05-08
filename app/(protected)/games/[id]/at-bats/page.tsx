@@ -178,6 +178,7 @@ export default function AtBatsPage() {
   const [atBats, setAtBats] = useState<AtBat[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [saved, setSaved] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState('')
 
@@ -312,6 +313,8 @@ export default function AtBatsPage() {
 
     resetForm()
     setSubmitting(false)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
     fetchData()
   }
 
@@ -402,8 +405,8 @@ export default function AtBatsPage() {
           <label className="block text-sm font-medium text-gray-600 dark:text-night-300 mb-2">
             打順 <span className="text-red-500">*</span>
           </label>
-          <div className="grid grid-cols-9 gap-1">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+          <div className="grid grid-cols-6 gap-1">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
               <button
                 key={n}
                 type="button"
@@ -666,6 +669,8 @@ export default function AtBatsPage() {
           >
             {submitting
               ? (editingAtBatId ? '更新中...' : '登録中...')
+              : saved
+              ? '打席入力完了 ✓'
               : (editingAtBatId ? '打席を更新する' : '打席を記録する')}
           </button>
         </div>
