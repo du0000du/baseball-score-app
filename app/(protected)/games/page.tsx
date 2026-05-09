@@ -4,14 +4,35 @@ import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import type { Game } from '@/lib/supabase/types'
+import type { AtBat, GameWithAtBats } from '@/lib/supabase/types'
 
 function formatDate(dateStr: string) {
   const [y, m, d] = dateStr.split('-')
   return `${y}年${parseInt(m)}月${parseInt(d)}日`
 }
 
-function ScoreDisplay({ game }: { game: Game }) {
+const AB_COUNTING_TYPES: AtBat['result_type'][] = [
+  'hit', 'double', 'triple', 'hr',
+  'strikeout', 'groundout', 'flyout', 'infield_flyout',
+  'sac_fly', 'error', 'fc',
+]
+const HIT_TYPES: AtBat['result_type'][] = ['hit', 'double', 'triple', 'hr']
+
+function AtBatStats({ atBats }: { atBats: AtBat[] }) {
+  if (atBats.length === 0) {
+    return <span className="text-sm text-sub2">記録なし</span>
+  }
+  const ab = atBats.filter(a => AB_COUNTING_TYPES.includes(a.result_type)).length
+  const hits = atBats.filter(a => HIT_TYPES.includes(a.result_type)).length
+  const hrs = atBats.filter(a => a.result_type === 'hr').length
+  return (
+    <span className="text-sm text-sub2">
+      {hits}/{ab}{hrs > 0 ? ` ${hrs}HR` : ''}
+    </span>
+  )
+}
+
+function ScoreDisplay({ game }: { game: GameWithAtBats }) {
   const marker =
     game.result === 'win'  ? <span className="text-pos-t text-lg">○</span> :
     game.result === 'loss' ? <span className="text-sub2 text-lg">●</span> :
@@ -41,7 +62,7 @@ function SkeletonRow() {
 type ResultFilter = 'all' | 'win' | 'loss' | 'draw'
 
 export default function GamesPage() {
-  const [games, setGames] = useState<Game[]>([])
+  const [games, setGames] = useState<GameWithAtBats[]>([])
   const [loading, setLoading] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmId, setConfirmId] = useState<string | null>(null)
@@ -55,9 +76,9 @@ export default function GamesPage() {
   const fetchGames = useCallback(async () => {
     const { data } = await supabase
       .from('games')
-      .select('*')
+      .select('*, at_bats(*)')
       .order('game_date', { ascending: false })
-    setGames((data ?? []) as Game[])
+    setGames((data ?? []) as GameWithAtBats[])
     setLoading(false)
   }, [supabase])
 
@@ -203,9 +224,12 @@ export default function GamesPage() {
                     </div>
                   </div>
                 </div>
-                <svg className="w-4 h-4 text-sub2 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
+                <div className="flex items-center gap-2 shrink-0">
+                  <AtBatStats atBats={game.at_bats ?? []} />
+                  <svg className="w-4 h-4 text-sub2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
               </Link>
 
               {/* アクションボタン */}
