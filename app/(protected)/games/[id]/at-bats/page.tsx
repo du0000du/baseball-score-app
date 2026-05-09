@@ -366,6 +366,16 @@ export default function AtBatsPage() {
   const showErrorPosition = resultType === 'error'
   const showFCPosition = resultType === 'fc'
 
+  // 現試合の累計成績（atBats state から計算）
+  const gameAb = atBats.filter(a =>
+    ['hit','double','triple','hr','strikeout','groundout','flyout','infield_flyout','sac_fly','error','fc'].includes(a.result_type)
+  ).length
+  const gameHits = atBats.filter(a =>
+    ['hit','double','triple','hr'].includes(a.result_type)
+  ).length
+  const gameHrs = atBats.filter(a => a.result_type === 'hr').length
+  const gameRbi = atBats.reduce((s, a) => s + (a.rbi_count ?? 0), 0)
+
   return (
     <div className="max-w-2xl mx-auto space-y-5">
       {/* ヘッダー */}
@@ -393,6 +403,11 @@ export default function AtBatsPage() {
         <div className="mt-2 text-sm text-white/80 dark:text-sub1">
           {atBats.length}打席記録済み
         </div>
+        {atBats.length > 0 && (
+          <div className="mt-0.5 text-xs text-sub2">
+            {gameHits}安打/{gameAb}打数{gameHrs >= 1 ? ` ${gameHrs}HR` : ''}{gameRbi >= 1 ? ` ${gameRbi}打点` : ''}
+          </div>
+        )}
       </div>
 
       {/* 打席入力フォーム */}

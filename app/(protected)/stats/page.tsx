@@ -135,6 +135,15 @@ export default function StatsPage() {
   const [tab, setTab] = useState<Tab>('season')
   const [tabVisible, setTabVisible] = useState(true)
 
+  // sessionStorage からタブを復元（SSR対策: useEffect で実行）
+  useEffect(() => {
+    const saved = sessionStorage.getItem('baseball_stats_tab')
+    const validTabs: Tab[] = ['season', 'per-game', 'log', 'pitching', 'direction']
+    if (saved && validTabs.includes(saved as Tab)) {
+      setTab(saved as Tab)
+    }
+  }, [])
+
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i)
 
   useEffect(() => {
@@ -160,6 +169,7 @@ export default function StatsPage() {
 
   const handleTabChange = (newTab: Tab) => {
     if (newTab === tab) return
+    sessionStorage.setItem('baseball_stats_tab', newTab)
     setTabVisible(false)
     setTab(newTab)
     requestAnimationFrame(() => {
