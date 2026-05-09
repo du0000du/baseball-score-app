@@ -267,6 +267,7 @@ export default function StatsPage() {
           style={{
             opacity: tabVisible ? 1 : 0,
             transition: tabVisible ? 'opacity 0.14s ease-out' : 'none',
+            overflowAnchor: 'none',
           }}
         >
 
@@ -657,16 +658,16 @@ export default function StatsPage() {
             const winStats = calcBattingStats(winGames.flatMap(g => g.at_bats))
             const lossStats = calcBattingStats(lossGames.flatMap(g => g.at_bats))
 
-            // 4. OPS ゲージ
-            const ops = stats.ops ?? 0
-            const maxOps = 1.2
-            const opsPct = Math.min((ops / maxOps) * 100, 100)
-            const markerPct = Math.min((0.8 / maxOps) * 100, 100)
-            const opsZone =
-              ops >= 0.9 ? 'bg-pos' :
-              ops >= 0.8 ? 'bg-pos/50' :
-              ops >= 0.7 ? 'bg-theme/30' :
-              ops >= 0.6 ? 'bg-neu' : 'bg-neg'
+            // 4. OPS 推移データ（累積 + 単試合）
+            const opsData = sortedGames.map((game, idx) => {
+              const cumStats = calcBattingStats(sortedGames.slice(0, idx + 1).flatMap(g => g.at_bats))
+              const gameStats = calcBattingStats(game.at_bats)
+              return {
+                date: formatDate(game.game_date),
+                cumOps: parseFloat((cumStats.ops ?? 0).toFixed(3)),
+                gameOps: parseFloat((gameStats.ops ?? 0).toFixed(3)),
+              }
+            })
 
             // 5. ERA トレンドデータ
             const sortedPitching = [...pitchingStats].sort((a, b) => {
@@ -724,6 +725,33 @@ export default function StatsPage() {
                   </div>
                 )}
 
+                {/* 新: OPS 推移 */}
+                {sortedGames.length >= 2 && (
+                  <div className={`${card} p-5`}>
+                    <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">OPS 推移</h2>
+                    <ResponsiveContainer width="100%" height={160}>
+                      <LineChart data={opsData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border_lv2)" />
+                        <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} />
+                        <YAxis
+                          domain={[0, 1.4]}
+                          tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }}
+                          tickFormatter={(v: number) => v.toFixed(1)}
+                        />
+                        <Tooltip formatter={(v: number, name: string) => [
+                          fmtDec(v, 3).replace(/^0/, ''),
+                          name === 'cumOps' ? '累積OPS' : '単試合OPS',
+                        ]} />
+                        <Line type="monotone" dataKey="cumOps" stroke="var(--theme)" strokeWidth={2}
+                          dot={{ r: 3, fill: 'var(--theme)' }} name="cumOps" />
+                        <Line type="monotone" dataKey="gameOps" stroke="var(--sub_text_lv1)" strokeWidth={1}
+                          dot={false} strokeDasharray="4 2" name="gameOps" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                    <p className="text-xs text-sub2 text-right mt-1">実線: 累積OPS　破線: 単試合OPS</p>
+                  </div>
+                )}
+
                 {/* 2. 試合別 RBI / HR */}
                 {sortedGames.length >= 3 && (
                   <div className={`${card} p-5`}>
@@ -760,30 +788,6 @@ export default function StatsPage() {
                       </div>
                     </div>
                   )}
-                </div>
-
-                {/* 4. OPS ゲージ */}
-                <div className={`${card} p-5`}>
-                  <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">OPS ゲージ</h2>
-                  <div className="mb-2 flex justify-between text-xs text-sub2">
-                    <span>現在: <span className="font-bold text-accent">{fmtDec(ops, 3).replace(/^0/, '')}</span></span>
-                    <span>.800 が高水準目安</span>
-                  </div>
-                  <div className="relative h-5 bg-lv2 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all ${opsZone}`}
-                      style={{ width: `${opsPct}%` }}
-                    />
-                    <div
-                      className="absolute top-0 bottom-0 w-0.5 bg-accent/60"
-                      style={{ left: `${markerPct}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-xs text-sub2 mt-1">
-                    <span>.000</span>
-                    <span>.800</span>
-                    <span>1.200</span>
-                  </div>
                 </div>
 
                 {/* 5. ERA トレンド */}

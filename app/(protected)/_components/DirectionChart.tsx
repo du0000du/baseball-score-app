@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import type { AtBat, OutfieldDirection, InfieldPosition } from '@/lib/supabase/types'
 
 const OUTFIELD_ORDER: OutfieldDirection[] = ['left', 'left_center', 'center', 'right_center', 'right']
@@ -85,7 +85,7 @@ const MODE_TABS: { value: Mode; label: string }[] = [
   { value: 'out',  label: 'アウトのみ' },
 ]
 
-export default function DirectionChart({ atBats }: Props) {
+function DirectionChart({ atBats }: Props) {
   const [mode, setMode] = useState<Mode>('all')
 
   // モードでフィルタリング
@@ -150,7 +150,7 @@ export default function DirectionChart({ atBats }: Props) {
       </div>
 
       {/* ───── 外野 ───── */}
-      <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-5">
+      <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-5 min-h-[200px]">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-semibold text-sub1 uppercase tracking-wide">外野方向</h3>
           <span className="text-xs text-sub2">{ofTotal} 打球</span>
@@ -212,7 +212,7 @@ export default function DirectionChart({ atBats }: Props) {
       </div>
 
       {/* ───── 内野 ───── */}
-      <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-5">
+      <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-5 min-h-[280px]">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-semibold text-sub1 uppercase tracking-wide">内野方向</h3>
           <span className="text-xs text-sub2">{ifTotal} 打球</span>
@@ -273,3 +273,5 @@ export default function DirectionChart({ atBats }: Props) {
     </div>
   )
 }
+
+export default memo(DirectionChart)
