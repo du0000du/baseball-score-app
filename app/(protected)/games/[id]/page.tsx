@@ -106,24 +106,27 @@ export default function GameDetailPage() {
       </div>
 
       {/* アクションボタン */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-3">
         <Link
           href={`/games/${game.id}/at-bats`}
-          className="flex items-center justify-center gap-1 py-2.5 rounded-xl text-sm font-medium bg-field-500 hover:bg-field-600 text-white transition-colors"
+          className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl font-semibold text-sm bg-pos text-pos-t border border-pos/40 hover:opacity-90 transition-opacity shadow-sm"
         >
-          ⚾ 打席入力
+          <span className="text-2xl leading-none">🏏</span>
+          <span>打席入力</span>
         </Link>
         <Link
           href={`/games/${game.id}/pitching`}
-          className="flex items-center justify-center gap-1 py-2.5 rounded-xl text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white transition-colors"
+          className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl font-semibold text-sm bg-theme text-white hover:opacity-90 transition-opacity shadow-sm"
         >
-          ⚡ 投手成績
+          <span className="text-2xl leading-none">⚾</span>
+          <span>投球入力</span>
         </Link>
         <Link
           href={`/games/${game.id}/edit`}
-          className="flex items-center justify-center gap-1 py-2.5 rounded-xl text-sm font-medium bg-lv2 hover:bg-s2 dark:hover:bg-s1 text-main border border-s2 transition-colors"
+          className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl font-semibold text-sm bg-lv2 text-main border border-s2 hover:bg-s2 transition-colors shadow-sm"
         >
-          ✏️ 編集
+          <span className="text-2xl leading-none">✏️</span>
+          <span>編集</span>
         </Link>
       </div>
 

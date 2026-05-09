@@ -33,8 +33,8 @@ export default function Nav() {
 
   const sidebarLinkClass = (href: string) =>
     isActive(href)
-      ? 'bg-theme text-white'
-      : 'text-sub1 hover:bg-lv2 hover:text-main'
+      ? 'bg-white/20 text-white dark:bg-theme/20 dark:text-theme'
+      : 'text-white/70 hover:bg-white/10 hover:text-white dark:text-sub1 dark:hover:bg-lv2 dark:hover:text-main'
 
   return (
     <>

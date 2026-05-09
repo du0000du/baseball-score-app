@@ -6,13 +6,13 @@ import { calcBattingStats, calcPitchingStats, fmtAvg, fmtDec, fmtERA, formatIP }
 import { RESULT_TYPE_LABELS, DIRECTION_LABELS } from '@/lib/supabase/types'
 import type { AtBat, Direction, Game, ResultType, PitchingStat } from '@/lib/supabase/types'
 import DirectionChart from '@/app/(protected)/_components/DirectionChart'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
 
 interface GameWithAtBats extends Game {
   at_bats: AtBat[]
 }
 
-type Tab = 'season' | 'per-game' | 'log' | 'pitching' | 'direction'
+type Tab = 'season' | 'per-game' | 'log' | 'pitching' | 'direction' | 'analytics'
 
 function formatDate(dateStr: string) {
   const [, m, d] = dateStr.split('-')
@@ -122,6 +122,7 @@ const TAB_LIST: { key: Tab; label: string }[] = [
   { key: 'log',       label: '打席ログ' },
   { key: 'pitching',  label: '投手成績' },
   { key: 'direction', label: '打球方向' },
+  { key: 'analytics', label: '分析' },
 ]
 
 export default function StatsPage() {
@@ -138,7 +139,7 @@ export default function StatsPage() {
   // sessionStorage からタブを復元（SSR対策: useEffect で実行）
   useEffect(() => {
     const saved = sessionStorage.getItem('baseball_stats_tab')
-    const validTabs: Tab[] = ['season', 'per-game', 'log', 'pitching', 'direction']
+    const validTabs: Tab[] = ['season', 'per-game', 'log', 'pitching', 'direction', 'analytics']
     if (saved && validTabs.includes(saved as Tab)) {
       setTab(saved as Tab)
     }
@@ -615,6 +616,191 @@ export default function StatsPage() {
               <DirectionChart atBats={allAtBats} />
             )
           )}
+
+          {/* タブ6: 分析 */}
+          {tab === 'analytics' && (() => {
+            const card = 'bg-lv1 rounded-xl shadow-sm border border-s2'
+
+            // 1. 安打種別データ
+            const hitTypeData = [
+              { name: '単打', value: stats.hits - stats.doubles - stats.triples - stats.hrs },
+              { name: '二塁打', value: stats.doubles },
+              { name: '三塁打', value: stats.triples },
+              { name: '本塁打', value: stats.hrs },
+            ].filter(d => d.value > 0)
+            const HIT_COLORS = ['var(--theme)', '#60a5fa', '#f97316', 'var(--pos_text)']
+
+            // 2. 試合別 RBI/HR データ（古い順）
+            const sortedGames = [...games].sort((a, b) => a.game_date.localeCompare(b.game_date))
+            const rbiHrData = sortedGames.map((g) => {
+              const gs = calcBattingStats(g.at_bats)
+              return { date: formatDate(g.game_date), rbi: gs.rbi, hr: gs.hrs }
+            })
+
+            // 3. 勝敗別打率
+            const winGames = games.filter(g => g.result === 'win')
+            const lossGames = games.filter(g => g.result === 'loss')
+            const winStats = calcBattingStats(winGames.flatMap(g => g.at_bats))
+            const lossStats = calcBattingStats(lossGames.flatMap(g => g.at_bats))
+
+            // 4. OPS ゲージ
+            const ops = stats.ops ?? 0
+            const maxOps = 1.2
+            const opsPct = Math.min((ops / maxOps) * 100, 100)
+            const markerPct = Math.min((0.8 / maxOps) * 100, 100)
+            const opsZone =
+              ops >= 0.9 ? 'bg-pos' :
+              ops >= 0.8 ? 'bg-pos/50' :
+              ops >= 0.7 ? 'bg-theme/30' :
+              ops >= 0.6 ? 'bg-neu' : 'bg-neg'
+
+            // 5. ERA トレンドデータ
+            const sortedPitching = [...pitchingStats].sort((a, b) => {
+              const ga = games.find(g => g.id === a.game_id)
+              const gb = games.find(g => g.id === b.game_id)
+              return (ga?.game_date ?? '').localeCompare(gb?.game_date ?? '')
+            })
+            const eraData = sortedPitching.reduce((acc, ps) => {
+              const prev = acc[acc.length - 1]
+              const totalER = (prev?.totalER ?? 0) + ps.earned_runs
+              const totalIP = (prev?.totalIP ?? 0) + ps.innings_pitched
+              const era = totalIP > 0 ? parseFloat(((totalER * 27) / totalIP).toFixed(2)) : 0
+              const g = games.find(gm => gm.id === ps.game_id)
+              return [...acc, { date: g ? formatDate(g.game_date) : '', era, totalER, totalIP }]
+            }, [] as { date: string; era: number; totalER: number; totalIP: number }[])
+
+            return (
+              <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
+
+                {/* 1. 安打種別ドーナツ */}
+                {stats.hits > 0 && (
+                  <div className={`${card} p-5`}>
+                    <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">安打種別</h2>
+                    <div className="relative">
+                      <ResponsiveContainer width="100%" height={200}>
+                        <PieChart>
+                          <Pie
+                            data={hitTypeData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={90}
+                            dataKey="value"
+                          >
+                            {hitTypeData.map((entry, index) => (
+                              <Cell key={entry.name} fill={HIT_COLORS[index]} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value: number, name: string) => [`${value}本`, name]} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span className="text-2xl font-bold text-accent">{stats.hits}</span>
+                        <span className="text-xs text-sub2">安打</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-3 justify-center mt-2">
+                      {hitTypeData.map((entry, i) => (
+                        <span key={entry.name} className="flex items-center gap-1 text-xs text-sub1">
+                          <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: HIT_COLORS[i] }} />
+                          {entry.name}: {entry.value}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. 試合別 RBI / HR */}
+                {sortedGames.length >= 3 && (
+                  <div className={`${card} p-5`}>
+                    <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">試合別 RBI / HR</h2>
+                    <ResponsiveContainer width="100%" height={160}>
+                      <BarChart data={rbiHrData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border_lv2)" />
+                        <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} />
+                        <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} />
+                        <Tooltip />
+                        <Bar dataKey="rbi" name="打点" fill="var(--theme)" />
+                        <Bar dataKey="hr" name="HR" fill="#f97316" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+
+                {/* 3. 勝敗別打率比較 */}
+                <div className={`${card} p-5`}>
+                  <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">勝敗別打率</h2>
+                  {winGames.length === 0 && lossGames.length === 0 ? (
+                    <p className="text-sub2 text-sm text-center py-4">データなし</p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-lv2 rounded-lg p-4 text-center">
+                        <div className="text-xs text-sub2 mb-1">勝ち（{winGames.length}試合）</div>
+                        <div className="text-2xl font-bold text-pos-t">{fmtAvg(winStats.avg)}</div>
+                        <div className="text-xs text-sub2 mt-1">打率</div>
+                      </div>
+                      <div className="bg-lv2 rounded-lg p-4 text-center">
+                        <div className="text-xs text-sub2 mb-1">負け（{lossGames.length}試合）</div>
+                        <div className="text-2xl font-bold text-neg-t">{fmtAvg(lossStats.avg)}</div>
+                        <div className="text-xs text-sub2 mt-1">打率</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 4. OPS ゲージ */}
+                <div className={`${card} p-5`}>
+                  <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">OPS ゲージ</h2>
+                  <div className="mb-2 flex justify-between text-xs text-sub2">
+                    <span>現在: <span className="font-bold text-accent">{fmtDec(ops, 3).replace(/^0/, '')}</span></span>
+                    <span>.800 が高水準目安</span>
+                  </div>
+                  <div className="relative h-5 bg-lv2 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${opsZone}`}
+                      style={{ width: `${opsPct}%` }}
+                    />
+                    <div
+                      className="absolute top-0 bottom-0 w-0.5 bg-accent/60"
+                      style={{ left: `${markerPct}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs text-sub2 mt-1">
+                    <span>.000</span>
+                    <span>.800</span>
+                    <span>1.200</span>
+                  </div>
+                </div>
+
+                {/* 5. ERA トレンド */}
+                {pitchingStats.length > 0 && (
+                  <div className={`${card} p-5`}>
+                    <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">ERA トレンド（累積）</h2>
+                    {pitchingStats.length < 3 ? (
+                      <p className="text-sub2 text-sm text-center py-4">登板数が増えると表示されます</p>
+                    ) : (
+                      <ResponsiveContainer width="100%" height={140}>
+                        <LineChart data={eraData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border_lv2)" />
+                          <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} />
+                          <YAxis tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} />
+                          <Tooltip formatter={(v: number) => [fmtERA(v), '累積ERA']} />
+                          <Line
+                            type="monotone"
+                            dataKey="era"
+                            stroke="var(--theme)"
+                            strokeWidth={2}
+                            dot={{ r: 3, fill: 'var(--theme)' }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+                )}
+
+              </div>
+            )
+          })()}
 
         </div>
       )}
