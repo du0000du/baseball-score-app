@@ -144,7 +144,7 @@ export default function GameDetailPage() {
         ) : (
           <>
             {/* 集計 */}
-            <div className="grid grid-cols-7 gap-1 text-center text-xs bg-lv2 rounded-lg p-3 mb-3">
+            <div className="grid grid-cols-8 gap-1 text-center text-xs bg-lv2 rounded-lg p-3 mb-3">
               <div>
                 <div className="font-bold text-sm text-accent">{fmtAvg(batting.avg)}</div>
                 <div className="text-sub2 mt-0.5">打率</div>
@@ -172,6 +172,10 @@ export default function GameDetailPage() {
               <div>
                 <div className="font-semibold text-main text-sm">{batting.strikeouts}</div>
                 <div className="text-sub2 mt-0.5">三振</div>
+              </div>
+              <div>
+                <div className="font-semibold text-main text-sm">{batting.walks + batting.hbp}</div>
+                <div className="text-sub2 mt-0.5">四死球</div>
               </div>
             </div>
 

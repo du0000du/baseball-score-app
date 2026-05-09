@@ -439,7 +439,7 @@ export default function StatsPage() {
                         <th className="px-3 py-3 font-medium">打点</th>
                         <th className="px-3 py-3 font-medium">盗塁</th>
                         <th className="px-3 py-3 font-medium">三振</th>
-                        <th className="px-3 py-3 font-medium">四球</th>
+                        <th className="px-3 py-3 font-medium">四死球</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-s2">
@@ -457,7 +457,7 @@ export default function StatsPage() {
                             <td className="px-3 py-3 text-center text-main">{gs.rbi}</td>
                             <td className="px-3 py-3 text-center text-main">{gs.sb}</td>
                             <td className="px-3 py-3 text-center text-main">{gs.strikeouts}</td>
-                            <td className="px-3 py-3 text-center text-main">{gs.walks}</td>
+                            <td className="px-3 py-3 text-center text-main">{gs.walks + gs.hbp}</td>
                           </tr>
                         )
                       })}
@@ -678,7 +678,7 @@ export default function StatsPage() {
               const prev = acc[acc.length - 1]
               const totalER = (prev?.totalER ?? 0) + ps.earned_runs
               const totalIP = (prev?.totalIP ?? 0) + ps.innings_pitched
-              const era = totalIP > 0 ? parseFloat(((totalER * 27) / totalIP).toFixed(2)) : 0
+              const era = totalIP > 0 ? parseFloat(((totalER * 21) / totalIP).toFixed(2)) : 0
               const g = games.find(gm => gm.id === ps.game_id)
               return [...acc, { date: g ? formatDate(g.game_date) : '', era, totalER, totalIP }]
             }, [] as { date: string; era: number; totalER: number; totalIP: number }[])
@@ -789,7 +789,7 @@ export default function StatsPage() {
                 {/* 5. ERA トレンド */}
                 {pitchingStats.length > 0 && (
                   <div className={`${card} p-5`}>
-                    <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">ERA トレンド（累積）</h2>
+                    <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">防御率トレンド（累積）</h2>
                     {pitchingStats.length < 3 ? (
                       <p className="text-sub2 text-sm text-center py-4">登板数が増えると表示されます</p>
                     ) : (
@@ -798,7 +798,7 @@ export default function StatsPage() {
                           <CartesianGrid strokeDasharray="3 3" stroke="var(--border_lv2)" />
                           <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} />
                           <YAxis tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} />
-                          <Tooltip formatter={(v: number) => [fmtERA(v), '累積ERA']} />
+                          <Tooltip formatter={(v: number) => [fmtERA(v), '累積防御率']} />
                           <Line
                             type="monotone"
                             dataKey="era"
