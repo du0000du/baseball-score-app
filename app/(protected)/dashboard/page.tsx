@@ -88,6 +88,7 @@ export default async function DashboardPage() {
   const sortedByDate = [...typedGames].sort((a, b) => b.game_date.localeCompare(a.game_date))
   let hitStreak = 0
   for (const game of sortedByDate) {
+    if (game.at_bats.length === 0) continue  // 打席ゼロの試合はスキップ（連続を途切れさせない）
     const hasHit = game.at_bats.some(ab => ['hit', 'double', 'triple', 'hr'].includes(ab.result_type))
     if (hasHit) hitStreak++
     else break
