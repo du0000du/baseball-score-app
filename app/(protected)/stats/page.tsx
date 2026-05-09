@@ -34,10 +34,44 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
   )
 }
 
+// セイバーメトリクス指標のツールチップ定義
+const STAT_TOOLTIPS: Record<string, string> = {
+  'RC27': '得点創出能力。その打者が9人打線に並んだと仮定した場合の1試合あたり得点数。高いほど攻撃に貢献している。',
+  'IsoD': '出塁率 − 打率。四球や死球を引き出す選球眼の指標。高いほど四球が多い。',
+  'IsoP': '長打率 − 打率。長打力の純粋な指標。高いほど長打が多い。',
+  'OPS': '出塁率 + 長打率。打撃の総合力を示す最も一般的な指標。.800以上は高水準。',
+}
+
+function StatTooltip({ label }: { label: string }) {
+  const [show, setShow] = useState(false)
+  const tip = STAT_TOOLTIPS[label]
+  if (!tip) return <>{label}</>
+  return (
+    <span className="relative inline-flex items-center gap-1">
+      {label}
+      <button
+        type="button"
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        onClick={() => setShow(v => !v)}
+        className="text-sub2 hover:text-theme transition-colors text-xs leading-none"
+        aria-label={`${label}の説明`}
+      >
+        ⓘ
+      </button>
+      {show && (
+        <span className="absolute bottom-full left-0 mb-2 z-50 bg-lv1 border border-s2 text-sub1 text-xs rounded-lg shadow-lg p-2.5 w-64 pointer-events-none block font-normal">
+          {tip}
+        </span>
+      )}
+    </span>
+  )
+}
+
 // 2カラムリスト形式の1行（左右それぞれラベル+値）
 function StatRow({ left, right }: {
-  left: { label: string; value: string | number }
-  right?: { label: string; value: string | number }
+  left: { label: React.ReactNode; value: string | number }
+  right?: { label: React.ReactNode; value: string | number }
 }) {
   return (
     <div className="grid grid-cols-2 divide-x divide-s2 odd:bg-lv1 even:bg-lv2 dark:odd:bg-lv1 dark:even:bg-lv2">
@@ -219,7 +253,9 @@ export default function StatsPage() {
                         { label: 'OPS', value: fmtDec(stats.ops, 3).replace(/^0/, '') },
                       ].map(({ label, value }) => (
                         <div key={label} className="flex flex-col items-center py-4 px-2">
-                          <span className="text-xs text-sub2 mb-1">{label}</span>
+                          <span className="text-xs text-sub2 mb-1">
+                            <StatTooltip label={label} />
+                          </span>
                           <span className="text-2xl font-bold text-accent">{value}</span>
                         </div>
                       ))}
@@ -233,8 +269,8 @@ export default function StatsPage() {
                       <StatRow left={{ label: '盗塁', value: stats.sb }}        right={{ label: '盗塁死', value: stats.cs }} />
                       <StatRow left={{ label: '三振', value: stats.strikeouts }} right={{ label: '四球', value: stats.walks }} />
                       <StatRow left={{ label: '死球', value: stats.hbp }}       right={{ label: '犠打', value: stats.sac_bunt }} />
-                      <StatRow left={{ label: '犠飛', value: stats.sac_fly }}   right={{ label: 'RC27', value: fmtDec(stats.rc27, 2) }} />
-                      <StatRow left={{ label: 'IsoD', value: fmtAvg(stats.isod) }} right={{ label: 'IsoP', value: fmtAvg(stats.isop) }} />
+                      <StatRow left={{ label: '犠飛', value: stats.sac_fly }}   right={{ label: <StatTooltip label="RC27" />, value: fmtDec(stats.rc27, 2) }} />
+                      <StatRow left={{ label: <StatTooltip label="IsoD" />, value: fmtAvg(stats.isod) }} right={{ label: <StatTooltip label="IsoP" />, value: fmtAvg(stats.isop) }} />
                     </div>
                   </>
                 )}

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import type { AtBat, OutfieldDirection, InfieldPosition } from '@/lib/supabase/types'
 
 const OUTFIELD_ORDER: OutfieldDirection[] = ['left', 'left_center', 'center', 'right_center', 'right']
@@ -22,6 +23,11 @@ const INFIELD_FULL: Record<InfieldPosition, string> = {
 const OUTFIELD_KEYS = new Set<string>(['left', 'left_center', 'center', 'right_center', 'right'])
 const INFIELD_KEYS = new Set<string>(['pitcher', 'catcher', 'first_base', 'second_base', 'third_base', 'shortstop'])
 
+const HIT_TYPES = new Set(['hit', 'double', 'triple', 'hr'])
+const OUT_TYPES = new Set(['strikeout', 'groundout', 'flyout', 'infield_flyout'])
+
+type Mode = 'all' | 'hit' | 'out'
+
 function heatColor(pct: number): { fill: string; text: string } {
   if (pct === 0) return { fill: '#f3f4f6', text: '#9ca3af' }
   if (pct < 12)  return { fill: '#dbeafe', text: '#1e40af' }
@@ -29,6 +35,30 @@ function heatColor(pct: number): { fill: string; text: string } {
   if (pct < 32)  return { fill: '#2563eb', text: 'white'   }
   if (pct < 45)  return { fill: '#f97316', text: 'white'   }
   return              { fill: '#dc2626', text: 'white'   }
+}
+
+function heatColorHit(pct: number): { fill: string; text: string } {
+  if (pct === 0) return { fill: '#f0fdf4', text: '#9ca3af' }
+  if (pct < 12)  return { fill: '#bbf7d0', text: '#166534' }
+  if (pct < 22)  return { fill: '#4ade80', text: '#14532d' }
+  if (pct < 32)  return { fill: '#16a34a', text: 'white'   }
+  if (pct < 45)  return { fill: '#15803d', text: 'white'   }
+  return              { fill: '#14532d', text: 'white'   }
+}
+
+function heatColorOut(pct: number): { fill: string; text: string } {
+  if (pct === 0) return { fill: '#fef2f2', text: '#9ca3af' }
+  if (pct < 12)  return { fill: '#fecaca', text: '#991b1b' }
+  if (pct < 22)  return { fill: '#f87171', text: '#7f1d1d' }
+  if (pct < 32)  return { fill: '#dc2626', text: 'white'   }
+  if (pct < 45)  return { fill: '#b91c1c', text: 'white'   }
+  return              { fill: '#7f1d1d', text: 'white'   }
+}
+
+function getColor(mode: Mode, pct: number) {
+  if (mode === 'hit') return heatColorHit(pct)
+  if (mode === 'out') return heatColorOut(pct)
+  return heatColor(pct)
 }
 
 function toRad(deg: number) { return (deg * Math.PI) / 180 }
@@ -49,12 +79,27 @@ function midPt(cx: number, cy: number, r: number, s: number, e: number) {
 
 interface Props { atBats: AtBat[] }
 
+const MODE_TABS: { value: Mode; label: string }[] = [
+  { value: 'all',  label: '全打球' },
+  { value: 'hit',  label: '安打のみ' },
+  { value: 'out',  label: 'アウトのみ' },
+]
+
 export default function DirectionChart({ atBats }: Props) {
+  const [mode, setMode] = useState<Mode>('all')
+
+  // モードでフィルタリング
+  const filtered = atBats.filter(ab => {
+    if (mode === 'hit') return HIT_TYPES.has(ab.result_type)
+    if (mode === 'out') return OUT_TYPES.has(ab.result_type)
+    return true
+  })
+
   const ofCnt = Object.fromEntries(OUTFIELD_ORDER.map(k => [k, 0])) as Record<OutfieldDirection, number>
   const ifCnt = Object.fromEntries(INFIELD_ORDER.map(k => [k, 0])) as Record<InfieldPosition, number>
   let ofTotal = 0, ifTotal = 0
 
-  for (const ab of atBats) {
+  for (const ab of filtered) {
     if (!ab.direction) continue
     if (OUTFIELD_KEYS.has(ab.direction)) { ofCnt[ab.direction as OutfieldDirection]++; ofTotal++ }
     else if (INFIELD_KEYS.has(ab.direction)) { ifCnt[ab.direction as InfieldPosition]++; ifTotal++ }
@@ -79,8 +124,31 @@ export default function DirectionChart({ atBats }: Props) {
     { pos: 'shortstop',   x: 107, y: 112 },
   ]
 
+  const noDataMsg =
+    mode === 'hit' ? '安打方向のデータがありません' :
+    mode === 'out' ? 'アウト方向のデータがありません' :
+    'データがありません'
+
   return (
     <div className="space-y-5">
+      {/* ─── モード切り替えトグル ─── */}
+      <div className="flex gap-1.5">
+        {MODE_TABS.map(({ value, label }) => (
+          <button
+            key={value}
+            onClick={() => setMode(value)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+              mode === value
+                ? 'bg-theme text-white border-theme'
+                : 'bg-lv2 border-s2 text-sub2 hover:text-main'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+        <span className="ml-auto text-xs text-sub2 self-center">{filtered.length} 打球</span>
+      </div>
+
       {/* ───── 外野 ───── */}
       <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-5">
         <div className="flex items-center justify-between mb-2">
@@ -89,7 +157,7 @@ export default function DirectionChart({ atBats }: Props) {
         </div>
 
         {ofTotal === 0 ? (
-          <p className="text-center text-sub2 text-sm py-10">外野方向のデータがありません</p>
+          <p className="text-center text-sub2 text-sm py-10">{noDataMsg}</p>
         ) : (
           <>
             <svg viewBox="0 0 400 240" className="w-full">
@@ -103,7 +171,7 @@ export default function DirectionChart({ atBats }: Props) {
                 <path
                   key={dir}
                   d={arcPath(CX, CY, R, start, end)}
-                  fill={heatColor(ofPct(dir)).fill}
+                  fill={getColor(mode, ofPct(dir)).fill}
                   fillOpacity="0.85"
                   stroke="white"
                   strokeWidth="2"
@@ -112,7 +180,7 @@ export default function DirectionChart({ atBats }: Props) {
               {/* pct + label */}
               {sectors.map(({ dir, start, end }) => {
                 const pct = ofPct(dir)
-                const { text } = heatColor(pct)
+                const { text } = getColor(mode, pct)
                 const { x, y } = midPt(CX, CY, R * 0.61, start, end)
                 return (
                   <g key={dir}>
@@ -134,7 +202,7 @@ export default function DirectionChart({ atBats }: Props) {
               {OUTFIELD_ORDER.map(dir => (
                 <div key={dir} className="flex items-center gap-1 text-xs text-sub2">
                   <span className="inline-block w-2.5 h-2.5 rounded-sm"
-                    style={{ background: heatColor(ofPct(dir)).fill, border: '1px solid #e5e7eb' }} />
+                    style={{ background: getColor(mode, ofPct(dir)).fill, border: '1px solid #e5e7eb' }} />
                   {OUTFIELD_SHORT[dir]}&nbsp;({ofCnt[dir]})
                 </div>
               ))}
@@ -151,7 +219,7 @@ export default function DirectionChart({ atBats }: Props) {
         </div>
 
         {ifTotal === 0 ? (
-          <p className="text-center text-sub2 text-sm py-10">内野方向のデータがありません</p>
+          <p className="text-center text-sub2 text-sm py-10">{noDataMsg}</p>
         ) : (
           <>
             <svg viewBox="0 0 300 285" className="w-full max-w-xs mx-auto">
@@ -168,7 +236,7 @@ export default function DirectionChart({ atBats }: Props) {
               {/* positions */}
               {positions.map(({ pos, x, y }) => {
                 const pct = ifPct(pos)
-                const { fill, text } = heatColor(pct)
+                const { fill, text } = getColor(mode, pct)
                 return (
                   <g key={pos}>
                     <circle cx={x} cy={y} r="22" fill={fill} fillOpacity="0.88"
@@ -194,7 +262,7 @@ export default function DirectionChart({ atBats }: Props) {
               {INFIELD_ORDER.map(pos => (
                 <div key={pos} className="flex items-center gap-1 text-xs text-sub2">
                   <span className="inline-block w-2.5 h-2.5 rounded-full"
-                    style={{ background: heatColor(ifPct(pos)).fill, border: '1px solid #e5e7eb' }} />
+                    style={{ background: getColor(mode, ifPct(pos)).fill, border: '1px solid #e5e7eb' }} />
                   {INFIELD_FULL[pos]}&nbsp;({ifCnt[pos]})
                 </div>
               ))}

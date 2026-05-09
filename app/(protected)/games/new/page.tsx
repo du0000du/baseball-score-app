@@ -63,7 +63,7 @@ export default function NewGamePage() {
     if (!user) { router.push('/login'); return }
 
     const season = new Date(form.game_date).getFullYear()
-    const { error: dbError } = await supabase.from('games').insert({
+    const { data: newGame, error: dbError } = await supabase.from('games').insert({
       user_id: user.id,
       game_date: form.game_date,
       opponent: form.opponent.trim(),
@@ -73,11 +73,10 @@ export default function NewGamePage() {
       stadium: form.stadium.trim() || null,
       notes: form.notes.trim() || null,
       season,
-    })
+    }).select().single()
 
     if (dbError) { setError('登録に失敗しました: ' + dbError.message); setLoading(false); return }
-    router.push('/games')
-    router.refresh()
+    router.push(`/games/${newGame.id}/at-bats`)
   }
 
   const resultOptions = [
