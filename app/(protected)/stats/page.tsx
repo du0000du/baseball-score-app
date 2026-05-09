@@ -44,25 +44,50 @@ const STAT_TOOLTIPS: Record<string, string> = {
 
 function StatTooltip({ label }: { label: string }) {
   const [show, setShow] = useState(false)
+  const [isTouch, setIsTouch] = useState(false)
   const tip = STAT_TOOLTIPS[label]
+
+  useEffect(() => {
+    const mq = window.matchMedia('(pointer: coarse)')
+    setIsTouch(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
   if (!tip) return <>{label}</>
+
   return (
     <span className="relative inline-flex items-center gap-1">
       {label}
       <button
         type="button"
-        onMouseEnter={() => setShow(true)}
-        onMouseLeave={() => setShow(false)}
-        onClick={() => setShow(v => !v)}
+        onMouseEnter={isTouch ? undefined : () => setShow(true)}
+        onMouseLeave={isTouch ? undefined : () => setShow(false)}
+        onClick={isTouch ? () => setShow(v => !v) : undefined}
         className="text-sub2 hover:text-theme transition-colors text-xs leading-none"
         aria-label={`${label}の説明`}
       >
         ⓘ
       </button>
-      {show && (
-        <span className="absolute bottom-full left-0 mb-2 z-50 bg-lv1 border border-s2 text-sub1 text-xs rounded-lg shadow-lg p-2.5 w-64 pointer-events-none block font-normal">
+      {/* デスクトップ: ホバーツールチップ（中央寄せ・見切れ防止） */}
+      {!isTouch && show && (
+        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 bg-lv1 border border-s2 text-sub1 text-xs rounded-lg shadow-lg p-2.5 w-64 max-w-[90vw] pointer-events-none block font-normal">
           {tip}
         </span>
+      )}
+      {/* スマホ: 画面下部モーダルシート */}
+      {isTouch && show && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/30"
+            onClick={() => setShow(false)}
+          />
+          <div className="fixed inset-x-0 bottom-0 z-50 bg-lv1 border-t border-s2 rounded-t-2xl p-6 shadow-2xl">
+            <div className="text-sm font-bold text-accent mb-2">{label}</div>
+            <p className="text-sm text-sub1 leading-relaxed">{tip}</p>
+          </div>
+        </>
       )}
     </span>
   )

@@ -119,9 +119,9 @@ export default function DirectionChart({ atBats }: Props) {
     { pos: 'catcher',     x: 150, y: 248 },
     { pos: 'pitcher',     x: 150, y: 158 },
     { pos: 'first_base',  x: 218, y: 150 },
-    { pos: 'second_base', x: 150, y: 77  },
+    { pos: 'second_base', x: 173, y: 91  },
     { pos: 'third_base',  x: 82,  y: 150 },
-    { pos: 'shortstop',   x: 107, y: 112 },
+    { pos: 'shortstop',   x: 127, y: 91  },
   ]
 
   const noDataMsg =
