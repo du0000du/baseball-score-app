@@ -18,6 +18,26 @@ export type GameResult = 'win' | 'loss' | 'draw'
 
 export type PitchingResult = 'win' | 'loss' | 'save' | 'hold' | 'none'
 
+// 守備ポジション（DH含む10種）
+export type FieldingPosition =
+  | 'pitcher' | 'catcher'
+  | 'first_base' | 'second_base' | 'third_base' | 'shortstop'
+  | 'left' | 'center' | 'right'
+  | 'dh'
+
+export const FIELDING_POSITIONS: { value: FieldingPosition; label: string; full: string }[] = [
+  { value: 'pitcher',     label: '投',  full: '投手' },
+  { value: 'catcher',     label: '捕',  full: '捕手' },
+  { value: 'first_base',  label: '一',  full: '一塁' },
+  { value: 'second_base', label: '二',  full: '二塁' },
+  { value: 'third_base',  label: '三',  full: '三塁' },
+  { value: 'shortstop',   label: '遊',  full: '遊撃' },
+  { value: 'left',        label: '左',  full: '左翼' },
+  { value: 'center',      label: '中',  full: '中堅' },
+  { value: 'right',       label: '右',  full: '右翼' },
+  { value: 'dh',          label: 'DH', full: 'DH' },
+]
+
 export interface User {
   id: string
   name: string | null
@@ -57,6 +77,7 @@ export interface AtBat {
   is_caught_stealing: boolean
   is_error: boolean
   input_method: 'manual' | 'nlp'
+  fielding_position: FieldingPosition | null
   created_at: string
 }
 

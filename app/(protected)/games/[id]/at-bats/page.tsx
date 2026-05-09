@@ -7,8 +7,9 @@ import { createClient } from '@/lib/supabase/client'
 import {
   DIRECTION_LABELS,
   getAtBatLabel,
+  FIELDING_POSITIONS,
 } from '@/lib/supabase/types'
-import type { AtBat, Direction, Game, ResultType, OutfieldDirection, InfieldPosition } from '@/lib/supabase/types'
+import type { AtBat, Direction, FieldingPosition, Game, ResultType, OutfieldDirection, InfieldPosition } from '@/lib/supabase/types'
 
 // 外野方向を表示する結果タイプ
 const SHOW_OUTFIELD_DIRECTION: ResultType[] = [
@@ -210,6 +211,7 @@ export default function AtBatsPage() {
   })
   const [resultType, setResultType] = useState<ResultType | null>(null)
   const [direction, setDirection] = useState<Direction | null>(null)
+  const [fieldingPosition, setFieldingPosition] = useState<FieldingPosition | null>(null)
   const [rbiCount, setRbiCount] = useState<number>(0)
   const [isRun, setIsRun] = useState(false)
   const [stolenBaseCount, setStolenBaseCount] = useState<number>(0)
@@ -228,6 +230,17 @@ export default function AtBatsPage() {
     fetchData()
   }, [fetchData])
 
+  // 同一試合内で最後の打席のポジションを引き継ぐ（新規入力モード時のみ）
+  useEffect(() => {
+    if (atBats.length > 0 && !editingAtBatId) {
+      const lastAb = atBats[atBats.length - 1]
+      if (lastAb.fielding_position) {
+        setFieldingPosition(lastAb.fielding_position as FieldingPosition)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [atBats])
+
   const resetForm = () => {
     setEditingAtBatId(null)
     setBattingOrder(() => {
@@ -239,6 +252,7 @@ export default function AtBatsPage() {
     })
     setResultType(null)
     setDirection(null)
+    setFieldingPosition(null)
     setRbiCount(0)
     setIsRun(false)
     setStolenBaseCount(0)
@@ -248,6 +262,7 @@ export default function AtBatsPage() {
     setEditingAtBatId(null)
     setResultType(null)
     setDirection(null)
+    // fieldingPosition はリセットしない（同試合内で前打席のポジションを引き継ぐ）
     setRbiCount(0)
     setIsRun(false)
     setStolenBaseCount(0)
@@ -264,6 +279,7 @@ export default function AtBatsPage() {
     setBattingOrder(ab.batting_order)
     setResultType(ab.result_type as ResultType)
     setDirection(ab.direction as Direction | null)
+    setFieldingPosition(ab.fielding_position as FieldingPosition | null)
     setRbiCount(ab.rbi_count ?? (ab.is_rbi ? 1 : 0))
     setIsRun(ab.is_run)
     setStolenBaseCount(ab.stolen_base_count ?? (ab.is_stolen_base ? 1 : 0))
@@ -309,6 +325,7 @@ export default function AtBatsPage() {
         result_type: resultType,
         hit_type: hitType,
         direction: directionValue,
+        fielding_position: fieldingPosition ?? null,
         is_rbi: rbiCount > 0,
         rbi_count: rbiCount,
         is_run: isRun,
@@ -332,6 +349,7 @@ export default function AtBatsPage() {
         result_type: resultType,
         hit_type: hitType,
         direction: directionValue,
+        fielding_position: fieldingPosition ?? null,
         is_rbi: rbiCount > 0,
         rbi_count: rbiCount,
         is_run: isRun,
@@ -480,6 +498,43 @@ export default function AtBatsPage() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* 守備ポジション（任意） */}
+        <div>
+          <label className="block text-sm font-medium text-sub1 mb-2">
+            守備ポジション
+            <span className="ml-1.5 text-[10px] bg-lv2 text-sub2 border border-s2 rounded px-1.5 py-0.5 font-normal">任意</span>
+          </label>
+          <div className="grid grid-cols-5 gap-1.5">
+            {FIELDING_POSITIONS.map(({ value, label, full }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFieldingPosition(fp => fp === value ? null : value)}
+                title={full}
+                className={`py-2.5 rounded-lg border text-sm font-bold transition-colors ${
+                  fieldingPosition === value
+                    ? 'bg-theme border-theme text-white'
+                    : 'bg-lv2 border-s2 text-main hover:bg-lv1'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {fieldingPosition && (
+            <p className="text-xs text-theme mt-1.5 flex items-center gap-1">
+              {FIELDING_POSITIONS.find(p => p.value === fieldingPosition)?.full} を選択中
+              <button
+                type="button"
+                onClick={() => setFieldingPosition(null)}
+                className="text-sub2 hover:text-neg-t ml-1 transition-colors"
+              >
+                ✕ 解除
+              </button>
+            </p>
+          )}
         </div>
 
         {/* 結果 */}

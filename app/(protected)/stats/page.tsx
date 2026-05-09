@@ -150,6 +150,9 @@ export default function StatsPage() {
   const [tab, setTab] = useState<Tab>('season')
   const [tabVisible, setTabVisible] = useState(true)
 
+  // P-2: シーズンごとのクライアントキャッシュ（タブ切り替え時のチラつき防止）
+  const cacheRef = useRef<Map<number, { games: GameWithAtBats[]; pitchingStats: PitchingStat[] }>>(new Map())
+
   // sessionStorage からタブを復元（SSR対策: useEffect で実行）
   useEffect(() => {
     const saved = sessionStorage.getItem('baseball_stats_tab')
@@ -162,24 +165,36 @@ export default function StatsPage() {
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i)
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchData = async () => {
+      // P-2: キャッシュヒット時はネットワーク取得をスキップ
+      const cached = cacheRef.current.get(season)
+      if (cached) {
+        setGames(cached.games)
+        setPitchingStats(cached.pitchingStats)
+        setLoading(false)
+        return
+      }
+
       setLoading(true)
-      const { data } = await supabase
-        .from('games')
-        .select('*, at_bats(*)')
-        .eq('season', season)
-        .order('game_date', { ascending: false })
-      setGames((data ?? []) as GameWithAtBats[])
-
-      const { data: ps } = await supabase
-        .from('pitching_stats')
-        .select('*, games!inner(season)')
-        .eq('games.season', season)
-      setPitchingStats((ps ?? []) as PitchingStat[])
-
+      const [{ data }, { data: ps }] = await Promise.all([
+        supabase
+          .from('games')
+          .select('*, at_bats(*)')
+          .eq('season', season)
+          .order('game_date', { ascending: false }),
+        supabase
+          .from('pitching_stats')
+          .select('*, games!inner(season)')
+          .eq('games.season', season),
+      ])
+      const gamesData = (data ?? []) as GameWithAtBats[]
+      const psData = (ps ?? []) as PitchingStat[]
+      setGames(gamesData)
+      setPitchingStats(psData)
+      cacheRef.current.set(season, { games: gamesData, pitchingStats: psData })
       setLoading(false)
     }
-    fetch()
+    fetchData()
   }, [supabase, season])
 
   const handleTabChange = (newTab: Tab) => {
