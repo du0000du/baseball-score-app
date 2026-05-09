@@ -22,6 +22,21 @@ const SHOW_INFIELD_POSITION: ResultType[] = ['groundout', 'infield_flyout']
 // FC時に内野守備位置を表示
 const SHOW_FC_POSITION: ResultType[] = ['fc']
 
+// ライナーアウト時に守備位置を表示
+const SHOW_LINER_POSITION: ResultType[] = ['liner_out']
+
+// ライナー守備位置（内野5種 + 外野3種）
+const LINER_POSITIONS: { value: Direction; label: string }[] = [
+  { value: 'pitcher',     label: 'ピッチャーライナー' },
+  { value: 'first_base',  label: 'ファーストライナー' },
+  { value: 'second_base', label: 'セカンドライナー' },
+  { value: 'third_base',  label: 'サードライナー' },
+  { value: 'shortstop',   label: 'ショートライナー' },
+  { value: 'left',        label: 'レフトライナー' },
+  { value: 'center',      label: 'センターライナー' },
+  { value: 'right',       label: 'ライトライナー' },
+]
+
 const RESULT_GROUPS: { label: string; color: string; activeColor: string; cols: string; items: ResultType[] }[] = [
   {
     label: '安打',
@@ -34,8 +49,8 @@ const RESULT_GROUPS: { label: string; color: string; activeColor: string; cols: 
     label: 'アウト',
     color: 'bg-lv2 border-s2 text-main hover:bg-lv2',
     activeColor: 'bg-sub1 border-sub1 text-white',
-    cols: 'grid-cols-4',
-    items: ['strikeout', 'groundout', 'flyout', 'infield_flyout'],
+    cols: 'grid-cols-5',
+    items: ['strikeout', 'groundout', 'flyout', 'infield_flyout', 'liner_out'],
   },
   {
     label: '出塁',
@@ -55,7 +70,7 @@ const RESULT_GROUPS: { label: string; color: string; activeColor: string; cols: 
 
 const RESULT_SHORT: Record<ResultType, string> = {
   hit: '単打', double: '二塁打', triple: '三塁打', hr: '本塁打',
-  strikeout: '三振', groundout: '内野ゴロ', flyout: '外野フライ', infield_flyout: '内野フライ',
+  strikeout: '三振', groundout: '内野ゴロ', flyout: '外野フライ', infield_flyout: '内野フライ', liner_out: 'ライナー',
   walk: '四球', hbp: '死球',
   sac_bunt: '犠打', sac_fly: '犠飛', error: 'エラー', fc: 'FC',
 }
@@ -283,7 +298,8 @@ export default function AtBatsPage() {
     const saveDirection = SHOW_OUTFIELD_DIRECTION.includes(resultType) ||
                           SHOW_INFIELD_POSITION.includes(resultType) ||
                           resultType === 'error' ||
-                          resultType === 'fc'
+                          resultType === 'fc' ||
+                          resultType === 'liner_out'
     const directionValue = saveDirection ? direction : null
 
     if (editingAtBatId) {
@@ -365,10 +381,11 @@ export default function AtBatsPage() {
   const showInfieldPosition = resultType ? SHOW_INFIELD_POSITION.includes(resultType) : false
   const showErrorPosition = resultType === 'error'
   const showFCPosition = resultType === 'fc'
+  const showLinerPosition = resultType ? SHOW_LINER_POSITION.includes(resultType) : false
 
   // 現試合の累計成績（atBats state から計算）
   const gameAb = atBats.filter(a =>
-    ['hit','double','triple','hr','strikeout','groundout','flyout','infield_flyout','sac_fly','error','fc'].includes(a.result_type)
+    ['hit','double','triple','hr','strikeout','groundout','flyout','infield_flyout','liner_out','sac_fly','error','fc'].includes(a.result_type)
   ).length
   const gameHits = atBats.filter(a =>
     ['hit','double','triple','hr'].includes(a.result_type)
@@ -585,6 +602,32 @@ export default function AtBatsPage() {
                     direction === pos.value
                       ? 'bg-purple-600 border-purple-600 text-white'
                       : 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800 text-purple-800 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40'
+                  }`}
+                >
+                  {pos.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ライナー守備位置（内野5種・外野3種） */}
+        {showLinerPosition && (
+          <div>
+            <label className="block text-sm font-medium text-sub1 mb-2">
+              ライナー先
+              <span className="text-sub2 font-normal ml-1">（任意）</span>
+            </label>
+            <div className="grid grid-cols-4 gap-1.5">
+              {LINER_POSITIONS.map((pos) => (
+                <button
+                  key={pos.value}
+                  type="button"
+                  onClick={() => setDirection(direction === pos.value ? null : pos.value)}
+                  className={`py-2.5 rounded-lg border text-xs font-medium transition-all ${
+                    direction === pos.value
+                      ? 'bg-sub1 border-sub1 text-white'
+                      : 'bg-lv2 border-s2 text-main hover:bg-lv2'
                   }`}
                 >
                   {pos.label}

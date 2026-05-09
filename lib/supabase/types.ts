@@ -1,6 +1,6 @@
 export type ResultType =
   | 'hit' | 'double' | 'triple' | 'hr'
-  | 'strikeout' | 'groundout' | 'flyout' | 'infield_flyout'
+  | 'strikeout' | 'groundout' | 'flyout' | 'infield_flyout' | 'liner_out'
   | 'walk' | 'hbp' | 'sac_bunt' | 'sac_fly'
   | 'error' | 'fc'
 
@@ -149,6 +149,7 @@ export const RESULT_TYPE_LABELS: Record<ResultType, string> = {
   groundout: '内野ゴロ',
   flyout: '外野フライ',
   infield_flyout: '内野フライ',
+  liner_out: 'ライナー',
   walk: '四球',
   hbp: '死球',
   sac_bunt: '犠打',
@@ -236,6 +237,7 @@ export const RESULT_TYPE_SHORT: Record<ResultType, string> = {
   groundout: '内ゴ',
   flyout: '外飛',
   infield_flyout: '内飛',
+  liner_out: 'ライナ',
   walk: '四球',
   hbp: '死球',
   sac_bunt: '犠打',
@@ -265,6 +267,18 @@ export const ERROR_POSITION_LABELS: Partial<Record<Direction, string>> = {
   right:       'ライトエラー',
 }
 
+// ライナーアウト守備位置ラベル
+export const LINER_OUT_LABELS: Partial<Record<Direction, string>> = {
+  pitcher:     'ピッチャーライナー',
+  first_base:  'ファーストライナー',
+  second_base: 'セカンドライナー',
+  third_base:  'サードライナー',
+  shortstop:   'ショートライナー',
+  left:        'レフトライナー',
+  center:      'センターライナー',
+  right:       'ライトライナー',
+}
+
 // 打席結果の表示ラベル（守備位置付き）
 export function getAtBatLabel(resultType: ResultType, direction: Direction | null): string {
   if (resultType === 'groundout' && isInfieldPosition(direction)) {
@@ -272,6 +286,9 @@ export function getAtBatLabel(resultType: ResultType, direction: Direction | nul
   }
   if (resultType === 'infield_flyout' && isInfieldPosition(direction)) {
     return INFIELD_FLY_POSITION_LABELS[direction]
+  }
+  if (resultType === 'liner_out' && direction && LINER_OUT_LABELS[direction]) {
+    return LINER_OUT_LABELS[direction]!
   }
   if (resultType === 'error' && direction && ERROR_POSITION_LABELS[direction]) {
     return ERROR_POSITION_LABELS[direction]!
