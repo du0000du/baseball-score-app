@@ -797,6 +797,82 @@ export default function StatsPage() {
                   </div>
                 )}
 
+                {/* 6. 打順別成績 (B-1) */}
+                {(() => {
+                  const orders = [1,2,3,4,5,6,7,8,9]
+                  const rows = orders.map(order => {
+                    const abs = allAtBats.filter(ab => ab.batting_order === order)
+                    if (abs.length === 0) return null
+                    const s = calcBattingStats(abs)
+                    return { order, pa: s.pa, ab: s.ab, hits: s.hits, hrs: s.hrs, rbi: s.rbi, avg: s.avg }
+                  }).filter(Boolean)
+                  if (rows.length === 0) return null
+                  return (
+                    <div className={`${card} p-5 lg:col-span-2`}>
+                      <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">打順別成績</h2>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="text-xs text-sub2 border-b border-s2">
+                              <th className="text-left py-2">打順</th>
+                              <th className="px-2 py-2">打席</th>
+                              <th className="px-2 py-2">打率</th>
+                              <th className="px-2 py-2">安打</th>
+                              <th className="px-2 py-2">HR</th>
+                              <th className="px-2 py-2">打点</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-s2">
+                            {rows.map(row => (
+                              <tr key={row!.order} className="text-center">
+                                <td className="text-left py-2 font-medium text-main">{row!.order}番</td>
+                                <td className="px-2 py-2 text-sub1">{row!.pa}</td>
+                                <td className={`px-2 py-2 font-bold ${avgColor(row!.avg)}`}>{fmtAvg(row!.avg)}</td>
+                                <td className="px-2 py-2 text-main">{row!.hits}</td>
+                                <td className="px-2 py-2 text-main">{row!.hrs}</td>
+                                <td className="px-2 py-2 text-main">{row!.rbi}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* 7. 対戦相手別成績 (B-2) */}
+                {(() => {
+                  const opponents = [...new Set(games.map(g => g.opponent))]
+                  if (opponents.length < 2) return null
+                  const rows = opponents.map(opp => {
+                    const oppGames = games.filter(g => g.opponent === opp)
+                    const oppABs = oppGames.flatMap(g => g.at_bats)
+                    const s = calcBattingStats(oppABs)
+                    const oppWins = oppGames.filter(g => g.result === 'win').length
+                    return { opp, games: oppGames.length, wins: oppWins, avg: s.avg, hits: s.hits, hrs: s.hrs }
+                  }).sort((a, b) => (b.avg ?? 0) - (a.avg ?? 0))
+                  return (
+                    <div className={`${card} p-5 lg:col-span-2`}>
+                      <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">対戦相手別成績</h2>
+                      <div className="space-y-2">
+                        {rows.map(r => (
+                          <div key={r.opp} className="flex items-center justify-between py-1.5 border-b border-s2 last:border-0">
+                            <div>
+                              <span className="text-sm font-medium text-main">vs {r.opp}</span>
+                              <span className="text-xs text-sub2 ml-2">{r.games}試合 {r.wins}勝</span>
+                            </div>
+                            <div className="flex gap-3 text-sm">
+                              <span className={`font-bold ${avgColor(r.avg)}`}>{fmtAvg(r.avg)}</span>
+                              <span className="text-sub1">{r.hits}安打</span>
+                              {r.hrs > 0 && <span className="text-accent font-bold">{r.hrs}HR</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
+
               </div>
             )
           })()}

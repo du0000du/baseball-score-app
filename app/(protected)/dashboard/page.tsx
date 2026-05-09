@@ -1,7 +1,19 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { calcBattingStats, calcPitchingStats, fmtAvg, fmtDec, fmtERA, formatIP } from '@/lib/stats'
-import type { AtBat, Game, User, PitchingStat } from '@/lib/supabase/types'
+import type { AtBat, Game, User, PitchingStat, BattingStats } from '@/lib/supabase/types'
+
+const BADGES: { id: string; label: string; emoji: string; cond: (s: BattingStats) => boolean }[] = [
+  { id: 'three_hundred', label: '.300打者', emoji: '🏆', cond: (s) => (s.avg ?? 0) >= 0.300 },
+  { id: 'five_hr',       label: '5本塁打',  emoji: '💪', cond: (s) => s.hrs >= 5 },
+  { id: 'ten_hr',        label: '10本塁打', emoji: '🔥', cond: (s) => s.hrs >= 10 },
+  { id: 'ten_rbi',       label: '10打点',   emoji: '⚡', cond: (s) => s.rbi >= 10 },
+  { id: 'ten_sb',        label: '10盗塁',   emoji: '💨', cond: (s) => s.sb >= 10 },
+  { id: 'ops_eight',     label: 'OPS .800+', emoji: '📈', cond: (s) => (s.ops ?? 0) >= 0.800 },
+  { id: 'ops_nine',      label: 'OPS .900+', emoji: '🌟', cond: (s) => (s.ops ?? 0) >= 0.900 },
+  { id: 'twenty_hits',   label: '20安打',   emoji: '🎯', cond: (s) => s.hits >= 20 },
+  { id: 'no_strikeout',  label: '無三振10打席', emoji: '🛡️', cond: (s) => s.strikeouts === 0 && s.pa >= 10 },
+]
 
 function formatDate(dateStr: string) {
   const [, m, d] = dateStr.split('-')
@@ -138,6 +150,24 @@ export default async function DashboardPage() {
                   <div><div className={smallVal}>{stats.rbi}</div><div className={smallLabel}>打点</div></div>
                   <div><div className={smallVal}>{stats.sb}</div><div className={smallLabel}>盗塁</div></div>
                 </div>
+                {/* 実績バッジ (B-3) */}
+                {(() => {
+                  const earned = BADGES.filter(b => b.cond(stats))
+                  if (earned.length === 0) return null
+                  return (
+                    <div className={`mt-4 pt-4 ${divider}`}>
+                      <p className="text-xs text-sub2 mb-2">🏅 今シーズンの実績</p>
+                      <div className="flex flex-wrap gap-2">
+                        {earned.map(b => (
+                          <span key={b.id} className="flex items-center gap-1 text-xs bg-lv2 border border-s2 rounded-full px-2.5 py-1 text-sub1">
+                            <span>{b.emoji}</span>
+                            <span>{b.label}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
               </>
             )}
           </div>
