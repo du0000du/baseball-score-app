@@ -78,6 +78,8 @@ export interface AtBat {
   is_error: boolean
   input_method: 'manual' | 'nlp'
   fielding_position: FieldingPosition | null
+  count_balls: number | null        // N-3: 最終ボールカウント（任意）
+  count_strikes: number | null      // N-3: 最終ストライクカウント（任意）
   created_at: string
 }
 

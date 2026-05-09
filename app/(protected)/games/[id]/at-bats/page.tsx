@@ -196,6 +196,9 @@ export default function AtBatsPage() {
   const [submitting, setSubmitting] = useState(false)
   const [saved, setSaved] = useState(false)
   const [savedFlash, setSavedFlash] = useState(false)
+  // N-3: カウント記録（任意）
+  const [countBalls, setCountBalls] = useState<number | null>(null)
+  const [countStrikes, setCountStrikes] = useState<number | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState('')
 
@@ -267,6 +270,8 @@ export default function AtBatsPage() {
     setRbiCount(0)
     setIsRun(false)
     setStolenBaseCount(0)
+    setCountBalls(null)
+    setCountStrikes(null)
   }
 
   const handleResultTypeChange = (rt: ResultType) => {
@@ -284,6 +289,8 @@ export default function AtBatsPage() {
     setRbiCount(ab.rbi_count ?? (ab.is_rbi ? 1 : 0))
     setIsRun(ab.is_run)
     setStolenBaseCount(ab.stolen_base_count ?? (ab.is_stolen_base ? 1 : 0))
+    setCountBalls(ab.count_balls ?? null)
+    setCountStrikes(ab.count_strikes ?? null)
     setSubmitError('')
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
@@ -333,6 +340,8 @@ export default function AtBatsPage() {
         is_stolen_base: stolenBaseCount > 0,
         stolen_base_count: stolenBaseCount,
         is_error: resultType === 'error',
+        count_balls: countBalls,
+        count_strikes: countStrikes,
       }).eq('id', editingAtBatId)
 
       if (error) {
@@ -359,6 +368,8 @@ export default function AtBatsPage() {
         is_caught_stealing: false,
         is_error: resultType === 'error',
         input_method: 'manual',
+        count_balls: countBalls,
+        count_strikes: countStrikes,
       })
 
       if (error) {
@@ -532,6 +543,68 @@ export default function AtBatsPage() {
               <button
                 type="button"
                 onClick={() => setFieldingPosition(null)}
+                className="text-sub2 hover:text-neg-t ml-1 transition-colors"
+              >
+                ✕ 解除
+              </button>
+            </p>
+          )}
+        </div>
+
+        {/* N-3: 最終カウント（任意） */}
+        <div>
+          <label className="block text-sm font-medium text-sub1 mb-2">
+            最終カウント
+            <span className="ml-1.5 text-[10px] bg-lv2 text-sub2 border border-s2 rounded px-1.5 py-0.5 font-normal">任意</span>
+          </label>
+          <div className="space-y-2">
+            {/* ボール */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-sub1 w-12 shrink-0">ボール</span>
+              <div className="flex gap-1">
+                {[0, 1, 2, 3].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setCountBalls(countBalls === n ? null : n)}
+                    className={`w-10 h-9 rounded-lg border text-sm font-medium transition-all ${
+                      countBalls === n
+                        ? 'bg-green-600 border-green-600 text-white'
+                        : 'border-s2 text-sub1 hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* ストライク */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-sub1 w-12 shrink-0">ストライク</span>
+              <div className="flex gap-1">
+                {[0, 1, 2].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setCountStrikes(countStrikes === n ? null : n)}
+                    className={`w-10 h-9 rounded-lg border text-sm font-medium transition-all ${
+                      countStrikes === n
+                        ? 'bg-red-500 border-red-500 text-white'
+                        : 'border-s2 text-sub1 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          {(countBalls !== null || countStrikes !== null) && (
+            <p className="text-xs text-theme mt-1.5 flex items-center gap-1">
+              {countBalls !== null ? `${countBalls}B` : '?B'} - {countStrikes !== null ? `${countStrikes}S` : '?S'} で記録
+              <button
+                type="button"
+                onClick={() => { setCountBalls(null); setCountStrikes(null) }}
                 className="text-sub2 hover:text-neg-t ml-1 transition-colors"
               >
                 ✕ 解除
@@ -866,6 +939,11 @@ export default function AtBatsPage() {
                       {sbVal > 0 && (
                         <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded font-medium">
                           盗塁{sbVal > 1 ? sbVal : ''}
+                        </span>
+                      )}
+                      {(ab.count_balls !== null || ab.count_strikes !== null) && (
+                        <span className="text-xs bg-lv2 text-sub2 px-1.5 py-0.5 rounded font-mono">
+                          {ab.count_balls ?? '?'}B-{ab.count_strikes ?? '?'}S
                         </span>
                       )}
                     </div>

@@ -168,6 +168,11 @@ export default function StatsPage() {
   const [tab, setTab] = useState<Tab>('season')
   const [tabVisible, setTabVisible] = useState(true)
   const [copiedFlash, setCopiedFlash] = useState(false)
+  const [logFilter, setLogFilter] = useState<ResultType | 'all'>('all')
+
+  // M-1: スワイプ検出用 ref
+  const touchStartX = useRef<number | null>(null)
+  const touchStartY = useRef<number | null>(null)
 
   // P-2: シーズンごとのクライアントキャッシュ（タブ切り替え時のチラつき防止）
   const cacheRef = useRef<Map<number | 'all', { games: GameWithAtBats[]; pitchingStats: PitchingStat[] }>>(new Map())
@@ -223,6 +228,25 @@ export default function StatsPage() {
     }
     fetchData()
   }, [supabase, season])
+
+  // M-1: スワイプでタブ遷移（縦スクロール競合防止）
+  const SWIPE_TABS: Tab[] = ['season', 'per-game', 'log', 'pitching', 'direction', 'analytics']
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+    touchStartY.current = e.touches[0].clientY
+  }
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current
+    touchStartX.current = null
+    touchStartY.current = null
+    // 縦方向が横方向より大きい場合はスクロールとみなしてスキップ
+    if (Math.abs(deltaY) > Math.abs(deltaX)) return
+    const currentIndex = SWIPE_TABS.indexOf(tab)
+    if (deltaX < -50 && currentIndex < SWIPE_TABS.length - 1) handleTabChange(SWIPE_TABS[currentIndex + 1])
+    if (deltaX > 50 && currentIndex > 0) handleTabChange(SWIPE_TABS[currentIndex - 1])
+  }
 
   const handleSeasonChange = (val: number | 'all') => {
     setSeason(val)
@@ -302,6 +326,8 @@ export default function StatsPage() {
             transition: tabVisible ? 'opacity 0.14s ease-out' : 'none',
             overflowAnchor: 'none',
           }}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
         >
 
           {/* タブ1: シーズン累計 */}
@@ -524,14 +550,46 @@ export default function StatsPage() {
           {/* タブ3: 打席ログ（試合別タイムライン） */}
           {tab === 'log' && (
             <div className="space-y-3">
+              {/* M-4: ログフィルタ */}
+              {allAtBats.length > 0 && (() => {
+                const LOG_FILTERS: { value: ResultType | 'all'; label: string }[] = [
+                  { value: 'all',       label: '全部' },
+                  { value: 'hit',       label: '安打' },
+                  { value: 'double',    label: '二塁打' },
+                  { value: 'triple',    label: '三塁打' },
+                  { value: 'hr',        label: '本塁打' },
+                  { value: 'strikeout', label: '三振' },
+                  { value: 'walk',      label: '四球' },
+                  { value: 'hbp',       label: '死球' },
+                ]
+                return (
+                  <div className="flex gap-1.5 flex-wrap">
+                    {LOG_FILTERS.map(({ value, label }) => (
+                      <button
+                        key={value}
+                        onClick={() => setLogFilter(value)}
+                        className={`px-3 py-1 text-xs rounded-lg border font-medium transition-colors ${
+                          logFilter === value
+                            ? 'bg-theme text-white border-theme'
+                            : 'bg-lv1 border-s2 text-sub2 hover:text-main'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )
+              })()}
               {allAtBats.length === 0 ? (
                 <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-12 text-center text-sub2">
                   打席データがありません
                 </div>
               ) : (
                 games.map((game) => {
-                  if (game.at_bats.length === 0) return null
-                  const sorted = [...game.at_bats].sort((a, b) => a.at_bat_number - b.at_bat_number)
+                  const sorted = [...game.at_bats]
+                    .filter(ab => logFilter === 'all' || ab.result_type === logFilter)
+                    .sort((a, b) => a.at_bat_number - b.at_bat_number)
+                  if (sorted.length === 0) return null
                   return (
                     <div key={game.id} className="bg-lv1 rounded-xl shadow-sm border border-s2 p-4">
                       {/* 試合ヘッダー */}
@@ -973,6 +1031,83 @@ export default function StatsPage() {
                                 <td className={`px-2 py-2 font-bold ${avgColor(row!.avg)}`}>{fmtAvg(row!.avg)}</td>
                                 <td className="px-2 py-2 text-main">{row!.hits}</td>
                                 <td className="px-2 py-2 text-main">{row!.hrs > 0 ? row!.hrs : '-'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* 9. 月別打率 (L-3) */}
+                {(() => {
+                  const monthMap = new Map<string, GameWithAtBats[]>()
+                  for (const g of sortedGames) {
+                    const [, m] = g.game_date.split('-')
+                    const key = `${parseInt(m)}月`
+                    if (!monthMap.has(key)) monthMap.set(key, [])
+                    monthMap.get(key)!.push(g)
+                  }
+                  if (monthMap.size < 2) return null
+                  const monthData = Array.from(monthMap.entries()).map(([month, mGames]) => {
+                    const s = calcBattingStats(mGames.flatMap(g => g.at_bats))
+                    return { month, avg: parseFloat((s.avg ?? 0).toFixed(3)), hits: s.hits, ab: s.ab }
+                  })
+                  return (
+                    <div className={`${card} p-5`}>
+                      <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">月別打率</h2>
+                      <ResponsiveContainer width="100%" height={140}>
+                        <BarChart data={monthData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border_lv2)" />
+                          <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} />
+                          <YAxis domain={[0, 0.5]} tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} tickFormatter={(v: number) => v.toFixed(1)} />
+                          <Tooltip formatter={(v: number, name: string) => [v.toFixed(3).replace(/^0/, ''), '打率']} />
+                          <Bar dataKey="avg" fill="var(--theme)" radius={[4,4,0,0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )
+                })()}
+
+                {/* 10. 球場別成績 (L-3) */}
+                {(() => {
+                  const stadiumMap = new Map<string, GameWithAtBats[]>()
+                  for (const g of games) {
+                    if (!g.stadium) continue
+                    if (!stadiumMap.has(g.stadium)) stadiumMap.set(g.stadium, [])
+                    stadiumMap.get(g.stadium)!.push(g)
+                  }
+                  if (stadiumMap.size < 2) return null
+                  const rows = Array.from(stadiumMap.entries())
+                    .map(([stadium, sGames]) => {
+                      const s = calcBattingStats(sGames.flatMap(g => g.at_bats))
+                      return { stadium, games: sGames.length, avg: s.avg, hits: s.hits, hrs: s.hrs }
+                    })
+                    .sort((a, b) => (b.avg ?? 0) - (a.avg ?? 0))
+                    .slice(0, 5)
+                  return (
+                    <div className={`${card} p-5 lg:col-span-2`}>
+                      <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">球場別成績（上位5）</h2>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="text-xs text-sub2 border-b border-s2">
+                              <th className="text-left py-2">球場</th>
+                              <th className="px-2 py-2">試合</th>
+                              <th className="px-2 py-2">打率</th>
+                              <th className="px-2 py-2">安打</th>
+                              <th className="px-2 py-2">HR</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-s2">
+                            {rows.map(r => (
+                              <tr key={r.stadium} className="text-center">
+                                <td className="text-left py-2 text-main text-xs">{r.stadium}</td>
+                                <td className="px-2 py-2 text-sub1">{r.games}</td>
+                                <td className={`px-2 py-2 font-bold ${avgColor(r.avg)}`}>{fmtAvg(r.avg)}</td>
+                                <td className="px-2 py-2 text-main">{r.hits}</td>
+                                <td className="px-2 py-2 text-main">{r.hrs > 0 ? r.hrs : '-'}</td>
                               </tr>
                             ))}
                           </tbody>
