@@ -19,6 +19,20 @@ function formatDate(dateStr: string) {
   return `${parseInt(m)}/${parseInt(d)}`
 }
 
+function avgColor(avg: number | null): string {
+  if (avg === null) return 'text-accent'
+  if (avg >= 0.300) return 'text-pos-t'
+  if (avg >= 0.250) return 'text-neu-t'
+  return 'text-neg-t'
+}
+
+function opsColor(ops: number | null): string {
+  if (ops === null) return 'text-accent'
+  if (ops >= 0.800) return 'text-pos-t'
+  if (ops >= 0.700) return 'text-neu-t'
+  return 'text-neg-t'
+}
+
 function ResultBadge({ result }: { result: Game['result'] }) {
   if (result === 'win') return <span className="text-xs px-1.5 py-0.5 rounded bg-pos text-pos-t font-bold">勝</span>
   if (result === 'loss') return <span className="text-xs px-1.5 py-0.5 rounded bg-neg text-neg-t font-bold">負</span>
@@ -283,16 +297,16 @@ export default function StatsPage() {
                     {/* 主要指標ハイライト */}
                     <div className="grid grid-cols-4 divide-x divide-s2 border-b border-s2">
                       {[
-                        { label: '打率', value: fmtAvg(stats.avg) },
-                        { label: '出塁率', value: fmtAvg(stats.obp) },
-                        { label: '長打率', value: fmtAvg(stats.slg) },
-                        { label: 'OPS', value: fmtDec(stats.ops, 3).replace(/^0/, '') },
-                      ].map(({ label, value }) => (
+                        { label: '打率', value: fmtAvg(stats.avg), colorClass: avgColor(stats.avg) },
+                        { label: '出塁率', value: fmtAvg(stats.obp), colorClass: 'text-accent' },
+                        { label: '長打率', value: fmtAvg(stats.slg), colorClass: 'text-accent' },
+                        { label: 'OPS', value: fmtDec(stats.ops, 3).replace(/^0/, ''), colorClass: opsColor(stats.ops) },
+                      ].map(({ label, value, colorClass }) => (
                         <div key={label} className="flex flex-col items-center py-4 px-2">
                           <span className="text-xs text-sub2 mb-1">
                             <StatTooltip label={label} />
                           </span>
-                          <span className="text-2xl font-bold text-accent">{value}</span>
+                          <span className={`text-2xl font-bold ${colorClass}`}>{value}</span>
                         </div>
                       ))}
                     </div>
@@ -424,7 +438,7 @@ export default function StatsPage() {
                             <td className="px-3 py-3 text-center text-main">{gs.pa}</td>
                             <td className="px-3 py-3 text-center text-main">{gs.ab}</td>
                             <td className="px-3 py-3 text-center text-main">{gs.hits}</td>
-                            <td className="px-3 py-3 text-center font-medium text-accent">{fmtAvg(gs.avg)}</td>
+                            <td className={`px-3 py-3 text-center font-medium ${avgColor(gs.avg)}`}>{fmtAvg(gs.avg)}</td>
                             <td className="px-3 py-3 text-center text-main">{gs.rbi}</td>
                             <td className="px-3 py-3 text-center text-main">{gs.sb}</td>
                             <td className="px-3 py-3 text-center text-main">{gs.strikeouts}</td>
@@ -441,76 +455,61 @@ export default function StatsPage() {
             )
           })()}
 
-          {/* タブ3: 全打席ログ */}
+          {/* タブ3: 打席ログ（試合別タイムライン） */}
           {tab === 'log' && (
-            <div className="bg-lv1 rounded-xl shadow-sm border border-s2 overflow-hidden">
+            <div className="space-y-3">
               {allAtBats.length === 0 ? (
-                <div className="p-12 text-center text-sub2">打席データがありません</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-lv2 text-sub2 text-xs">
-                        <th className="text-left px-4 py-3 font-medium">日付</th>
-                        <th className="text-left px-4 py-3 font-medium">相手</th>
-                        <th className="px-3 py-3 font-medium">打席</th>
-                        <th className="px-3 py-3 font-medium">打順</th>
-                        <th className="text-left px-3 py-3 font-medium">結果</th>
-                        <th className="text-left px-3 py-3 font-medium">方向</th>
-                        <th className="px-3 py-3 font-medium">打点</th>
-                        <th className="px-3 py-3 font-medium">盗塁</th>
-                        <th className="px-3 py-3 font-medium">得点</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-s2">
-                      {games.flatMap((game) =>
-                        game.at_bats.map((ab) => (
-                          <tr key={ab.id} className="hover:bg-lv2 dark:hover:bg-lv1 transition-colors duration-100">
-                            <td className="px-4 py-2.5 text-sub1 whitespace-nowrap">{formatDate(game.game_date)}</td>
-                            <td className="px-4 py-2.5 text-main whitespace-nowrap">{game.opponent}</td>
-                            <td className="px-3 py-2.5 text-center text-sub2">#{ab.at_bat_number}</td>
-                            <td className="px-3 py-2.5 text-center text-main">{ab.batting_order}番</td>
-                            <td className="px-3 py-2.5">
-                              <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                                ['hit','double','triple','hr'].includes(ab.result_type)
-                                  ? 'bg-pos text-pos-t'
-                                  : ab.result_type === 'strikeout'
-                                  ? 'bg-neg text-neg-t'
-                                  : ['walk','hbp'].includes(ab.result_type)
-                                  ? 'bg-theme/15 text-theme'
-                                  : 'bg-lv2 text-sub1'
-                              }`}>
-                                {RESULT_TYPE_LABELS[ab.result_type as ResultType] ?? ab.result_type}
-                              </span>
-                            </td>
-                            <td className="px-3 py-2.5 text-sub2 text-xs">
-                              {ab.direction ? DIRECTION_LABELS[ab.direction as Direction] : '-'}
-                            </td>
-                            <td className="px-3 py-2.5 text-center">
-                              {(() => {
-                                const cnt = ab.rbi_count ?? (ab.is_rbi ? 1 : 0)
-                                return cnt > 0
-                                  ? <span className="text-accent font-bold">{cnt}</span>
-                                  : <span className="text-s2">-</span>
-                              })()}
-                            </td>
-                            <td className="px-3 py-2.5 text-center">
-                              {(() => {
-                                const sb = ab.stolen_base_count ?? (ab.is_stolen_base ? 1 : 0)
-                                return sb > 0
-                                  ? <span className="text-pos-t font-bold">{sb}</span>
-                                  : <span className="text-s2">-</span>
-                              })()}
-                            </td>
-                            <td className="px-3 py-2.5 text-center">
-                              {ab.is_run ? <span className="text-theme font-bold">●</span> : <span className="text-s2">-</span>}
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-12 text-center text-sub2">
+                  打席データがありません
                 </div>
+              ) : (
+                games.map((game) => {
+                  if (game.at_bats.length === 0) return null
+                  const sorted = [...game.at_bats].sort((a, b) => a.at_bat_number - b.at_bat_number)
+                  return (
+                    <div key={game.id} className="bg-lv1 rounded-xl shadow-sm border border-s2 p-4">
+                      {/* 試合ヘッダー */}
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-sm font-medium text-main">{formatDate(game.game_date)} vs {game.opponent}</span>
+                        <ResultBadge result={game.result} />
+                        <span className="text-xs text-sub2 ml-auto">{sorted.length}打席</span>
+                      </div>
+                      {/* 打席バッジ横並び */}
+                      <div className="flex flex-wrap gap-2">
+                        {sorted.map((ab) => {
+                          const isHit = ['hit', 'double', 'triple', 'hr'].includes(ab.result_type)
+                          const isK = ab.result_type === 'strikeout'
+                          const isWalk = ['walk', 'hbp'].includes(ab.result_type)
+                          const badgeClass = isHit
+                            ? 'bg-pos text-pos-t'
+                            : isK
+                            ? 'bg-neg text-neg-t'
+                            : isWalk
+                            ? 'bg-theme/15 text-theme'
+                            : 'bg-lv2 text-sub1'
+                          const label = RESULT_TYPE_LABELS[ab.result_type as ResultType] ?? ab.result_type
+                          const rbiVal = ab.rbi_count ?? (ab.is_rbi ? 1 : 0)
+                          const sbVal = ab.stolen_base_count ?? (ab.is_stolen_base ? 1 : 0)
+                          return (
+                            <div key={ab.id} className="flex flex-col items-center gap-0.5">
+                              <span className="text-[10px] text-sub2">{ab.at_bat_number}</span>
+                              <span className={`text-xs font-medium px-2.5 py-1 rounded-lg ${badgeClass}`}>
+                                {label}
+                              </span>
+                              {(rbiVal > 0 || sbVal > 0 || ab.is_run) && (
+                                <span className="text-[10px] text-sub2">
+                                  {rbiVal > 0 && `打${rbiVal}`}
+                                  {sbVal > 0 && `盗${sbVal}`}
+                                  {ab.is_run && '得'}
+                                </span>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })
               )}
             </div>
           )}
