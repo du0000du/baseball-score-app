@@ -25,9 +25,10 @@ function AtBatStats({ atBats }: { atBats: AtBat[] }) {
   const ab = atBats.filter(a => AB_COUNTING_TYPES.includes(a.result_type)).length
   const hits = atBats.filter(a => HIT_TYPES.includes(a.result_type)).length
   const hrs = atBats.filter(a => a.result_type === 'hr').length
+  const rbi = atBats.reduce((sum, a) => sum + (a.rbi_count ?? 0), 0)
   return (
     <span className="text-sm text-sub2">
-      {hits}/{ab}{hrs > 0 ? ` ${hrs}HR` : ''}
+      {hits}/{ab}{hrs > 0 ? ` ${hrs}HR` : ''}{rbi > 0 ? ` 打点${rbi}` : ''}
     </span>
   )
 }

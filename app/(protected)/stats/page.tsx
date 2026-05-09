@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { calcBattingStats, calcPitchingStats, fmtAvg, fmtDec, fmtERA, formatIP } from '@/lib/stats'
-import { RESULT_TYPE_LABELS, DIRECTION_LABELS } from '@/lib/supabase/types'
+import { RESULT_TYPE_LABELS, DIRECTION_LABELS, FIELDING_POSITIONS } from '@/lib/supabase/types'
 import type { AtBat, Direction, Game, ResultType, PitchingStat } from '@/lib/supabase/types'
 import DirectionChart from '@/app/(protected)/_components/DirectionChart'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
@@ -167,6 +167,7 @@ export default function StatsPage() {
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('season')
   const [tabVisible, setTabVisible] = useState(true)
+  const [copiedFlash, setCopiedFlash] = useState(false)
 
   // P-2: シーズンごとのクライアントキャッシュ（タブ切り替え時のチラつき防止）
   const cacheRef = useRef<Map<number | 'all', { games: GameWithAtBats[]; pitchingStats: PitchingStat[] }>>(new Map())
@@ -369,6 +370,23 @@ export default function StatsPage() {
                       <StatRow left={{ label: '死球', value: stats.hbp }}       right={{ label: '犠打', value: stats.sac_bunt }} />
                       <StatRow left={{ label: '犠飛', value: stats.sac_fly }}   right={{ label: <StatTooltip label="RC27" />, value: fmtDec(stats.rc27, 2) }} />
                       <StatRow left={{ label: <StatTooltip label="IsoD" />, value: fmtAvg(stats.isod) }} right={{ label: <StatTooltip label="IsoP" />, value: fmtAvg(stats.isop) }} />
+                    </div>
+                    {/* L-2: 成績コピーボタン */}
+                    <div className="px-5 py-3 border-t border-s2 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const label = season === 'all' ? '通算' : `${season}年`
+                          const text = `⚾ ${label}成績\n打率: ${fmtAvg(stats.avg)}  安打: ${stats.hits}  本塁打: ${stats.hrs}  打点: ${stats.rbi}  OPS: ${fmtDec(stats.ops, 3).replace(/^0/, '')}`
+                          navigator.clipboard.writeText(text).then(() => {
+                            setCopiedFlash(true)
+                            setTimeout(() => setCopiedFlash(false), 800)
+                          })
+                        }}
+                        className="text-xs text-sub2 hover:text-theme border border-s2 rounded-lg px-3 py-1.5 transition-colors"
+                      >
+                        📋 成績をコピー
+                      </button>
                     </div>
                   </>
                 )}
@@ -924,10 +942,57 @@ export default function StatsPage() {
                   )
                 })()}
 
+                {/* 8. 守備位置別成績 (N-1) */}
+                {(() => {
+                  const posRows = FIELDING_POSITIONS.map(({ value, full }) => {
+                    const posABs = allAtBats.filter(ab => ab.fielding_position === value)
+                    if (posABs.length === 0) return null
+                    const s = calcBattingStats(posABs)
+                    return { label: full, pa: s.pa, ab: s.ab, hits: s.hits, hrs: s.hrs, avg: s.avg }
+                  }).filter(Boolean)
+                  if (posRows.length === 0) return null
+                  return (
+                    <div className={`${card} p-5 lg:col-span-2`}>
+                      <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">守備位置別成績</h2>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="text-xs text-sub2 border-b border-s2">
+                              <th className="text-left py-2">ポジション</th>
+                              <th className="px-2 py-2">打席</th>
+                              <th className="px-2 py-2">打率</th>
+                              <th className="px-2 py-2">安打</th>
+                              <th className="px-2 py-2">HR</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-s2">
+                            {posRows.map(row => (
+                              <tr key={row!.label} className="text-center">
+                                <td className="text-left py-2 font-medium text-main">{row!.label}</td>
+                                <td className="px-2 py-2 text-sub1">{row!.pa}</td>
+                                <td className={`px-2 py-2 font-bold ${avgColor(row!.avg)}`}>{fmtAvg(row!.avg)}</td>
+                                <td className="px-2 py-2 text-main">{row!.hits}</td>
+                                <td className="px-2 py-2 text-main">{row!.hrs > 0 ? row!.hrs : '-'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )
+                })()}
+
               </div>
             )
           })()}
 
+        </div>
+      )}
+
+      {/* L-2: コピートースト */}
+      {copiedFlash && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-pos text-pos-t text-sm font-semibold px-4 py-2 rounded-full shadow-lg animate-fade-in-out z-50 whitespace-nowrap">
+          ✓ コピーしました
         </div>
       )}
     </div>

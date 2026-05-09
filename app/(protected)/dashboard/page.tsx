@@ -84,6 +84,15 @@ export default async function DashboardPage() {
   const pitchingStats = (pitchingData ?? []) as PitchingStat[]
   const pStats = calcPitchingStats(pitchingStats)
 
+  // N-2: 連続安打ストリーク算出
+  const sortedByDate = [...typedGames].sort((a, b) => b.game_date.localeCompare(a.game_date))
+  let hitStreak = 0
+  for (const game of sortedByDate) {
+    const hasHit = game.at_bats.some(ab => ['hit', 'double', 'triple', 'hr'].includes(ab.result_type))
+    if (hasHit) hitStreak++
+    else break
+  }
+
   const recentAtBats = recentGames.flatMap((g) => g.at_bats)
   const recentStats = calcBattingStats(recentAtBats)
   const recentN = Math.min(5, typedGames.length)
@@ -125,6 +134,28 @@ export default async function DashboardPage() {
                 <div><div className="text-xl font-bold text-accent">{draws}</div><div className={subLabel}>分</div></div>
                 <div><div className={bigStat}>{winRate}</div><div className={subLabel}>勝率</div></div>
               </div>
+            </div>
+          )}
+
+          {/* M-3: 試合ゼロ時の Empty State */}
+          {typedGames.length === 0 && (
+            <div className={`${card} p-5`}>
+              <div className="flex flex-col items-center justify-center py-12 gap-4 text-center">
+                <div className="text-5xl">⚾</div>
+                <p className="text-main font-semibold text-lg">まだ試合がありません</p>
+                <p className="text-sub2 text-sm">「試合を追加」から最初の試合を登録しましょう</p>
+                <Link href="/games/new" className="mt-2 px-5 py-2.5 rounded-lg bg-theme text-white text-sm font-semibold">
+                  試合を追加する →
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* N-2: 連続安打バナー */}
+          {hitStreak >= 2 && (
+            <div className={`${card} px-5 py-3 flex items-center gap-2`}>
+              <span className="text-xl">🔥</span>
+              <span className="text-sm font-semibold text-main">{hitStreak}試合連続安打中</span>
             </div>
           )}
 

@@ -129,3 +129,13 @@
   0%   { opacity: 0; }
   100% { opacity: 1; }
 }
+
+@keyframes fade-in-out {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  20%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+.animate-fade-in-out {
+  animation: fade-in-out 0.8s ease forwards;
+}

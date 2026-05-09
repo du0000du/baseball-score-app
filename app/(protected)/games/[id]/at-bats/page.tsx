@@ -195,6 +195,7 @@ export default function AtBatsPage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [savedFlash, setSavedFlash] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState('')
 
@@ -371,6 +372,8 @@ export default function AtBatsPage() {
     setSubmitting(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
+    setSavedFlash(true)
+    setTimeout(() => setSavedFlash(false), 800)
     fetchData()
   }
 
@@ -888,6 +891,13 @@ export default function AtBatsPage() {
               )
             })}
           </div>
+        </div>
+      )}
+
+      {/* 保存トースト */}
+      {savedFlash && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-pos text-pos-t text-sm font-semibold px-4 py-2 rounded-full shadow-lg animate-fade-in-out z-50 whitespace-nowrap">
+          ✓ 保存しました
         </div>
       )}
     </div>
