@@ -59,6 +59,8 @@ const STAT_TOOLTIPS: Record<string, string> = {
 function StatTooltip({ label }: { label: string }) {
   const [show, setShow] = useState(false)
   const [isTouch, setIsTouch] = useState(false)
+  const [tipPos, setTipPos] = useState<{ top: number; left: number } | null>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
   const tip = STAT_TOOLTIPS[label]
 
   useEffect(() => {
@@ -69,14 +71,27 @@ function StatTooltip({ label }: { label: string }) {
     return () => mq.removeEventListener('change', handler)
   }, [])
 
+  const handleMouseEnter = () => {
+    if (!btnRef.current) return
+    const rect = btnRef.current.getBoundingClientRect()
+    const TIP_W = 256   // w-64
+    const GAP = 8
+    const rawLeft = rect.left + rect.width / 2 - TIP_W / 2
+    const left = Math.max(GAP, Math.min(rawLeft, window.innerWidth - TIP_W - GAP))
+    const top = rect.top - GAP  // -translateY(100%) で上に出る
+    setTipPos({ top, left })
+    setShow(true)
+  }
+
   if (!tip) return <>{label}</>
 
   return (
     <span className="relative inline-flex items-center gap-1">
       {label}
       <button
+        ref={btnRef}
         type="button"
-        onMouseEnter={isTouch ? undefined : () => setShow(true)}
+        onMouseEnter={isTouch ? undefined : handleMouseEnter}
         onMouseLeave={isTouch ? undefined : () => setShow(false)}
         onClick={isTouch ? () => setShow(v => !v) : undefined}
         className="text-sub2 hover:text-theme transition-colors text-xs leading-none"
@@ -84,13 +99,16 @@ function StatTooltip({ label }: { label: string }) {
       >
         ⓘ
       </button>
-      {/* デスクトップ: ホバーツールチップ（中央寄せ・見切れ防止） */}
-      {!isTouch && show && (
-        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 bg-lv1 border border-s2 text-sub1 text-xs rounded-lg shadow-lg p-2.5 w-64 max-w-[90vw] pointer-events-none block font-normal">
+      {/* デスクトップ: fixed位置ツールチップ（viewport クランプ済み） */}
+      {!isTouch && show && tipPos && (
+        <span
+          className="fixed z-50 bg-lv1 border border-s2 text-sub1 text-xs rounded-lg shadow-lg p-2.5 w-64 pointer-events-none block font-normal"
+          style={{ top: tipPos.top, left: tipPos.left, transform: 'translateY(calc(-100% - 8px))' }}
+        >
           {tip}
         </span>
       )}
-      {/* スマホ: 画面下部モーダルシート */}
+      {/* スマホ: 画面下部モーダルシート（変更なし） */}
       {isTouch && show && (
         <>
           <div
@@ -143,7 +161,7 @@ export default function StatsPage() {
   const supabaseRef = useRef(createClient())
   const supabase = supabaseRef.current
   const currentYear = new Date().getFullYear()
-  const [season, setSeason] = useState(currentYear)
+  const [season, setSeason] = useState<number | 'all'>(currentYear)
   const [games, setGames] = useState<GameWithAtBats[]>([])
   const [pitchingStats, setPitchingStats] = useState<PitchingStat[]>([])
   const [loading, setLoading] = useState(true)
@@ -151,14 +169,22 @@ export default function StatsPage() {
   const [tabVisible, setTabVisible] = useState(true)
 
   // P-2: シーズンごとのクライアントキャッシュ（タブ切り替え時のチラつき防止）
-  const cacheRef = useRef<Map<number, { games: GameWithAtBats[]; pitchingStats: PitchingStat[] }>>(new Map())
+  const cacheRef = useRef<Map<number | 'all', { games: GameWithAtBats[]; pitchingStats: PitchingStat[] }>>(new Map())
 
-  // sessionStorage からタブを復元（SSR対策: useEffect で実行）
+  // sessionStorage からタブ・シーズンを復元（SSR対策: useEffect で実行）
   useEffect(() => {
     const saved = sessionStorage.getItem('baseball_stats_tab')
     const validTabs: Tab[] = ['season', 'per-game', 'log', 'pitching', 'direction', 'analytics']
     if (saved && validTabs.includes(saved as Tab)) {
       setTab(saved as Tab)
+    }
+    // 通算選択も復元する
+    const savedSeason = sessionStorage.getItem('baseball_stats_season')
+    if (savedSeason === 'all') {
+      setSeason('all')
+    } else if (savedSeason) {
+      const parsed = parseInt(savedSeason)
+      if (!isNaN(parsed)) setSeason(parsed)
     }
   }, [])
 
@@ -176,17 +202,17 @@ export default function StatsPage() {
       }
 
       setLoading(true)
-      const [{ data }, { data: ps }] = await Promise.all([
-        supabase
-          .from('games')
-          .select('*, at_bats(*)')
-          .eq('season', season)
-          .order('game_date', { ascending: false }),
-        supabase
-          .from('pitching_stats')
-          .select('*, games!inner(season)')
-          .eq('games.season', season),
-      ])
+
+      // 通算の場合は season フィルタなし
+      const [{ data }, { data: ps }] = season === 'all'
+        ? await Promise.all([
+            supabase.from('games').select('*, at_bats(*)').order('game_date', { ascending: false }),
+            supabase.from('pitching_stats').select('*'),
+          ])
+        : await Promise.all([
+            supabase.from('games').select('*, at_bats(*)').eq('season', season).order('game_date', { ascending: false }),
+            supabase.from('pitching_stats').select('*, games!inner(season)').eq('games.season', season),
+          ])
       const gamesData = (data ?? []) as GameWithAtBats[]
       const psData = (ps ?? []) as PitchingStat[]
       setGames(gamesData)
@@ -196,6 +222,11 @@ export default function StatsPage() {
     }
     fetchData()
   }, [supabase, season])
+
+  const handleSeasonChange = (val: number | 'all') => {
+    setSeason(val)
+    sessionStorage.setItem('baseball_stats_season', String(val))
+  }
 
   const handleTabChange = (newTab: Tab) => {
     if (newTab === tab) return
@@ -222,9 +253,10 @@ export default function StatsPage() {
         <h1 className="text-2xl font-bold text-accent">成績</h1>
         <select
           value={season}
-          onChange={(e) => setSeason(parseInt(e.target.value))}
+          onChange={(e) => handleSeasonChange(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
           className="border border-s2 rounded-lg px-3 py-1.5 text-sm bg-lv1 text-main focus:outline-none focus:ring-2 focus:ring-theme transition-shadow duration-150"
         >
+          <option value="all">通算</option>
           {years.map((y) => (
             <option key={y} value={y}>{y}年</option>
           ))}
