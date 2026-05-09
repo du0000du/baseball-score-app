@@ -8,6 +8,20 @@ function formatDate(dateStr: string) {
   return `${parseInt(m)}/${parseInt(d)}`
 }
 
+function avgColor(avg: number | null): string {
+  if (avg === null) return 'text-accent'
+  if (avg >= 0.300) return 'text-pos-t'
+  if (avg >= 0.250) return 'text-neu-t'
+  return 'text-neg-t'
+}
+
+function opsColor(ops: number | null): string {
+  if (ops === null) return 'text-accent'
+  if (ops >= 0.800) return 'text-pos-t'
+  if (ops >= 0.700) return 'text-neu-t'
+  return 'text-neg-t'
+}
+
 function ScoreDisplay({ game }: { game: Game }) {
   const score = (
     <span className="text-white dark:text-white">
@@ -110,10 +124,10 @@ export default async function DashboardPage() {
             ) : (
               <>
                 <div className="grid grid-cols-4 gap-2 mb-4">
-                  <div className="text-center min-w-0"><div className={bigStat}>{fmtAvg(stats.avg)}</div><div className={subLabel}>打率</div></div>
+                  <div className="text-center min-w-0"><div className={`text-2xl font-bold truncate ${avgColor(stats.avg)}`}>{fmtAvg(stats.avg)}</div><div className={subLabel}>打率</div></div>
                   <div className="text-center min-w-0"><div className={bigStat}>{fmtAvg(stats.obp)}</div><div className={subLabel}>出塁率</div></div>
                   <div className="text-center min-w-0"><div className={bigStat}>{fmtAvg(stats.slg)}</div><div className={subLabel}>長打率</div></div>
-                  <div className="text-center min-w-0"><div className={bigStat}>{fmtDec(stats.ops, 3).replace(/^0/, '')}</div><div className={subLabel}>OPS</div></div>
+                  <div className="text-center min-w-0"><div className={`text-2xl font-bold truncate ${opsColor(stats.ops)}`}>{fmtDec(stats.ops, 3).replace(/^0/, '')}</div><div className={subLabel}>OPS</div></div>
                 </div>
                 <div className={`grid grid-cols-7 gap-2 pt-4 ${divider} text-center text-sm`}>
                   <div><div className={smallVal}>{typedGames.length}</div><div className={smallLabel}>試合</div></div>
@@ -134,7 +148,7 @@ export default async function DashboardPage() {
               <h2 className={`${sectionTitle} mb-3`}>直近{recentN}試合</h2>
               <div className="flex items-end gap-4 flex-wrap">
                 <div>
-                  <div className={bigStat}>{fmtAvg(recentStats.avg)}</div>
+                  <div className={`text-2xl font-bold truncate ${avgColor(recentStats.avg)}`}>{fmtAvg(recentStats.avg)}</div>
                   <div className={subLabel}>打率</div>
                 </div>
                 {avgDiff !== null && (
@@ -212,9 +226,14 @@ export default async function DashboardPage() {
                         ) : (
                           <span className="text-sub2">記録なし</span>
                         )}
-                        <Link href={`/games/${game.id}/at-bats`} className="btn text-accent hover:underline text-xs">
-                          打席入力
-                        </Link>
+                        <div className="flex gap-2">
+                          <Link href={`/games/${game.id}`} className="btn text-theme hover:underline text-xs">
+                            詳細
+                          </Link>
+                          <Link href={`/games/${game.id}/at-bats`} className="btn text-accent hover:underline text-xs">
+                            打席入力
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   )
