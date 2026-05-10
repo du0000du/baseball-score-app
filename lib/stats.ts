@@ -92,13 +92,18 @@ export function calcPitchingStats(stats: PitchingStat[]): PitchingStats {
   const fip = ipDecimal > 0
     ? (13 * home_runs_allowed + 3 * (walks + hit_batsmen) - 2 * strikeouts) / ipDecimal + 3.10
     : null
+  // H8-3: 被打率 (BAA) — 草野球は対戦打数を厳密に取れないため簡易式
+  // BAA = 被安打 / (投球回小数 × 3 + 被安打)
+  const baa = ipDecimal > 0
+    ? hits_allowed / (ipDecimal * 3 + hits_allowed)
+    : null
   const win_rate = (wins + losses) > 0 ? wins / (wins + losses) : null
 
   return {
     games, wins, losses, saves, holds, complete_games,
     innings_pitched, hits_allowed, home_runs_allowed,
     strikeouts, walks, hit_batsmen, runs_allowed, earned_runs,
-    pitch_count, era, whip, k9, kbb, fip, win_rate,
+    pitch_count, era, whip, k9, kbb, fip, baa, win_rate,
   }
 }
 

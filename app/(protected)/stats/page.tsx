@@ -55,6 +55,13 @@ const STAT_TOOLTIPS: Record<string, string> = {
   'IsoD': '出塁率 − 打率。四球や死球を引き出す選球眼の指標。高いほど四球が多い。',
   'IsoP': '長打率 − 打率。長打力の純粋な指標。高いほど長打が多い。',
   'OPS': '出塁率 + 長打率。打撃の総合力を示す最も一般的な指標。.800以上は高水準。',
+  // H8-2 / H8-3: 投手指標の解説
+  'FIP': '本塁打・四死球・奪三振だけで投手の地力を評価する指標。守備や運の影響を排除し、防御率より「真の投球内容」を表すと言われる。3.50前後がリーグ平均、3.00以下は優秀。',
+  '防御率': '7イニング（草野球基準）あたりの自責点。低いほど良い。3.00未満で優秀、4.00超は要改善。',
+  'WHIP': '1イニングあたりに許した走者数（被安打 + 与四球）÷ 投球回。1.20未満で優秀、1.50超は要改善。',
+  'K/9': '9イニングあたりの奪三振数。奪三振能力の指標。7.0以上で優秀。',
+  'K/BB': '奪三振 ÷ 与四球。コントロールと支配力の総合指標。3.0以上で優秀、1.0未満は要改善。',
+  '被打率': '相手打者の打率。被安打 ÷ (投球回 × 3 + 被安打) で簡易計算。.250以下で優秀、.300超は要改善。',
 }
 
 function StatTooltip({ label }: { label: string }) {
@@ -653,9 +660,10 @@ export default function StatsPage() {
                 <>
                   <div className="bg-lv1 rounded-xl shadow-sm border border-s2 overflow-hidden">
                     <div className="px-5 py-4 border-b border-s2">
-                      <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide">シーズン投手成績</h2>
+                      {/* H8-4: 「シーズン投手成績」→「投手成績」（通算切替対応） */}
+                      <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide">投手成績</h2>
                     </div>
-                    {/* 主要指標ハイライト */}
+                    {/* 主要指標ハイライト（H8-2: ⓘ ツールチップ付き） */}
                     <div className="grid grid-cols-4 divide-x divide-s2 border-b border-s2">
                       {[
                         { label: '防御率', value: fmtERA(pStats.era) },
@@ -664,12 +672,14 @@ export default function StatsPage() {
                         { label: 'K/BB', value: fmtDec(pStats.kbb, 2) },
                       ].map(({ label, value }) => (
                         <div key={label} className="flex flex-col items-center py-4 px-2">
-                          <span className="text-xs text-sub2 mb-1">{label}</span>
+                          <span className="text-xs text-sub2 mb-1">
+                            <StatTooltip label={label} />
+                          </span>
                           <span className="text-2xl font-bold text-accent">{value}</span>
                         </div>
                       ))}
                     </div>
-                    {/* 詳細成績 2カラムリスト */}
+                    {/* 詳細成績 2カラムリスト（H8-2/H8-3: ⓘ 付き・被打率/WHIP/K/BB 追加） */}
                     <div className="divide-y divide-s2">
                       <StatRow left={{ label: '登板', value: pStats.games }}          right={{ label: '投球回', value: formatIP(pStats.innings_pitched) }} />
                       <StatRow left={{ label: '勝', value: pStats.wins }}             right={{ label: '敗', value: pStats.losses }} />
@@ -678,7 +688,80 @@ export default function StatsPage() {
                       <StatRow left={{ label: '被本塁打', value: pStats.home_runs_allowed }} right={{ label: '奪三振', value: pStats.strikeouts }} />
                       <StatRow left={{ label: '与四球', value: pStats.walks }}        right={{ label: '与死球', value: pStats.hit_batsmen }} />
                       <StatRow left={{ label: '失点', value: pStats.runs_allowed }}   right={{ label: '自責点', value: pStats.earned_runs }} />
-                      <StatRow left={{ label: 'FIP', value: fmtDec(pStats.fip, 2) }} right={pStats.pitch_count !== null ? { label: '総投球数', value: pStats.pitch_count } : undefined} />
+                      <StatRow
+                        left={{ label: <StatTooltip label="FIP" />, value: fmtDec(pStats.fip, 2) }}
+                        right={{ label: <StatTooltip label="被打率" />, value: fmtAvg(pStats.baa) }}
+                      />
+                      <StatRow
+                        left={{ label: <StatTooltip label="WHIP" />, value: fmtDec(pStats.whip, 2) }}
+                        right={{ label: <StatTooltip label="K/BB" />, value: fmtDec(pStats.kbb, 2) }}
+                      />
+                      {pStats.pitch_count !== null && (
+                        <StatRow
+                          left={{ label: <StatTooltip label="K/9" />, value: fmtDec(pStats.k9, 1) }}
+                          right={{ label: '総投球数', value: pStats.pitch_count }}
+                        />
+                      )}
+                      {pStats.pitch_count === null && (
+                        <StatRow left={{ label: <StatTooltip label="K/9" />, value: fmtDec(pStats.k9, 1) }} />
+                      )}
+                    </div>
+                    {/* H8-5: CSV / シェアコピー（投手成績） */}
+                    <div className="px-5 py-3 border-t border-s2 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const headers = ['日付', '対戦相手', '結果', '投球回', '被安打', '被本塁打', '奪三振', '与四球', '与死球', '失点', '自責点', '投球数', '完投']
+                          const resultLabels: Record<string, string> = { win: '勝', loss: '敗', save: 'S', hold: 'H', none: '-' }
+                          const rows = pitchingStats.map(ps => {
+                            const g = games.find(gm => gm.id === ps.game_id)
+                            return [
+                              g?.game_date ?? '',
+                              g?.opponent ?? '',
+                              resultLabels[ps.result] ?? '-',
+                              formatIP(ps.innings_pitched),
+                              ps.hits_allowed,
+                              ps.home_runs_allowed,
+                              ps.strikeouts,
+                              ps.walks,
+                              ps.hit_batsmen,
+                              ps.runs_allowed,
+                              ps.earned_runs,
+                              ps.pitch_count ?? '',
+                              ps.complete_game ? '○' : '',
+                            ]
+                          })
+                          const csv = [headers, ...rows].map(r => r.join(',')).join('\n')
+                          const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+                          const url = URL.createObjectURL(blob)
+                          const a = document.createElement('a')
+                          a.href = url
+                          a.download = `pitching_stats_${season}.csv`
+                          a.click()
+                          URL.revokeObjectURL(url)
+                          setCsvFlash(true)
+                          setTimeout(() => setCsvFlash(false), 1500)
+                        }}
+                        className="text-xs text-sub2 hover:text-theme border border-s2 rounded-lg px-3 py-1.5 transition-colors"
+                      >
+                        ⬇ CSV
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const label = season === 'all' ? '通算' : `${season}年`
+                          const prefix = theme === 'abema' ? '📺' : '⚾'
+                          const themeLine = theme === 'abema' ? ' #ABEMA' : ''
+                          const text = `${prefix}【${label} 投手成績】\n防御率 ${fmtERA(pStats.era)} / WHIP ${fmtDec(pStats.whip, 2)} / K/9 ${fmtDec(pStats.k9, 1)}\n${pStats.games}登板 ${pStats.wins}勝${pStats.losses}敗 ${formatIP(pStats.innings_pitched)}回 ${pStats.strikeouts}奪三振\n#草野球 #baseball${themeLine}`
+                          navigator.clipboard.writeText(text).then(() => {
+                            setCopiedFlash(true)
+                            setTimeout(() => setCopiedFlash(false), 800)
+                          })
+                        }}
+                        className="text-xs text-sub2 hover:text-theme border border-s2 rounded-lg px-3 py-1.5 transition-colors"
+                      >
+                        📋 コピー
+                      </button>
                     </div>
                   </div>
 

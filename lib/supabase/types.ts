@@ -160,6 +160,7 @@ export interface PitchingStats {
   k9: number | null
   kbb: number | null
   fip: number | null
+  baa: number | null   // H8-3: 被打率（簡易式）
   win_rate: number | null
 }
 

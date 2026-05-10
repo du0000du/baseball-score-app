@@ -279,7 +279,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
           {/* 投手成績 */}
           {pitchingStats.length > 0 && (
             <div className={`${card} p-6`}>
-              <h2 className={`${sectionTitle} mb-4`}>シーズン投手成績</h2>
+              <h2 className={`${sectionTitle} mb-4`}>投手成績</h2>
               <div className="grid grid-cols-4 gap-2 mb-4">
                 <div className="text-center min-w-0"><div className={bigStat}>{fmtERA(pStats.era)}</div><div className={subLabel}>防御率</div></div>
                 <div className="text-center min-w-0"><div className={bigStat}>{fmtDec(pStats.whip, 2)}</div><div className={subLabel}>WHIP</div></div>

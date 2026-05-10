@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { calcBattingStats, calcPitchingStats, fmtAvg, fmtERA, formatIP } from '@/lib/stats'
-import { getAtBatLabel, DIRECTION_LABELS } from '@/lib/supabase/types'
+import { getAtBatLabel, DIRECTION_LABELS, FIELDING_POSITIONS } from '@/lib/supabase/types'
 import type { AtBat, Game, PitchingStat, Direction, ResultType } from '@/lib/supabase/types'
 
 function formatDate(dateStr: string) {
@@ -223,12 +223,25 @@ export default function GameDetailPage() {
                 const isHit = ['hit', 'double', 'triple', 'hr'].includes(ab.result_type)
                 const rbiVal = ab.rbi_count ?? (ab.is_rbi ? 1 : 0)
                 const sbVal = ab.stolen_base_count ?? (ab.is_stolen_base ? 1 : 0)
+                // H8-1: 守備位置バッジ用ラベル
+                const posDef = ab.fielding_position
+                  ? FIELDING_POSITIONS.find(p => p.value === ab.fielding_position) ?? null
+                  : null
                 return (
                   <div key={ab.id} className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg bg-lv2">
                     <span className="text-xs text-sub2 w-5 shrink-0 text-right">{ab.at_bat_number}</span>
                     <span className="text-xs bg-theme/15 text-accent px-1.5 py-0.5 rounded font-medium shrink-0 w-9 text-center">
                       {ab.batting_order}番
                     </span>
+                    {/* H8-1: 守備位置バッジ（記録があるときのみ） */}
+                    {posDef && (
+                      <span
+                        className="text-xs bg-lv1 border border-s2 text-sub1 px-1.5 py-0.5 rounded font-medium shrink-0 w-7 text-center"
+                        title={posDef.full}
+                      >
+                        {posDef.label}
+                      </span>
+                    )}
                     <span className={`text-sm font-medium flex-1 min-w-0 truncate ${isHit ? 'text-green-600 dark:text-green-400' : 'text-main'}`}>
                       {label}
                     </span>
