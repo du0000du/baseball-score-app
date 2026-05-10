@@ -185,8 +185,8 @@ export default async function DashboardPage() {
                   <div><div className={smallVal}>{stats.sb}</div><div className={smallLabel}>盗塁</div></div>
                 </div>
                 {/* M6-3: 安打内訳（単打/二塁打/三塁打/HR） */}
+                {/* FX-1: 安打内訳 — gap-1 で列幅を確保 */}
                 {stats.hits > 0 && (
-                  {/* FX-1: 安打内訳 — gap-1 で列幅を確保 */}
                   <div className={`grid grid-cols-4 gap-1 pt-3 ${divider} text-center`}>
                     <div><div className={smallVal}>{stats.hits - stats.doubles - stats.triples - stats.hrs}</div><div className={smallLabel}>単打</div></div>
                     <div><div className={smallVal}>{stats.doubles}</div><div className={smallLabel}>二塁打</div></div>

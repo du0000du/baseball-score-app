@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useContext } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { calcBattingStats, calcPitchingStats, fmtAvg, fmtDec, fmtERA, formatIP } from '@/lib/stats'
 import { RESULT_TYPE_LABELS, DIRECTION_LABELS, FIELDING_POSITIONS } from '@/lib/supabase/types'
 import type { AtBat, Direction, Game, ResultType, PitchingStat } from '@/lib/supabase/types'
 import DirectionChart from '@/app/(protected)/_components/DirectionChart'
+import { ThemeContext } from '@/app/(protected)/_components/ThemeProvider'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
 
 interface GameWithAtBats extends Game {
@@ -160,6 +161,7 @@ const TAB_LIST: { key: Tab; label: string }[] = [
 export default function StatsPage() {
   const supabaseRef = useRef(createClient())
   const supabase = supabaseRef.current
+  const { theme } = useContext(ThemeContext)
   const currentYear = new Date().getFullYear()
   const [season, setSeason] = useState<number | 'all'>(currentYear)
   const [games, setGames] = useState<GameWithAtBats[]>([])
@@ -168,6 +170,7 @@ export default function StatsPage() {
   const [tab, setTab] = useState<Tab>('season')
   const [tabVisible, setTabVisible] = useState(true)
   const [copiedFlash, setCopiedFlash] = useState(false)
+  const [csvFlash, setCsvFlash] = useState(false)
   const [logFilter, setLogFilter] = useState<ResultType | 'all'>('all')
 
   // M-1: スワイプ検出用 ref
@@ -397,13 +400,49 @@ export default function StatsPage() {
                       <StatRow left={{ label: '犠飛', value: stats.sac_fly }}   right={{ label: <StatTooltip label="RC27" />, value: fmtDec(stats.rc27, 2) }} />
                       <StatRow left={{ label: <StatTooltip label="IsoD" />, value: fmtAvg(stats.isod) }} right={{ label: <StatTooltip label="IsoP" />, value: fmtAvg(stats.isop) }} />
                     </div>
-                    {/* L-2: 成績コピーボタン */}
-                    <div className="px-5 py-3 border-t border-s2 flex justify-end">
+                    {/* L6-2: CSVエクスポート + L6-6: 成績コピー（テーマ名付き） */}
+                    <div className="px-5 py-3 border-t border-s2 flex justify-end gap-2">
+                      {/* L6-2: CSV ダウンロード */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const headers = ['日付', '対戦相手', '打順', '結果', 'RBI', '方向', '最終カウント']
+                          const rows = games.flatMap(g =>
+                            g.at_bats.map(ab => [
+                              g.game_date,
+                              g.opponent,
+                              ab.batting_order,
+                              RESULT_TYPE_LABELS[ab.result_type] ?? ab.result_type,
+                              ab.rbi_count ?? 0,
+                              ab.direction ? (DIRECTION_LABELS[ab.direction] ?? ab.direction) : '',
+                              ab.count_balls !== null && ab.count_strikes !== null
+                                ? `${ab.count_balls}B-${ab.count_strikes}S`
+                                : '',
+                            ])
+                          )
+                          const csv = [headers, ...rows].map(r => r.join(',')).join('\n')
+                          const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+                          const url = URL.createObjectURL(blob)
+                          const a = document.createElement('a')
+                          a.href = url
+                          a.download = `batting_stats_${season}.csv`
+                          a.click()
+                          URL.revokeObjectURL(url)
+                          setCsvFlash(true)
+                          setTimeout(() => setCsvFlash(false), 1500)
+                        }}
+                        className="text-xs text-sub2 hover:text-theme border border-s2 rounded-lg px-3 py-1.5 transition-colors"
+                      >
+                        ⬇ CSV
+                      </button>
+                      {/* L6-6: 成績コピー（テーマ名・ハッシュタグ付き） */}
                       <button
                         type="button"
                         onClick={() => {
                           const label = season === 'all' ? '通算' : `${season}年`
-                          const text = `⚾ ${label}成績\n打率: ${fmtAvg(stats.avg)}  安打: ${stats.hits}  本塁打: ${stats.hrs}  打点: ${stats.rbi}  OPS: ${fmtDec(stats.ops, 3).replace(/^0/, '')}`
+                          const prefix = theme === 'abema' ? '📺' : '⚾'
+                          const themeLine = theme === 'abema' ? ' #ABEMA' : ''
+                          const text = `${prefix}【${label}シーズン成績】\n打率 ${fmtAvg(stats.avg)} / OPS ${fmtDec(stats.ops, 3).replace(/^0/, '')}\n${stats.hits}安打 ${stats.hrs}本塁打 ${stats.rbi}打点\n#草野球 #baseball${themeLine}`
                           navigator.clipboard.writeText(text).then(() => {
                             setCopiedFlash(true)
                             setTimeout(() => setCopiedFlash(false), 800)
@@ -411,7 +450,7 @@ export default function StatsPage() {
                         }}
                         className="text-xs text-sub2 hover:text-theme border border-s2 rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        📋 成績をコピー
+                        📋 コピー
                       </button>
                     </div>
                   </>
@@ -1099,6 +1138,69 @@ export default function StatsPage() {
                   )
                 })()}
 
+                {/* 11. L6-3: マルチシーズン比較（「通算」表示時のみ） */}
+                {season === 'all' && (() => {
+                  const seasonMap = new Map<number, GameWithAtBats[]>()
+                  for (const g of games) {
+                    if (!seasonMap.has(g.season)) seasonMap.set(g.season, [])
+                    seasonMap.get(g.season)!.push(g)
+                  }
+                  if (seasonMap.size < 2) return null
+                  const seasonData = Array.from(seasonMap.entries())
+                    .sort(([a], [b]) => a - b)
+                    .map(([yr, sGames]) => {
+                      const s = calcBattingStats(sGames.flatMap(g => g.at_bats))
+                      return {
+                        year: `${yr}年`,
+                        avg: s.avg != null ? parseFloat(s.avg.toFixed(3)) : 0,
+                        ops: s.ops != null ? parseFloat(s.ops.toFixed(3)) : 0,
+                        games: sGames.length,
+                        hits: s.hits,
+                        hrs: s.hrs,
+                      }
+                    })
+                  return (
+                    <div className={`${card} p-5 lg:col-span-2`}>
+                      <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">マルチシーズン比較</h2>
+                      <div className="mb-4">
+                        <p className="text-xs text-sub2 mb-2">打率推移</p>
+                        <ResponsiveContainer width="100%" height={140}>
+                          <BarChart data={seasonData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border_lv2)" />
+                            <XAxis dataKey="year" tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} />
+                            <YAxis domain={[0, 0.5]} tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} tickFormatter={(v: number) => v.toFixed(2)} />
+                            <Tooltip formatter={(v: number) => [v.toFixed(3).replace(/^0/, ''), '打率']} />
+                            <Bar dataKey="avg" fill="var(--theme)" radius={[4,4,0,0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div>
+                        <p className="text-xs text-sub2 mb-2">OPS推移</p>
+                        <ResponsiveContainer width="100%" height={140}>
+                          <BarChart data={seasonData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border_lv2)" />
+                            <XAxis dataKey="year" tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} />
+                            <YAxis domain={[0, 1.5]} tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} tickFormatter={(v: number) => v.toFixed(1)} />
+                            <Tooltip formatter={(v: number) => [v.toFixed(3).replace(/^0/, ''), 'OPS']} />
+                            <Bar dataKey="ops" fill="var(--accent)" radius={[4,4,0,0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="mt-3 divide-y divide-s2">
+                        {seasonData.map(d => (
+                          <div key={d.year} className="flex items-center justify-between py-2 text-sm">
+                            <span className="font-medium text-main w-16">{d.year}</span>
+                            <span className="text-sub1">{d.games}試合</span>
+                            <span className={`font-bold ${avgColor(d.avg)}`}>{d.avg > 0 ? d.avg.toFixed(3).replace(/^0/, '') : '---'}</span>
+                            <span className={`font-bold ${opsColor(d.ops)}`}>OPS {d.ops > 0 ? d.ops.toFixed(3).replace(/^0/, '') : '---'}</span>
+                            <span className="text-sub2">{d.hits}安 {d.hrs}HR</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
+
               </div>
             )
           })()}
@@ -1110,6 +1212,12 @@ export default function StatsPage() {
       {copiedFlash && (
         <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-pos text-pos-t text-sm font-semibold px-4 py-2 rounded-full shadow-lg animate-fade-in-out z-50 whitespace-nowrap">
           ✓ コピーしました
+        </div>
+      )}
+      {/* L6-2: CSV ダウンロードトースト */}
+      {csvFlash && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-lv1 border border-s2 text-main text-sm font-semibold px-4 py-2 rounded-full shadow-lg animate-fade-in-out z-50 whitespace-nowrap">
+          ⬇ CSV downloaded
         </div>
       )}
     </div>
