@@ -105,8 +105,8 @@ export default async function DashboardPage() {
   const sectionTitle = "text-sm font-semibold text-sub1 uppercase tracking-wide"
   const bigStat = "text-2xl font-bold text-accent truncate"
   const subLabel = "text-xs text-sub2 mt-1"
-  const smallVal = "font-semibold text-main"
-  const smallLabel = "text-xs text-sub2"
+  const smallVal = "text-xs font-semibold text-main"
+  const smallLabel = "text-[10px] text-sub2"
   const divider = "border-t border-s2"
 
   return (
@@ -128,12 +128,13 @@ export default async function DashboardPage() {
           {typedGames.length > 0 && (
             <div className={`${card} p-5`}>
               <h2 className={`${sectionTitle} mb-3`}>チーム戦績</h2>
-              <div className="grid grid-cols-5 gap-2 text-center text-sm">
-                <div><div className={bigStat}>{typedGames.length}</div><div className={subLabel}>試合</div></div>
-                <div><div className="text-xl font-bold text-accent">{wins}</div><div className={subLabel}>勝</div></div>
-                <div><div className="text-xl font-bold text-accent">{losses}</div><div className={subLabel}>負</div></div>
-                <div><div className="text-xl font-bold text-accent">{draws}</div><div className={subLabel}>分</div></div>
-                <div><div className={bigStat}>{winRate}</div><div className={subLabel}>勝率</div></div>
+              {/* FX-1: フォント幅増大テーマ対応 — text-lg + gap-1.5 で横幅オーバー防止 */}
+              <div className="grid grid-cols-5 gap-1.5 text-center">
+                <div><div className="text-lg font-bold text-accent truncate">{typedGames.length}</div><div className={subLabel}>試合</div></div>
+                <div><div className="text-lg font-bold text-accent">{wins}</div><div className={subLabel}>勝</div></div>
+                <div><div className="text-lg font-bold text-accent">{losses}</div><div className={subLabel}>負</div></div>
+                <div><div className="text-lg font-bold text-accent">{draws}</div><div className={subLabel}>分</div></div>
+                <div><div className="text-lg font-bold text-accent truncate">{winRate}</div><div className={subLabel}>勝率</div></div>
               </div>
             </div>
           )}
@@ -173,7 +174,8 @@ export default async function DashboardPage() {
                   <div className="text-center min-w-0"><div className={bigStat}>{fmtAvg(stats.slg)}</div><div className={subLabel}>長打率</div></div>
                   <div className="text-center min-w-0"><div className={`text-2xl font-bold truncate ${opsColor(stats.ops)}`}>{fmtDec(stats.ops, 3).replace(/^0/, '')}</div><div className={subLabel}>OPS</div></div>
                 </div>
-                <div className={`grid grid-cols-7 gap-2 pt-4 ${divider} text-center text-sm`}>
+                {/* FX-1: 7列グリッド — gap-1 で列幅を確保、smallVal/smallLabel で文字縮小済み */}
+                <div className={`grid grid-cols-7 gap-1 pt-4 ${divider} text-center`}>
                   <div><div className={smallVal}>{typedGames.length}</div><div className={smallLabel}>試合</div></div>
                   <div><div className={smallVal}>{stats.pa}</div><div className={smallLabel}>打席</div></div>
                   <div><div className={smallVal}>{stats.ab}</div><div className={smallLabel}>打数</div></div>
@@ -184,7 +186,8 @@ export default async function DashboardPage() {
                 </div>
                 {/* M6-3: 安打内訳（単打/二塁打/三塁打/HR） */}
                 {stats.hits > 0 && (
-                  <div className={`grid grid-cols-4 gap-2 pt-3 ${divider} text-center text-sm`}>
+                  {/* FX-1: 安打内訳 — gap-1 で列幅を確保 */}
+                  <div className={`grid grid-cols-4 gap-1 pt-3 ${divider} text-center`}>
                     <div><div className={smallVal}>{stats.hits - stats.doubles - stats.triples - stats.hrs}</div><div className={smallLabel}>単打</div></div>
                     <div><div className={smallVal}>{stats.doubles}</div><div className={smallLabel}>二塁打</div></div>
                     <div><div className={smallVal}>{stats.triples}</div><div className={smallLabel}>三塁打</div></div>
@@ -217,28 +220,29 @@ export default async function DashboardPage() {
           {recentAtBats.length > 0 && (
             <div className={`${card} p-5`}>
               <h2 className={`${sectionTitle} mb-3`}>直近{recentN}試合</h2>
-              <div className="flex items-end gap-4 flex-wrap">
+              {/* FX-2: gap-2 + フォント縮小でフォント幅増大テーマでも1行に収める */}
+              <div className="flex items-end gap-2 flex-wrap">
                 <div>
-                  <div className={`text-2xl font-bold truncate ${avgColor(recentStats.avg)}`}>{fmtAvg(recentStats.avg)}</div>
+                  <div className={`text-xl font-bold truncate ${avgColor(recentStats.avg)}`}>{fmtAvg(recentStats.avg)}</div>
                   <div className={subLabel}>打率</div>
                 </div>
                 {avgDiff !== null && (
-                  <div className={`text-sm font-semibold mb-1 ${diffClass}`}>{diffLabel}</div>
+                  <div className={`text-xs font-semibold mb-1 ${diffClass}`}>{diffLabel}</div>
                 )}
                 <div className="text-center">
-                  <div className="text-lg font-bold text-main">{recentStats.hits}-{recentStats.ab}</div>
+                  <div className="text-base font-bold text-main">{recentStats.hits}-{recentStats.ab}</div>
                   <div className={subLabel}>安打-打数</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-main">{recentStats.hrs}</div>
+                  <div className="text-base font-bold text-main">{recentStats.hrs}</div>
                   <div className={subLabel}>本塁打</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-main">{recentStats.rbi}</div>
+                  <div className="text-base font-bold text-main">{recentStats.rbi}</div>
                   <div className={subLabel}>打点</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-main">{recentStats.sb}</div>
+                  <div className="text-base font-bold text-main">{recentStats.sb}</div>
                   <div className={subLabel}>盗塁</div>
                 </div>
               </div>
