@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef, useContext } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@/lib/supabase/types'
 import { ThemeContext } from '@/app/(protected)/_components/ThemeProvider'
@@ -17,9 +18,11 @@ export default function SettingsPage() {
   const supabaseRef = useRef(createClient())
   const supabase = supabaseRef.current
   const { theme, setTheme } = useContext(ThemeContext)
+  const router = useRouter()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
   const [name, setName] = useState('')
@@ -41,6 +44,12 @@ export default function SettingsPage() {
     }
     load()
   }, [supabase])
+
+  const handleLogout = async () => {
+    setLoggingOut(true)
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
 
   const handleSave = async () => {
     setSaving(true)
@@ -128,6 +137,19 @@ export default function SettingsPage() {
           className="w-full bg-theme hover:opacity-90 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition-colors text-sm btn"
         >
           {saving ? '保存中...' : '保存する'}
+        </button>
+      </div>
+      {/* M6-6: ログアウト */}
+      <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-6">
+        <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-4">
+          アカウント
+        </h2>
+        <button
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="w-full border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 font-medium py-2.5 rounded-lg transition-colors text-sm btn"
+        >
+          {loggingOut ? 'ログアウト中...' : 'ログアウト'}
         </button>
       </div>
     </div>

@@ -112,6 +112,11 @@
 }
 
 @layer base {
+  /* M6-1: テーマ切替アニメーション */
+  html {
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
   body {
     background-color: var(--bg_lv2);
     color: var(--main_text);

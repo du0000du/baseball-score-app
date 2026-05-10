@@ -182,6 +182,15 @@ export default async function DashboardPage() {
                   <div><div className={smallVal}>{stats.rbi}</div><div className={smallLabel}>打点</div></div>
                   <div><div className={smallVal}>{stats.sb}</div><div className={smallLabel}>盗塁</div></div>
                 </div>
+                {/* M6-3: 安打内訳（単打/二塁打/三塁打/HR） */}
+                {stats.hits > 0 && (
+                  <div className={`grid grid-cols-4 gap-2 pt-3 ${divider} text-center text-sm`}>
+                    <div><div className={smallVal}>{stats.hits - stats.doubles - stats.triples - stats.hrs}</div><div className={smallLabel}>単打</div></div>
+                    <div><div className={smallVal}>{stats.doubles}</div><div className={smallLabel}>二塁打</div></div>
+                    <div><div className={smallVal}>{stats.triples}</div><div className={smallLabel}>三塁打</div></div>
+                    <div><div className="font-semibold text-accent">{stats.hrs}</div><div className={smallLabel}>本塁打</div></div>
+                  </div>
+                )}
                 {/* 実績バッジ (B-3) */}
                 {(() => {
                   const earned = BADGES.filter(b => b.cond(stats))

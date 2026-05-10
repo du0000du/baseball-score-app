@@ -200,6 +200,7 @@ export default function AtBatsPage() {
   const [countBalls, setCountBalls] = useState<number | null>(null)
   const [countStrikes, setCountStrikes] = useState<number | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [movingId, setMovingId] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState('')
 
   // 編集モード
@@ -393,6 +394,33 @@ export default function AtBatsPage() {
     await supabase.from('at_bats').delete().eq('id', id)
     setDeletingId(null)
     if (editingAtBatId === id) resetForm()
+    fetchData()
+  }
+
+  // M6-4: 打席並び替え（↑/↓で隣接レコードの at_bat_number を入れ替え）
+  const handleMoveUp = async (index: number) => {
+    if (index === 0) return
+    const cur = atBats[index]
+    const prev = atBats[index - 1]
+    setMovingId(cur.id)
+    await Promise.all([
+      supabase.from('at_bats').update({ at_bat_number: prev.at_bat_number }).eq('id', cur.id),
+      supabase.from('at_bats').update({ at_bat_number: cur.at_bat_number }).eq('id', prev.id),
+    ])
+    setMovingId(null)
+    fetchData()
+  }
+
+  const handleMoveDown = async (index: number) => {
+    if (index === atBats.length - 1) return
+    const cur = atBats[index]
+    const next = atBats[index + 1]
+    setMovingId(cur.id)
+    await Promise.all([
+      supabase.from('at_bats').update({ at_bat_number: next.at_bat_number }).eq('id', cur.id),
+      supabase.from('at_bats').update({ at_bat_number: cur.at_bat_number }).eq('id', next.id),
+    ])
+    setMovingId(null)
     fetchData()
   }
 
@@ -897,7 +925,7 @@ export default function AtBatsPage() {
         <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-5">
           <h2 className="font-semibold text-main mb-4">打席記録</h2>
           <div className="space-y-2">
-            {atBats.map((ab) => {
+            {atBats.map((ab, index) => {
               const label = getAtBatLabel(ab.result_type as ResultType, ab.direction as Direction | null)
               const isPositionInLabel = ab.result_type === 'groundout' ||
                                         ab.result_type === 'infield_flyout' ||
@@ -905,6 +933,7 @@ export default function AtBatsPage() {
                                         (ab.result_type === 'hit' && !!ab.direction) ||
                                         (ab.result_type === 'fc' && !!ab.direction)
               const isEditing = editingAtBatId === ab.id
+              const isMoving = movingId === ab.id
               const rbiVal = ab.rbi_count ?? (ab.is_rbi ? 1 : 0)
               const sbVal = ab.stolen_base_count ?? (ab.is_stolen_base ? 1 : 0)
               return (
@@ -914,12 +943,31 @@ export default function AtBatsPage() {
                     isEditing ? 'bg-theme/10 ring-2 ring-theme/30' : 'bg-lv2'
                   }`}
                 >
-                  <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  {/* M6-4: ↑/↓ 並び替えボタン */}
+                  <div className="flex flex-col gap-0.5 shrink-0 mr-1.5">
+                    <button
+                      onClick={() => handleMoveUp(index)}
+                      disabled={index === 0 || !!movingId || !!deletingId}
+                      aria-label={`打席 #${ab.at_bat_number} を上へ移動`}
+                      className="w-5 h-5 flex items-center justify-center text-sub2 hover:text-main disabled:opacity-20 transition-colors leading-none"
+                    >
+                      ▲
+                    </button>
+                    <button
+                      onClick={() => handleMoveDown(index)}
+                      disabled={index === atBats.length - 1 || !!movingId || !!deletingId}
+                      aria-label={`打席 #${ab.at_bat_number} を下へ移動`}
+                      className="w-5 h-5 flex items-center justify-center text-sub2 hover:text-main disabled:opacity-20 transition-colors leading-none"
+                    >
+                      ▼
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap min-w-0 flex-1">
                     <span className="text-xs text-sub2 w-7 shrink-0">#{ab.at_bat_number}</span>
                     <span className="text-xs bg-theme/15 text-accent px-1.5 py-0.5 rounded font-medium shrink-0">
                       {ab.batting_order}番
                     </span>
-                    <span className="text-sm font-medium text-main">
+                    <span className={`text-sm font-medium text-main ${isMoving ? 'opacity-50' : ''}`}>
                       {label}
                     </span>
                     {ab.direction && !isPositionInLabel && (
@@ -951,7 +999,8 @@ export default function AtBatsPage() {
                   <div className="flex items-center gap-2 shrink-0 ml-2">
                     <button
                       onClick={() => handleEditAtBat(ab)}
-                      disabled={!!deletingId}
+                      disabled={!!deletingId || !!movingId}
+                      aria-label={`打席 #${ab.at_bat_number} を編集`}
                       className="text-theme/60 hover:text-theme transition-colors text-xs disabled:opacity-50"
                     >
                       編集
@@ -959,7 +1008,8 @@ export default function AtBatsPage() {
                     <span className="text-s2">|</span>
                     <button
                       onClick={() => handleDeleteAtBat(ab.id)}
-                      disabled={deletingId === ab.id}
+                      disabled={deletingId === ab.id || !!movingId}
+                      aria-label={`打席 #${ab.at_bat_number} を削除`}
                       className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 transition-colors text-xs disabled:opacity-50"
                     >
                       {deletingId === ab.id ? '削除中' : '削除'}

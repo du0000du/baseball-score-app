@@ -160,7 +160,7 @@ function DirectionChart({ atBats }: Props) {
           <p className="text-center text-sub2 text-sm py-10">{noDataMsg}</p>
         ) : (
           <>
-            <svg viewBox="0 0 400 240" className="w-full">
+            <svg viewBox="0 0 400 240" className="w-full" role="img" aria-label="外野打球方向チャート">
               {/* green field bg */}
               <path
                 d={`M ${CX} ${CY} L ${CX - R} ${CY} A ${R} ${R} 0 0 1 ${CX + R} ${CY} Z`}
@@ -222,7 +222,7 @@ function DirectionChart({ atBats }: Props) {
           <p className="text-center text-sub2 text-sm py-10">{noDataMsg}</p>
         ) : (
           <>
-            <svg viewBox="0 0 300 285" className="w-full max-w-xs mx-auto">
+            <svg viewBox="0 0 300 285" className="w-full max-w-xs mx-auto" role="img" aria-label="内野打球方向チャート">
               {/* infield diamond */}
               <polygon
                 points="150,62 232,148 150,234 68,148"
