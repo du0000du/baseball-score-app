@@ -172,10 +172,14 @@ export default function StatsPage() {
   const [copiedFlash, setCopiedFlash] = useState(false)
   const [csvFlash, setCsvFlash] = useState(false)
   const [logFilter, setLogFilter] = useState<ResultType | 'all'>('all')
+  // M7-2: 対戦相手検索フィルター
+  const [opponentSearch, setOpponentSearch] = useState('')
 
   // M-1: スワイプ検出用 ref
   const touchStartX = useRef<number | null>(null)
   const touchStartY = useRef<number | null>(null)
+  // M7-3: タブ切り替え時のスクロール位置保存
+  const scrollPositions = useRef<Record<string, number>>({})
 
   // P-2: シーズンごとのクライアントキャッシュ（タブ切り替え時のチラつき防止）
   const cacheRef = useRef<Map<number | 'all', { games: GameWithAtBats[]; pitchingStats: PitchingStat[] }>>(new Map())
@@ -198,6 +202,21 @@ export default function StatsPage() {
   }, [])
 
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i)
+
+  // M7-5: タブに応じてドキュメントタイトルを更新
+  const TAB_TITLES: Record<Tab, string> = {
+    'season':    'シーズン累計',
+    'per-game':  '試合別成績',
+    'log':       '打席ログ',
+    'pitching':  '投手成績',
+    'direction': '打球方向',
+    'analytics': '分析',
+  }
+  useEffect(() => {
+    document.title = `${TAB_TITLES[tab]} | 草野球記録`
+    return () => { document.title = '草野球記録' }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -258,11 +277,17 @@ export default function StatsPage() {
 
   const handleTabChange = (newTab: Tab) => {
     if (newTab === tab) return
+    // M7-3: 現在のスクロール位置を保存してからタブ切り替え
+    scrollPositions.current[tab] = window.scrollY
     sessionStorage.setItem('baseball_stats_tab', newTab)
     setTabVisible(false)
     setTab(newTab)
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => setTabVisible(true))
+      requestAnimationFrame(() => {
+        // M7-3: 新タブの前回スクロール位置を復元（初回は0）
+        window.scrollTo({ top: scrollPositions.current[newTab] ?? 0, behavior: 'instant' })
+        setTabVisible(true)
+      })
     })
   }
 
@@ -515,6 +540,16 @@ export default function StatsPage() {
           {/* タブ3: 打席ログ（試合別タイムライン） */}
           {tab === 'log' && (
             <div className="space-y-3">
+              {/* M7-2: 対戦相手検索フィルター */}
+              {games.length > 0 && (
+                <input
+                  type="search"
+                  placeholder="対戦相手で絞り込み..."
+                  value={opponentSearch}
+                  onChange={(e) => setOpponentSearch(e.target.value)}
+                  className="w-full border border-s2 rounded-lg px-3 py-1.5 text-sm bg-lv1 text-main placeholder:text-sub2 focus:outline-none focus:ring-2 focus:ring-theme transition-shadow duration-150"
+                />
+              )}
               {/* M-4: ログフィルタ */}
               {allAtBats.length > 0 && (() => {
                 const LOG_FILTERS: { value: ResultType | 'all'; label: string }[] = [
@@ -550,10 +585,14 @@ export default function StatsPage() {
                   打席データがありません
                 </div>
               ) : (
-                games.map((game) => {
+                games
+                  // M7-2: 対戦相手名でフィルタ
+                  .filter(g => !opponentSearch || g.opponent?.toLowerCase().includes(opponentSearch.toLowerCase()))
+                  .map((game) => {
                   const sorted = [...game.at_bats]
                     .filter(ab => logFilter === 'all' || ab.result_type === logFilter)
                     .sort((a, b) => a.at_bat_number - b.at_bat_number)
+                  if (sorted.length === 0 && logFilter !== 'all') return null
                   if (sorted.length === 0) return null
                   return (
                     <div key={game.id} className="bg-lv1 rounded-xl shadow-sm border border-s2 p-4">

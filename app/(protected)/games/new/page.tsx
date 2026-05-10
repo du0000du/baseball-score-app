@@ -148,13 +148,13 @@ export default function NewGamePage() {
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <label className="text-xs text-sub2 mb-1 block">自チーム</label>
-              <input type="number" min="0" value={form.score_us} onChange={(e) => set('score_us', e.target.value)}
+              <input type="number" min="0" inputMode="numeric" enterKeyHint="next" value={form.score_us} onChange={(e) => set('score_us', e.target.value)}
                 className={`${INPUT} text-center text-lg font-bold`} />
             </div>
             <span className="text-sub2 font-bold mt-5">-</span>
             <div className="flex-1">
               <label className="text-xs text-sub2 mb-1 block">相手チーム</label>
-              <input type="number" min="0" value={form.score_them} onChange={(e) => set('score_them', e.target.value)}
+              <input type="number" min="0" inputMode="numeric" enterKeyHint="done" value={form.score_them} onChange={(e) => set('score_them', e.target.value)}
                 className={`${INPUT} text-center text-lg font-bold`} />
             </div>
           </div>

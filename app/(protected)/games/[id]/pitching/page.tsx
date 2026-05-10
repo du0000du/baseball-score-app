@@ -246,6 +246,8 @@ export default function PitchingPage() {
           </label>
           <input
             type="number"
+            inputMode="numeric"
+            enterKeyHint="done"
             value={pitchCount}
             onChange={(e) => setPitchCount(e.target.value)}
             placeholder="例: 85"

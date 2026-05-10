@@ -1,7 +1,14 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { calcBattingStats, calcPitchingStats, fmtAvg, fmtDec, fmtERA, formatIP } from '@/lib/stats'
 import type { AtBat, Game, User, PitchingStat, BattingStats } from '@/lib/supabase/types'
+import DashboardSeasonSelector from '@/app/(protected)/_components/DashboardSeasonSelector'
+
+export const metadata: Metadata = {
+  title: 'ダッシュボード',
+  description: 'シーズン打撃成績・チーム戦績・最近の活躍を確認',
+}
 
 const BADGES: { id: string; label: string; emoji: string; cond: (s: BattingStats) => boolean }[] = [
   { id: 'three_hundred', label: '.300打者', emoji: '🏆', cond: (s) => (s.avg ?? 0) >= 0.300 },
@@ -59,16 +66,18 @@ function ScoreDisplay({ game }: { game: Game }) {
 
 interface GameWithAtBats extends Game { at_bats: AtBat[] }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: { year?: string } }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const currentYear = new Date().getFullYear()
+  // M7-1: URL searchParam でシーズン切り替え（デフォルト: 当年）
+  const displayYear = searchParams.year ? parseInt(searchParams.year) : currentYear
 
   const { data: profile } = await supabase.from('users').select('team_name, name').eq('id', user!.id).single()
   const typedProfile = profile as Pick<User, 'team_name' | 'name'> | null
 
   const { data: games } = await supabase
-    .from('games').select('*, at_bats(*)').eq('season', currentYear).eq('user_id', user!.id).order('game_date', { ascending: false })
+    .from('games').select('*, at_bats(*)').eq('season', displayYear).eq('user_id', user!.id).order('game_date', { ascending: false })
   const typedGames = (games ?? []) as GameWithAtBats[]
   const allAtBats = typedGames.flatMap((g) => g.at_bats)
   const stats = calcBattingStats(allAtBats)
@@ -80,7 +89,7 @@ export default async function DashboardPage() {
   const winRate = (wins + losses) > 0 ? (wins / (wins + losses)).toFixed(3).replace(/^0/, '') : '---'
 
   const { data: pitchingData } = await supabase
-    .from('pitching_stats').select('*, games!inner(season, user_id)').eq('games.season', currentYear).eq('games.user_id', user!.id)
+    .from('pitching_stats').select('*, games!inner(season, user_id)').eq('games.season', displayYear).eq('games.user_id', user!.id)
   const pitchingStats = (pitchingData ?? []) as PitchingStat[]
   const pStats = calcPitchingStats(pitchingStats)
 
@@ -111,12 +120,16 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-accent">{currentYear}年 シーズン</h1>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl font-bold text-accent">{displayYear}年</h1>
+            {/* M7-1: シーズンセレクター */}
+            <DashboardSeasonSelector currentYear={currentYear} selectedYear={displayYear} />
+          </div>
           {typedProfile?.team_name && <p className="text-sm text-sub1 mt-0.5">{typedProfile.team_name}</p>}
         </div>
-        <Link href="/games/new" className="btn bg-theme hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium">
+        <Link href="/games/new" className="shrink-0 btn bg-theme hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium">
           ＋ 試合を登録
         </Link>
       </div>
