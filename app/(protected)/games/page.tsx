@@ -231,9 +231,9 @@ export default function GamesPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  {/* M8-5: 投手成績入力済バッジ */}
+                  {/* H8-11: 投球入力済バッジ */}
                   {game.pitching_stats?.length > 0 && (
-                    <span className="text-sm" title="投手成績入力済">⚾</span>
+                    <span className="text-sm" title="投球入力済">⚾</span>
                   )}
                   <AtBatStats atBats={game.at_bats ?? []} />
                   <svg className="w-4 h-4 text-sub2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
