@@ -487,6 +487,21 @@ export default function AtBatsPage() {
           ← 試合一覧
         </Link>
         <GameNavBar prevGame={prevGame} nextGame={nextGame} />
+        {/* H8-16: 同一試合内ナビ */}
+        <div className="flex gap-2">
+          <Link
+            href={`/games/${gameId}/pitching`}
+            className="flex-1 text-center py-1.5 text-xs font-medium bg-theme hover:opacity-90 text-white rounded-lg"
+          >
+            ⚾ 投球入力
+          </Link>
+          <Link
+            href={`/games/${gameId}`}
+            className="flex-1 text-center py-1.5 text-xs font-medium bg-lv2 border border-s2 text-main rounded-lg hover:bg-s2 transition-colors"
+          >
+            📋 試合サマリー
+          </Link>
+        </div>
       </div>
 
       <div className="bg-theme dark:bg-lv1 border border-theme/30 dark:border-s2 text-white rounded-xl p-4">
