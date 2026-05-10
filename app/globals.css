@@ -77,6 +77,40 @@
   --neu_text:     #FDE68A;    /* yellow-200                         */
 }
 
+/* ── ABEMA theme ──────────────────────────────────────────────────── */
+/* デザイン参照: ABEMA DESIGN.md                                       */
+/* 純黒背景・ABEMAグリーン(#00b900)/ピンク(#ff0077)・ゴシック体         */
+.abema {
+  /* Surface */
+  --bg_lv1:       #1a1a1a;               /* カード / モーダル (ABEMA Surface)  */
+  --bg_lv2:       #000000;               /* ページ背景 (純黒)                  */
+
+  /* Brand */
+  --theme:        #00b900;               /* CTA / active (ABEMA Green)         */
+  --accent:       #ff0077;               /* タイトル / KPI (ABEMA Pink)        */
+
+  /* Text */
+  --main_text:    #ffffff;               /* 本文テキスト (Text Primary)        */
+  --sub_text_lv1: rgba(255,255,255,0.7); /* 補足テキスト (Text Secondary)      */
+  --sub_text_lv2: rgba(255,255,255,0.38);/* キャプション (Text Disabled)       */
+
+  /* Border */
+  --stroke_lv1:   rgba(255,255,255,0.2); /* 強調罫線                           */
+  --stroke_lv2:   rgba(255,255,255,0.12);/* カード枠線 (ABEMA Border)          */
+
+  /* State — positive (ABEMA Green 系) */
+  --pos_bg:       rgba(0,185,0,0.18);
+  --pos_text:     #4dff4d;
+
+  /* State — negative (ABEMA Danger 系) */
+  --neg_bg:       rgba(229,57,53,0.18);
+  --neg_text:     #ff6b6b;
+
+  /* State — neutral (ABEMA Warning 系) */
+  --neu_bg:       rgba(255,152,0,0.18);
+  --neu_text:     #ffb74d;
+}
+
 @layer base {
   body {
     background-color: var(--bg_lv2);
@@ -93,6 +127,25 @@
   }
 
   .dark select option {
+    background-color: var(--bg_lv1);
+    color: var(--main_text);
+  }
+
+  /* ── ABEMA テーマ: フォントファミリー ────────────────────────────── */
+  .abema {
+    font-family: "Hiragino Sans", "BIZ UDGothic", Meiryo, sans-serif;
+  }
+
+  /* ── ABEMA テーマ: フォーム要素のカラースキーム強制 ──────────────── */
+  .abema select,
+  .abema input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+  .abema textarea {
+    background-color: var(--bg_lv1);
+    color: var(--main_text);
+    color-scheme: dark;
+  }
+
+  .abema select option {
     background-color: var(--bg_lv1);
     color: var(--main_text);
   }

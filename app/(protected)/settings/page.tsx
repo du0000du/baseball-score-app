@@ -10,6 +10,7 @@ const THEME_OPTIONS: { value: Theme; label: string; icon: string }[] = [
   { value: 'light',  label: 'ライト',       icon: '☀️' },
   { value: 'dark',   label: 'ダーク',       icon: '🌙' },
   { value: 'system', label: 'システム設定', icon: '💻' },
+  { value: 'abema',  label: 'ABEMA',        icon: '📺' },
 ]
 
 export default function SettingsPage() {
@@ -82,7 +83,7 @@ export default function SettingsPage() {
         <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-4">
           表示テーマ
         </h2>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-2">
           {THEME_OPTIONS.map(({ value, label, icon }) => (
             <button
               key={value}

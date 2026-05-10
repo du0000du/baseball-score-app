@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 
-export type Theme = 'light' | 'dark' | 'system'
+export type Theme = 'light' | 'dark' | 'system' | 'abema'
 
 interface ThemeContextValue {
   theme: Theme
@@ -20,17 +20,20 @@ export function useTheme() {
 
 function applyTheme(theme: Theme) {
   const root = document.documentElement
+  // 先に両クラスをリセット
+  root.classList.remove('dark', 'abema')
+
   if (theme === 'dark') {
     root.classList.add('dark')
+  } else if (theme === 'abema') {
+    root.classList.add('abema')
   } else if (theme === 'light') {
-    root.classList.remove('dark')
+    // 何も付けない
   } else {
-    // system
+    // system: OS設定に従う
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     if (prefersDark) {
       root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
     }
   }
 }
@@ -41,7 +44,7 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   useEffect(() => {
     try {
       const stored = localStorage.getItem('theme') as Theme | null
-      if (stored === 'light' || stored === 'dark' || stored === 'system') {
+      if (stored === 'light' || stored === 'dark' || stored === 'system' || stored === 'abema') {
         setThemeState(stored)
       }
     } catch {}
