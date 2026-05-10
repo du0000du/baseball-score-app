@@ -260,4 +260,11 @@ export default function SettingsPage() {
         <button
           onClick={handleLogout}
           disabled={loggingOut}
-          className="w-full border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:
+          className="w-full border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium py-2.5 rounded-lg transition-colors text-sm btn"
+        >
+          {loggingOut ? 'ログアウト中...' : 'ログアウト'}
+        </button>
+      </div>
+    </div>
+  )
+}

@@ -324,4 +324,19 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
                           <span className="font-medium text-main">
                             {gameStats.hits}/{gameStats.ab}
                             {gameStats.hrs > 0 && <span className="text-accent ml-1">{gameStats.hrs}HR</span>}
-                      
+                          </span>
+                        ) : (
+                          <span className="text-xs text-sub2">打席なし</span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
