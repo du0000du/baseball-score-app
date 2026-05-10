@@ -6,12 +6,22 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Game } from '@/lib/supabase/types'
 import SuggestInput from '@/app/(protected)/_components/SuggestInput'
+import GameNavBar from '@/app/(protected)/_components/GameNavBar'
+import type { NavGame } from '@/app/(protected)/_components/GameNavBar'
 
 const INPUT  = 'w-full border border-s2 rounded-lg px-3 py-2 text-sm bg-lv1 text-main placeholder-sub2 focus:outline-none focus:ring-2 focus:ring-theme'
 const LABEL  = 'block text-sm font-medium text-main mb-1'
 const LABEL2 = 'block text-sm font-medium text-main mb-2'
 
-export default function EditGameForm({ game }: { game: Game }) {
+export default function EditGameForm({
+  game,
+  prevGame,
+  nextGame,
+}: {
+  game: Game
+  prevGame: NavGame | null
+  nextGame: NavGame | null
+}) {
   const router = useRouter()
   const supabaseRef = useRef(createClient())
   const supabase = supabaseRef.current
@@ -93,10 +103,11 @@ export default function EditGameForm({ game }: { game: Game }) {
 
   return (
     <div className="max-w-lg mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <Link href="/games" className="text-sub2 hover:text-main transition-colors">
+      <div className="mb-6 space-y-2">
+        <Link href="/games" className="text-sub2 hover:text-main transition-colors text-sm flex items-center gap-1">
           ← 試合一覧
         </Link>
+        <GameNavBar prevGame={prevGame} nextGame={nextGame} />
         <h1 className="text-2xl font-bold text-accent">試合を編集</h1>
       </div>
 

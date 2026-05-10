@@ -7,6 +7,8 @@ import { createClient } from '@/lib/supabase/client'
 import { calcBattingStats, calcPitchingStats, fmtAvg, fmtERA, formatIP } from '@/lib/stats'
 import { getAtBatLabel, DIRECTION_LABELS, FIELDING_POSITIONS } from '@/lib/supabase/types'
 import type { AtBat, Game, PitchingStat, Direction, ResultType } from '@/lib/supabase/types'
+import GameNavBar from '@/app/(protected)/_components/GameNavBar'
+import type { NavGame } from '@/app/(protected)/_components/GameNavBar'
 
 function formatDate(dateStr: string) {
   const [y, m, d] = dateStr.split('-')
@@ -30,6 +32,8 @@ export default function GameDetailPage() {
   const [memo, setMemo] = useState('')
   const [savingMemo, setSavingMemo] = useState(false)
   const [savedMemo, setSavedMemo] = useState(false)
+  const [prevGame, setPrevGame] = useState<NavGame | null>(null)
+  const [nextGame, setNextGame] = useState<NavGame | null>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -43,6 +47,23 @@ export default function GameDetailPage() {
       setPitching(ps)
       setMemo((g as Game)?.notes ?? '')
       setLoading(false)
+      // 前後ナビ用
+      if (g) {
+        const [{ data: prev }, { data: next }] = await Promise.all([
+          supabase.from('games').select('id, game_date, opponent')
+            .lt('game_date', (g as Game).game_date)
+            .order('game_date', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase.from('games').select('id, game_date, opponent')
+            .gt('game_date', (g as Game).game_date)
+            .order('game_date', { ascending: true })
+            .limit(1)
+            .maybeSingle(),
+        ])
+        setPrevGame(prev as NavGame ?? null)
+        setNextGame(next as NavGame ?? null)
+      }
     }
     load()
   }, [gameId, supabase])
@@ -76,10 +97,13 @@ export default function GameDetailPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
-      {/* 戻るリンク */}
-      <Link href="/games" className="text-sub2 hover:text-main transition-colors text-sm flex items-center gap-1">
-        ← 試合一覧
-      </Link>
+      {/* 戻るリンク + 前後ナビ */}
+      <div className="space-y-2">
+        <Link href="/games" className="text-sub2 hover:text-main transition-colors text-sm flex items-center gap-1">
+          ← 試合一覧
+        </Link>
+        <GameNavBar prevGame={prevGame} nextGame={nextGame} />
+      </div>
 
       {/* 試合ヘッダー */}
       <div className="bg-theme dark:bg-lv1 border border-theme/30 dark:border-s2 rounded-xl p-4 text-white dark:text-main">

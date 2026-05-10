@@ -10,6 +10,8 @@ import {
   FIELDING_POSITIONS,
 } from '@/lib/supabase/types'
 import type { AtBat, Direction, FieldingPosition, Game, ResultType, OutfieldDirection, InfieldPosition } from '@/lib/supabase/types'
+import GameNavBar from '@/app/(protected)/_components/GameNavBar'
+import type { NavGame } from '@/app/(protected)/_components/GameNavBar'
 
 // 外野方向を表示する結果タイプ
 const SHOW_OUTFIELD_DIRECTION: ResultType[] = [
@@ -193,6 +195,8 @@ export default function AtBatsPage() {
   const [game, setGame] = useState<Game | null>(null)
   const [atBats, setAtBats] = useState<AtBat[]>([])
   const [loading, setLoading] = useState(true)
+  const [prevGame, setPrevGame] = useState<NavGame | null>(null)
+  const [nextGame, setNextGame] = useState<NavGame | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [saved, setSaved] = useState(false)
   const [savedFlash, setSavedFlash] = useState(false)
@@ -234,6 +238,28 @@ export default function AtBatsPage() {
   useEffect(() => {
     fetchData()
   }, [fetchData])
+
+  // 前後ゲームナビ取得（game がロードされた後に一度だけ）
+  useEffect(() => {
+    if (!game) return
+    const fetchNavGames = async () => {
+      const [{ data: prev }, { data: next }] = await Promise.all([
+        supabase.from('games').select('id, game_date, opponent')
+          .lt('game_date', game.game_date)
+          .order('game_date', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase.from('games').select('id, game_date, opponent')
+          .gt('game_date', game.game_date)
+          .order('game_date', { ascending: true })
+          .limit(1)
+          .maybeSingle(),
+      ])
+      setPrevGame(prev as NavGame ?? null)
+      setNextGame(next as NavGame ?? null)
+    }
+    fetchNavGames()
+  }, [game?.game_date, supabase]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 同一試合内で最後の打席のポジションを引き継ぐ（新規入力モード時のみ）
   useEffect(() => {
@@ -456,10 +482,11 @@ export default function AtBatsPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-5">
       {/* ヘッダー */}
-      <div className="flex items-center gap-3">
-        <Link href="/games" className="text-sub2 hover:text-main transition-colors text-sm">
+      <div className="space-y-2">
+        <Link href="/games" className="text-sub2 hover:text-main transition-colors text-sm flex items-center gap-1">
           ← 試合一覧
         </Link>
+        <GameNavBar prevGame={prevGame} nextGame={nextGame} />
       </div>
 
       <div className="bg-theme dark:bg-lv1 border border-theme/30 dark:border-s2 text-white rounded-xl p-4">

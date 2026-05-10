@@ -23,5 +23,29 @@ export default async function EditGamePage({ params }: Props) {
 
   if (!game) notFound()
 
-  return <EditGameForm game={game} />
+  // 前後ゲームナビ用
+  const [{ data: prevGame }, { data: nextGame }] = await Promise.all([
+    supabase.from('games')
+      .select('id, game_date, opponent')
+      .eq('user_id', user.id)
+      .lt('game_date', game.game_date)
+      .order('game_date', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase.from('games')
+      .select('id, game_date, opponent')
+      .eq('user_id', user.id)
+      .gt('game_date', game.game_date)
+      .order('game_date', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+  ])
+
+  return (
+    <EditGameForm
+      game={game}
+      prevGame={prevGame ?? null}
+      nextGame={nextGame ?? null}
+    />
+  )
 }

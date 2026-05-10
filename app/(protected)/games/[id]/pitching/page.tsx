@@ -2,9 +2,12 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Game, PitchingStat, PitchingResult } from '@/lib/supabase/types'
 import { formatIP } from '@/lib/stats'
+import GameNavBar from '@/app/(protected)/_components/GameNavBar'
+import type { NavGame } from '@/app/(protected)/_components/GameNavBar'
 
 const SELECT = 'border border-s2 rounded-lg px-3 py-2 text-sm bg-lv1 text-main focus:outline-none focus:ring-2 focus:ring-theme'
 
@@ -28,6 +31,8 @@ export default function PitchingPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+  const [prevGame, setPrevGame] = useState<NavGame | null>(null)
+  const [nextGame, setNextGame] = useState<NavGame | null>(null)
 
   // Form state
   const [inningsWhole, setInningsWhole] = useState(0)
@@ -76,6 +81,28 @@ export default function PitchingPage() {
     }
     load()
   }, [supabase, gameId])
+
+  // 前後ゲームナビ取得
+  useEffect(() => {
+    if (!game) return
+    const fetchNavGames = async () => {
+      const [{ data: prev }, { data: next }] = await Promise.all([
+        supabase.from('games').select('id, game_date, opponent')
+          .lt('game_date', game.game_date)
+          .order('game_date', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase.from('games').select('id, game_date, opponent')
+          .gt('game_date', game.game_date)
+          .order('game_date', { ascending: true })
+          .limit(1)
+          .maybeSingle(),
+      ])
+      setPrevGame(prev as NavGame ?? null)
+      setNextGame(next as NavGame ?? null)
+    }
+    fetchNavGames()
+  }, [game?.game_date, supabase]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const innings_pitched = inningsWhole * 3 + inningsThirds
 
@@ -127,13 +154,13 @@ export default function PitchingPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <button
-          onClick={() => router.back()}
-          className="text-sm text-sub2 hover:text-main mb-2 flex items-center gap-1 transition-colors"
-        >
-          ← 戻る
-        </button>
-        <h1 className="text-2xl font-bold text-accent">投手成績入力</h1>
+        <div className="space-y-2 mb-2">
+          <Link href="/games" className="text-sub2 hover:text-main transition-colors text-sm flex items-center gap-1">
+            ← 試合一覧
+          </Link>
+          <GameNavBar prevGame={prevGame} nextGame={nextGame} />
+        </div>
+        <h1 className="text-2xl font-bold text-accent">投球入力</h1>
         {game && (
           <p className="text-sm text-sub1 mt-1">
             {formatDate(game.game_date)} vs {game.opponent}

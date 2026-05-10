@@ -265,7 +265,7 @@ export default function GamesPage() {
                     href={`/games/${game.id}/pitching`}
                     className="btn flex-1 text-center py-1.5 text-xs font-medium bg-theme hover:opacity-90 text-white rounded-lg"
                   >
-                    投手成績
+                    投球入力
                   </Link>
                   <Link
                     href={`/games/${game.id}/edit`}
