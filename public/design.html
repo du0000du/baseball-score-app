@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>草野球成績管理アプリ — システム設計書</title>
+<title>草野球成績管理アプリ — システム設計書 v2.0.0</title>
 <style>
   :root {
     --navy: #1e3a5f;
@@ -15,560 +15,143 @@
     --border: #e2e8f0;
     --code-bg: #0d1117;
     --code-fg: #c9d1d9;
-    /* crimson accent */
     --crimson: #b83227;
     --crimson-pale: #fff1f0;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    font-size: 15px;
-    line-height: 1.7;
-    color: var(--text);
-    background: #f8fafc;
-  }
-
-  /* ── Sidebar nav ── */
-  #sidebar {
-    position: fixed;
-    top: 0; left: 0;
-    width: 240px;
-    height: 100vh;
-    background: var(--navy);
-    overflow-y: auto;
-    z-index: 100;
-    padding: 0 0 32px;
-  }
-
-  #sidebar .logo {
-    padding: 24px 20px 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
-  #sidebar .logo .app-name {
-    color: #fff;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1.4;
-  }
-  #sidebar .logo .doc-type {
-    color: rgba(255,255,255,0.5);
-    font-size: 11px;
-    margin-top: 2px;
-  }
-
+  body { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; font-size: 15px; line-height: 1.7; color: var(--text); background: #f8fafc; }
+  #sidebar { position: fixed; top: 0; left: 0; width: 240px; height: 100vh; background: var(--navy); overflow-y: auto; z-index: 100; padding: 0 0 32px; }
+  #sidebar .logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  #sidebar .logo .app-name { color: #fff; font-size: 14px; font-weight: 700; line-height: 1.4; }
+  #sidebar .logo .doc-type { color: rgba(255,255,255,0.5); font-size: 11px; margin-top: 2px; }
   #sidebar nav { padding: 16px 0; }
-
-  #sidebar nav a {
-    display: block;
-    padding: 7px 20px;
-    color: rgba(255,255,255,0.7);
-    text-decoration: none;
-    font-size: 13px;
-    transition: all 0.15s;
-  }
-  #sidebar nav a:hover, #sidebar nav a.active {
-    color: #fff;
-    background: rgba(255,255,255,0.1);
-  }
-  #sidebar nav a.section-link {
-    font-weight: 600;
-    color: rgba(255,255,255,0.9);
-    margin-top: 8px;
-  }
-  #sidebar nav a.sub-link {
-    padding-left: 32px;
-    font-size: 12px;
-  }
-
-  /* ── Main content ── */
-  #main {
-    margin-left: 240px;
-    padding: 40px 48px 80px;
-    max-width: 1000px;
-  }
-
-  /* ── Cover ── */
-  .cover {
-    text-align: center;
-    padding: 60px 0 48px;
-    border-bottom: 3px solid var(--navy);
-    margin-bottom: 48px;
-  }
-  .cover .badge {
-    display: inline-block;
-    background: var(--navy-pale);
-    color: var(--navy);
-    font-size: 12px;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 20px;
-    margin-bottom: 16px;
-    letter-spacing: 0.05em;
-  }
-  .cover h1 {
-    font-size: 36px;
-    color: var(--navy);
-    font-weight: 800;
-    line-height: 1.2;
-    margin-bottom: 8px;
-  }
-  .cover .subtitle {
-    font-size: 16px;
-    color: var(--muted);
-    margin-bottom: 32px;
-  }
-  .cover-meta {
-    display: inline-grid;
-    grid-template-columns: auto auto;
-    gap: 8px 24px;
-    text-align: left;
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 28px;
-    font-size: 13px;
-  }
-  .cover-meta .key {
-    color: var(--muted);
-    font-weight: 600;
-  }
-  .cover-meta .val {
-    color: var(--text);
-  }
-
-  /* ── Section headings ── */
+  #sidebar nav a { display: block; padding: 7px 20px; color: rgba(255,255,255,0.7); text-decoration: none; font-size: 13px; transition: all 0.15s; }
+  #sidebar nav a:hover, #sidebar nav a.active { color: #fff; background: rgba(255,255,255,0.1); }
+  #sidebar nav a.section-link { font-weight: 600; color: rgba(255,255,255,0.9); margin-top: 8px; }
+  #sidebar nav a.sub-link { padding-left: 32px; font-size: 12px; }
+  #main { margin-left: 240px; padding: 40px 48px 80px; max-width: 1000px; }
+  .cover { text-align: center; padding: 60px 0 48px; border-bottom: 3px solid var(--navy); margin-bottom: 48px; }
+  .cover .badge { display: inline-block; background: var(--navy-pale); color: var(--navy); font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; margin-bottom: 16px; letter-spacing: 0.05em; }
+  .cover h1 { font-size: 36px; color: var(--navy); font-weight: 800; line-height: 1.2; margin-bottom: 8px; }
+  .cover .subtitle { font-size: 16px; color: var(--muted); margin-bottom: 32px; }
+  .cover-meta { display: inline-grid; grid-template-columns: auto auto; gap: 8px 24px; text-align: left; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px 28px; font-size: 13px; }
+  .cover-meta .key { color: var(--muted); font-weight: 600; }
+  .cover-meta .val { color: var(--text); }
   section { margin-bottom: 56px; }
-
-  h2.sec-title {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--navy);
-    padding-bottom: 10px;
-    border-bottom: 3px solid var(--navy);
-    margin-bottom: 24px;
-    scroll-margin-top: 24px;
-  }
-
-  h3.sub-title {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--navy);
-    margin: 28px 0 14px;
-    scroll-margin-top: 24px;
-  }
-
-  h4.sub-sub {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--navy-light);
-    margin: 20px 0 10px;
-  }
-
+  h2.sec-title { font-size: 22px; font-weight: 800; color: var(--navy); padding-bottom: 10px; border-bottom: 3px solid var(--navy); margin-bottom: 24px; scroll-margin-top: 24px; }
+  h3.sub-title { font-size: 17px; font-weight: 700; color: var(--navy); margin: 28px 0 14px; scroll-margin-top: 24px; }
+  h4.sub-sub { font-size: 14px; font-weight: 700; color: var(--navy-light); margin: 20px 0 10px; }
   p { margin-bottom: 14px; }
-
-  /* ── Tables ── */
-  .info-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-    margin-bottom: 24px;
-  }
-  .info-table th {
-    background: var(--navy-pale);
-    color: var(--navy);
-    font-weight: 700;
-    text-align: left;
-    padding: 10px 14px;
-    border: 1px solid #d1d9f0;
-    width: 26%;
-  }
-  .info-table td {
-    padding: 10px 14px;
-    border: 1px solid var(--border);
-    background: white;
-  }
+  .info-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 24px; }
+  .info-table th { background: var(--navy-pale); color: var(--navy); font-weight: 700; text-align: left; padding: 10px 14px; border: 1px solid #d1d9f0; width: 26%; }
+  .info-table td { padding: 10px 14px; border: 1px solid var(--border); background: white; }
   .info-table tr:nth-child(even) td { background: #fafbff; }
-
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    margin-bottom: 24px;
-  }
-  .data-table thead th {
-    background: var(--navy);
-    color: white;
-    font-weight: 600;
-    padding: 10px 14px;
-    text-align: left;
-    border: 1px solid #16305a;
-  }
-  .data-table tbody tr:nth-child(odd) td  { background: white; }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px; }
+  .data-table thead th { background: var(--navy); color: white; font-weight: 600; padding: 10px 14px; text-align: left; border: 1px solid #16305a; }
+  .data-table tbody tr:nth-child(odd) td { background: white; }
   .data-table tbody tr:nth-child(even) td { background: #f8f9ff; }
-  .data-table tbody td {
-    padding: 10px 14px;
-    border: 1px solid var(--border);
-    vertical-align: top;
-  }
-  .data-table code {
-    background: var(--navy-pale);
-    color: var(--navy);
-    padding: 1px 5px;
-    border-radius: 3px;
-    font-size: 12px;
-  }
-
-  /* ── Code block ── */
-  .code-block {
-    background: var(--code-bg);
-    color: var(--code-fg);
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 12.5px;
-    line-height: 1.6;
-    padding: 24px;
-    border-radius: 10px;
-    overflow-x: auto;
-    margin-bottom: 24px;
-    border: 1px solid #30363d;
-    white-space: pre;
-  }
-
-  .code-inline {
-    background: var(--navy-pale);
-    color: var(--navy);
-    font-family: 'Consolas', monospace;
-    font-size: 12.5px;
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
-
-  /* ── Chip tags ── */
-  .tag {
-    display: inline-block;
-    background: var(--navy-pale);
-    color: var(--navy);
-    font-size: 11.5px;
-    font-weight: 600;
-    padding: 2px 9px;
-    border-radius: 12px;
-    margin: 2px 3px 2px 0;
-  }
+  .data-table tbody td { padding: 10px 14px; border: 1px solid var(--border); vertical-align: top; }
+  .data-table code { background: var(--navy-pale); color: var(--navy); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+  .code-block { background: var(--code-bg); color: var(--code-fg); font-family: 'Consolas', 'Courier New', monospace; font-size: 12.5px; line-height: 1.6; padding: 24px; border-radius: 10px; overflow-x: auto; margin-bottom: 24px; border: 1px solid #30363d; white-space: pre; }
+  .code-inline { background: var(--navy-pale); color: var(--navy); font-family: 'Consolas', monospace; font-size: 12.5px; padding: 2px 6px; border-radius: 4px; }
+  .tag { display: inline-block; background: var(--navy-pale); color: var(--navy); font-size: 11.5px; font-weight: 600; padding: 2px 9px; border-radius: 12px; margin: 2px 3px 2px 0; }
   .tag.green  { background: #dcfce7; color: #15803d; }
   .tag.purple { background: #f3e8ff; color: #7e22ce; }
   .tag.orange { background: #fff7ed; color: #c2410c; }
   .tag.red    { background: #ffe0da; color: #9d2a1e; }
   .tag.new    { background: #fef9c3; color: #854d0e; font-size: 10.5px; padding: 1px 7px; vertical-align: middle; }
-
-  /* ── Grid cards ── */
-  .card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  .card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
-  }
-  .card .card-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--navy);
-    margin-bottom: 6px;
-  }
-  .card .card-body {
-    font-size: 12.5px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-
-  /* ── Color swatch grid ── */
-  .swatch-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 24px;
-  }
-  .swatch {
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    min-width: 120px;
-    flex: 1 1 120px;
-  }
-  .swatch .swatch-color {
-    height: 44px;
-  }
-  .swatch .swatch-label {
-    background: white;
-    padding: 6px 10px;
-    font-size: 11.5px;
-    font-family: 'Consolas', monospace;
-    color: #374151;
-    line-height: 1.4;
-  }
-  .swatch .swatch-label strong {
-    display: block;
-    color: var(--navy);
-    font-size: 12px;
-  }
-
-  /* ── Directory tree ── */
-  .dir-tree {
-    background: #0d1117;
-    color: #8b949e;
-    font-family: 'Consolas', monospace;
-    font-size: 13px;
-    line-height: 1.8;
-    padding: 24px;
-    border-radius: 10px;
-    margin-bottom: 24px;
-    overflow-x: auto;
-    border: 1px solid #30363d;
-    white-space: pre;
-  }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .card .card-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .card .card-body { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .swatch-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .swatch { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); min-width: 120px; flex: 1 1 120px; }
+  .swatch .swatch-color { height: 44px; }
+  .swatch .swatch-label { background: white; padding: 6px 10px; font-size: 11.5px; font-family: 'Consolas', monospace; color: #374151; line-height: 1.4; }
+  .swatch .swatch-label strong { display: block; color: var(--navy); font-size: 12px; }
+  .dir-tree { background: #0d1117; color: #8b949e; font-family: 'Consolas', monospace; font-size: 13px; line-height: 1.8; padding: 24px; border-radius: 10px; margin-bottom: 24px; overflow-x: auto; border: 1px solid #30363d; white-space: pre; }
   .dir-tree .dir  { color: #79c0ff; }
   .dir-tree .file { color: #c9d1d9; }
   .dir-tree .note { color: #6e7681; }
-
-  /* ── Flow steps ── */
-  .flow {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    margin-bottom: 24px;
-  }
-  .flow-step {
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
-    padding: 14px 0;
-    border-left: 2px solid var(--border);
-    padding-left: 20px;
-    position: relative;
-  }
-  .flow-step::before {
-    content: attr(data-n);
-    position: absolute;
-    left: -13px;
-    top: 16px;
-    width: 24px;
-    height: 24px;
-    background: var(--navy);
-    color: white;
-    font-size: 11px;
-    font-weight: 700;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .flow-step .step-label {
-    font-weight: 700;
-    color: var(--navy);
-    font-size: 14px;
-    min-width: 160px;
-  }
-  .flow-step .step-desc {
-    font-size: 13.5px;
-    color: #374151;
-  }
-
-  /* ── Stats formula ── */
-  .formula-list {
-    display: grid;
-    grid-template-columns: 200px 1fr;
-    gap: 1px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 24px;
-  }
-  .formula-list .fl-key {
-    background: var(--navy-pale);
-    padding: 9px 14px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--navy);
-    border-bottom: 1px solid var(--border);
-  }
-  .formula-list .fl-val {
-    background: white;
-    padding: 9px 14px;
-    font-size: 13px;
-    color: var(--text);
-    border-bottom: 1px solid var(--border);
-    font-family: 'Consolas', monospace;
-  }
-  .formula-list .fl-key:last-of-type,
-  .formula-list .fl-val:last-of-type { border-bottom: none; }
-
-  /* ── Env table ── */
-  .env-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    margin-bottom: 24px;
-  }
-  .env-table th {
-    background: var(--navy);
-    color: white;
-    padding: 9px 14px;
-    text-align: left;
-    border: 1px solid #16305a;
-  }
-  .env-table td {
-    padding: 9px 14px;
-    border: 1px solid var(--border);
-    font-family: 'Consolas', monospace;
-  }
-  .env-table tr:nth-child(odd)  td { background: white; }
+  .flow { display: flex; flex-direction: column; gap: 0; margin-bottom: 24px; }
+  .flow-step { display: flex; gap: 16px; align-items: flex-start; padding: 14px 0; border-left: 2px solid var(--border); padding-left: 20px; position: relative; }
+  .flow-step::before { content: attr(data-n); position: absolute; left: -13px; top: 16px; width: 24px; height: 24px; background: var(--navy); color: white; font-size: 11px; font-weight: 700; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .flow-step .step-label { font-weight: 700; color: var(--navy); font-size: 14px; min-width: 160px; }
+  .flow-step .step-desc { font-size: 13.5px; color: #374151; }
+  .formula-list { display: grid; grid-template-columns: 200px 1fr; gap: 1px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 24px; }
+  .formula-list .fl-key { background: var(--navy-pale); padding: 9px 14px; font-size: 13px; font-weight: 700; color: var(--navy); border-bottom: 1px solid var(--border); }
+  .formula-list .fl-val { background: white; padding: 9px 14px; font-size: 13px; color: var(--text); border-bottom: 1px solid var(--border); font-family: 'Consolas', monospace; }
+  .formula-list .fl-key:last-of-type, .formula-list .fl-val:last-of-type { border-bottom: none; }
+  .env-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px; }
+  .env-table th { background: var(--navy); color: white; padding: 9px 14px; text-align: left; border: 1px solid #16305a; }
+  .env-table td { padding: 9px 14px; border: 1px solid var(--border); font-family: 'Consolas', monospace; }
+  .env-table tr:nth-child(odd) td { background: white; }
   .env-table tr:nth-child(even) td { background: #fafbff; }
-
-  /* ── Migration timeline ── */
-  .migration {
-    position: relative;
-    padding-left: 28px;
-    margin-bottom: 24px;
-  }
-  .migration::before {
-    content: '';
-    position: absolute;
-    left: 8px; top: 0; bottom: 0;
-    width: 2px;
-    background: var(--border);
-  }
-  .mig-item {
-    position: relative;
-    margin-bottom: 20px;
-  }
-  .mig-item::before {
-    content: '';
-    position: absolute;
-    left: -24px;
-    top: 6px;
-    width: 10px;
-    height: 10px;
-    background: var(--navy);
-    border-radius: 50%;
-    border: 2px solid white;
-    box-shadow: 0 0 0 2px var(--navy);
-  }
-  .mig-title {
-    font-weight: 700;
-    color: var(--navy);
-    font-size: 13.5px;
-    margin-bottom: 4px;
-  }
-  .mig-desc {
-    font-size: 13px;
-    color: #374151;
-  }
-
-  /* ── Alert box ── */
-  .note-box {
-    background: #fffbeb;
-    border: 1px solid #fbbf24;
-    border-left: 4px solid #f59e0b;
-    border-radius: 6px;
-    padding: 12px 16px;
-    font-size: 13.5px;
-    margin-bottom: 20px;
-  }
-  .note-box.crimson {
-    background: #fff1f0;
-    border-color: #f4907e;
-    border-left-color: #b83227;
-  }
-
-  /* ── Changelog badge ── */
-  .changelog {
-    background: #f0fdf4;
-    border: 1px solid #86efac;
-    border-radius: 8px;
-    padding: 16px 20px;
-    margin-bottom: 28px;
-    font-size: 13px;
-  }
-  .changelog h4 {
-    color: #15803d;
-    font-weight: 700;
-    margin-bottom: 8px;
-    font-size: 13px;
-  }
-  .changelog ul {
-    list-style: disc;
-    padding-left: 18px;
-    color: #374151;
-    line-height: 1.8;
-  }
-
-  /* ── Scrollbar ── */
+  .migration { position: relative; padding-left: 28px; margin-bottom: 24px; }
+  .migration::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+  .mig-item { position: relative; margin-bottom: 20px; }
+  .mig-item::before { content: ''; position: absolute; left: -24px; top: 6px; width: 10px; height: 10px; background: var(--navy); border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 2px var(--navy); }
+  .mig-title { font-weight: 700; color: var(--navy); font-size: 13.5px; margin-bottom: 4px; }
+  .mig-desc { font-size: 13px; color: #374151; }
+  .note-box { background: #fffbeb; border: 1px solid #fbbf24; border-left: 4px solid #f59e0b; border-radius: 6px; padding: 12px 16px; font-size: 13.5px; margin-bottom: 20px; }
+  .note-box.blue { background: #eff6ff; border-color: #93c5fd; border-left-color: #3b82f6; }
+  .changelog { background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 16px 20px; margin-bottom: 28px; font-size: 13px; }
+  .changelog h4 { color: #15803d; font-weight: 700; margin-bottom: 8px; font-size: 13px; }
+  .changelog ul { list-style: disc; padding-left: 18px; color: #374151; line-height: 1.8; }
+  .theme-demo { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
+  .theme-chip { border-radius: 10px; overflow: hidden; border: 1px solid var(--border); flex: 1 1 160px; min-width: 160px; }
+  .theme-chip .tc-header { padding: 10px 14px; font-size: 13px; font-weight: 700; color: white; }
+  .theme-chip .tc-body { background: white; padding: 10px 14px; font-size: 11.5px; color: #374151; font-family: 'Consolas', monospace; line-height: 1.7; }
   #sidebar::-webkit-scrollbar { width: 4px; }
   #sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
-
-  /* ── Responsive ── */
-  @media (max-width: 900px) {
-    #sidebar { display: none; }
-    #main { margin-left: 0; padding: 24px 20px 60px; }
-  }
-
-  @media print {
-    #sidebar { display: none; }
-    #main { margin-left: 0; }
-  }
+  @media (max-width: 900px) { #sidebar { display: none; } #main { margin-left: 0; padding: 24px 20px 60px; } }
+  @media print { #sidebar { display: none; } #main { margin-left: 0; } }
 </style>
 </head>
 <body>
 
-<!-- ════════════════════ SIDEBAR ════════════════════ -->
 <div id="sidebar">
   <div class="logo">
-    <div class="app-name">⚾ 草野球成績管理アプリ</div>
-    <div class="doc-type">システム設計書 v1.1.0</div>
+    <div class="app-name">&#9918; 草野球成績管理アプリ</div>
+    <div class="doc-type">システム設計書 v2.0.0</div>
   </div>
   <nav>
-    <a href="#cover"  class="section-link">表紙</a>
+    <a href="#cover" class="section-link">表紙</a>
     <a href="#changelog" class="sub-link">変更履歴</a>
-    <a href="#sec1"   class="section-link">1. システム概要</a>
-    <a href="#sec1-1" class="sub-link">1.1 主要機能</a>
-    <a href="#sec2"   class="section-link">2. システム構成図</a>
-    <a href="#sec3"   class="section-link">3. アーキテクチャ詳細</a>
+    <a href="#sec1" class="section-link">1. システム概要</a>
+    <a href="#sec1-1" class="sub-link">1.1 主要機能一覧</a>
+    <a href="#sec2" class="section-link">2. システム構成図</a>
+    <a href="#sec3" class="section-link">3. アーキテクチャ詳細</a>
     <a href="#sec3-1" class="sub-link">3.1 フロントエンド</a>
     <a href="#sec3-2" class="sub-link">3.2 認証・セキュリティ</a>
     <a href="#sec3-3" class="sub-link">3.3 データ層</a>
     <a href="#sec3-4" class="sub-link">3.4 ホスティング・CI/CD</a>
-    <a href="#sec4"   class="section-link">4. カラーシステム</a>
-    <a href="#sec4-1" class="sub-link">4.1 Crimsonパレット</a>
-    <a href="#sec4-2" class="sub-link">4.2 Nightパレット（ダーク）</a>
-    <a href="#sec4-3" class="sub-link">4.3 テーマ切替</a>
-    <a href="#sec5"   class="section-link">5. ナビゲーション設計</a>
-    <a href="#sec6"   class="section-link">6. ディレクトリ構成</a>
-    <a href="#sec7"   class="section-link">7. 画面・ルート一覧</a>
-    <a href="#sec8"   class="section-link">8. 型システム</a>
-    <a href="#sec9"   class="section-link">9. 成績計算ロジック</a>
-    <a href="#sec10"  class="section-link">10. 認証フロー</a>
-    <a href="#sec11"  class="section-link">11. 環境変数</a>
-    <a href="#sec12"  class="section-link">12. 主要ライブラリ</a>
-    <a href="#sec13"  class="section-link">13. DBマイグレーション</a>
+    <a href="#sec3-5" class="sub-link">3.5 PWA・オフライン対応</a>
+    <a href="#sec4" class="section-link">4. デザイントークン</a>
+    <a href="#sec4-1" class="sub-link">4.1 カラートークン体系</a>
+    <a href="#sec4-2" class="sub-link">4.2 テーマ一覧（9種）</a>
+    <a href="#sec4-3" class="sub-link">4.3 テーマ切替システム</a>
+    <a href="#sec5" class="section-link">5. ナビゲーション設計</a>
+    <a href="#sec6" class="section-link">6. ディレクトリ構成</a>
+    <a href="#sec7" class="section-link">7. 画面・ルート一覧</a>
+    <a href="#sec8" class="section-link">8. 型システム</a>
+    <a href="#sec9" class="section-link">9. 成績計算ロジック</a>
+    <a href="#sec10" class="section-link">10. 認証フロー</a>
+    <a href="#sec11" class="section-link">11. 環境変数</a>
+    <a href="#sec12" class="section-link">12. 主要ライブラリ</a>
+    <a href="#sec13" class="section-link">13. DBマイグレーション</a>
   </nav>
 </div>
 
-<!-- ════════════════════ MAIN ════════════════════ -->
 <div id="main">
 
-  <!-- COVER -->
   <div class="cover" id="cover">
     <div class="badge">System Architecture &amp; Design Document</div>
     <h1>草野球成績管理アプリ</h1>
-    <div class="subtitle">Baseball Score App — システム設計書</div>
+    <div class="subtitle">Baseball Score App &mdash; システム設計書</div>
     <div class="cover-meta">
-      <span class="key">バージョン</span>   <span class="val">v1.1.0</span>
-      <span class="key">作成日</span>       <span class="val">2026年5月4日</span>
+      <span class="key">バージョン</span>   <span class="val">v2.0.0</span>
+      <span class="key">更新日</span>       <span class="val">2026年5月10日</span>
       <span class="key">初版</span>         <span class="val">2026年5月2日 (v1.0.0)</span>
       <span class="key">リポジトリ</span>   <span class="val">github.com/du0000du/baseball-score-app</span>
       <span class="key">デプロイ先</span>   <span class="val">Vercel (自動デプロイ)</span>
@@ -576,127 +159,118 @@
     </div>
   </div>
 
-  <!-- CHANGELOG -->
   <section id="changelog">
     <h2 class="sec-title">変更履歴</h2>
+
     <div class="changelog">
-      <h4>v1.1.0 — 2026年5月4日</h4>
+      <h4>v2.0.0 &mdash; 2026年5月10日（メジャーリリース）</h4>
       <ul>
-        <li>カラーシステム刷新: <code class="code-inline">navy</code> パレット廃止 → <code class="code-inline">crimson</code>（赤）＋ <code class="code-inline">night</code>（ダーク用）へ変更。全カラーコード追記</li>
-        <li>ダークモード実装: <code class="code-inline">ThemeProvider</code> による light / dark / system 3択切替、<code class="code-inline">localStorage</code> 永続化</li>
-        <li>ナビゲーション刷新: モバイル上部バー ＋ デスクトップ左サイドバーのレスポンシブ対応</li>
-        <li>試合編集画面追加: <code class="code-inline">/games/[id]/edit</code> ルート新設</li>
-        <li>設定画面追加: <code class="code-inline">/settings</code>（テーマ切替 ＋ プロフィール編集を統合）</li>
-        <li>型定義更新: <code class="code-inline">infield_flyout</code> 追加、<code class="code-inline">PitchingStat</code> に <code class="code-inline">home_runs_allowed</code> / <code class="code-inline">hit_batsmen</code> 等追加</li>
-        <li>DBマイグレーション履歴を実際のファイルに合わせて修正</li>
-        <li>ページ遷移アニメーション: <code class="code-inline">transform</code> を廃止しopacityのみに変更（スクロール位置バグ対策）</li>
+        <li><strong>デザイントークン体系刷新</strong>: crimson/night/field の Tailwind クラス体系から CSS カスタムプロパティ（<code class="code-inline">--bg_lv1</code>, <code class="code-inline">--theme</code>, <code class="code-inline">--accent</code> 等）主体のトークン設計に移行。<code class="code-inline">tailwind.config.ts</code> の <code class="code-inline">darkMode: selector</code> 方式でマルチテーマを実現</li>
+        <li><strong>9テーマ対応</strong>: light / dark / system に加え、ABM（ABEMA）/ NTD（任天堂）/ HNF（ファイターズ）/ HTG（タイガース）/ TYS（スワローズ）/ TRG（イーグルス）の計9テーマを追加。各球団テーマは公式サイト実測カラーを使用</li>
+        <li><strong>分析タブ追加</strong>: 打率推移チャート・OPS推移チャート・打順別成績・守備位置別成績・対戦相手別成績（打席数・打点列含む）・月別BarChart・球場別成績テーブルを統合</li>
+        <li><strong>マルチシーズン対応</strong>: ダッシュボードシーズンセレクター・シーズン比較グラフ・前シーズン比サマリーカードを実装</li>
+        <li><strong>目標打率メーター</strong>: <code class="code-inline">DashboardTargetMeter</code>（Client Component）で localStorage から目標値を読み込み、達成率プログレスバーをダッシュボードに表示</li>
+        <li><strong>マイルストーントースト</strong>: <code class="code-inline">DashboardMilestoneToast</code>（Client Component）で初回達成バッジを bounce アニメーション付きトーストで通知</li>
+        <li><strong>試合メモ機能</strong>: <code class="code-inline">games</code> テーブルの既存 <code class="code-inline">notes</code> カラムを活用した試合ひとことメモ編集UIを試合詳細ページに追加</li>
+        <li><strong>PWA対応</strong>: <code class="code-inline">manifest.json</code> / <code class="code-inline">sw.js</code>（IndexedDB オフラインキュー）/ Service Worker によるオフライン打席記録に対応</li>
+        <li><strong>CSV エクスポート</strong>: 成績サマリータブから試合別・打席別データを CSV ダウンロード可能に</li>
+        <li><strong>SNS コピー</strong>: シーズン成績をリッチテキストでクリップボードにコピーする機能</li>
+        <li><strong>スワイプ操作</strong>: 成績ページのタブコンテンツを横スワイプで切り替え可能に（縦スクロールとの競合防止ロジック付き）</li>
+        <li><strong>クライアントキャッシュ</strong>: <code class="code-inline">lib/query-cache.ts</code> による SessionStorage ベースのデータキャッシュでページ再読み込みを削減</li>
+        <li><strong>連続安打ストリーク</strong>: ダッシュボードに現在進行中の連続安打試合数バナーを表示（打席ゼロの試合はスキップ）</li>
+        <li><strong>カウント入力</strong>: 打席記録画面に count_balls / count_strikes フィールド追加（migration 007）</li>
+        <li><strong>守備位置別成績</strong>: 分析タブに守備ポジション別の打撃成績テーブルを追加</li>
+        <li><strong>ページタイトル動的更新</strong>: <code class="code-inline">layout.tsx</code> タイトルテンプレート + stats ページでの <code class="code-inline">document.title</code> 動的更新</li>
+      </ul>
+    </div>
+
+    <div class="changelog" style="background:#f0f4ff; border-color:#c7d2fe;">
+      <h4 style="color:#3730a3;">v1.1.0 &mdash; 2026年5月4日</h4>
+      <ul>
+        <li>カラーシステム刷新: crimson（赤）+ night（ダーク）+ field（緑）パレット導入</li>
+        <li>ダークモード実装: ThemeProvider による light / dark / system 3択切替</li>
+        <li>ナビゲーション刷新: モバイル上部バー + デスクトップ左サイドバーのレスポンシブ対応</li>
+        <li>試合編集画面追加: /games/[id]/edit ルート新設</li>
+        <li>設定画面追加: /settings（テーマ切替 + プロフィール編集統合）</li>
       </ul>
     </div>
 
     <table class="data-table">
-      <thead><tr><th>バージョン</th><th>日付</th><th>主な変更</th></tr></thead>
+      <thead><tr><th>バージョン</th><th>日付</th><th>主な変更</th><th>commit</th></tr></thead>
       <tbody>
-        <tr><td>v1.0.0</td><td>2026-05-02</td><td>初版リリース。基本機能・認証・打席/投手記録・成績集計</td></tr>
-        <tr><td>v1.1.0</td><td>2026-05-04</td><td>カラーシステム刷新・ダークモード・ナビ刷新・試合編集・設定画面</td></tr>
+        <tr><td>v1.0.0</td><td>2026-05-02</td><td>初版リリース。基本機能・認証・打席/投手記録・成績集計</td><td>—</td></tr>
+        <tr><td>v1.1.0</td><td>2026-05-04</td><td>カラーシステム刷新・ダークモード・ナビ刷新・試合編集・設定画面</td><td>—</td></tr>
+        <tr><td>v1.2.x</td><td>2026-05-09</td><td>分析タブ・守備位置記録・OPS推移・打席ログUI・スクロールバグ修正群</td><td>51fd100〜09eec3d</td></tr>
+        <tr><td>v1.3.x</td><td>2026-05-10</td><td>PWA・マルチシーズン・CSV・SNSコピー・ABEMAテーマ・スワイプ操作</td><td>d71fdc2〜b7e2573</td></tr>
+        <tr><td>v2.0.0</td><td>2026-05-10</td><td>9テーマ・デザイントークン完全移行・マイルストーン・目標打率・前シーズン比</td><td>bd85bbd〜5cac08b</td></tr>
       </tbody>
     </table>
   </section>
 
-  <!-- ══ 1. システム概要 ══ -->
   <section id="sec1">
     <h2 class="sec-title">1. システム概要</h2>
-    <p>本アプリは、草野球プレイヤーが試合ごとの打席・投手成績を記録・集計するためのWebアプリケーションである。モバイルファーストのUIで設計されており、試合当日のリアルタイム入力から、シーズン通算成績の分析まで一貫して対応する。ダークモード・ライトモードをユーザーが自由に切替可能。</p>
+    <p>本アプリは、草野球プレイヤーが試合ごとの打席・投手成績を記録・集計・分析するための PWA 対応 Web アプリケーションである。モバイルファーストのUIで設計されており、試合当日のリアルタイム入力から、シーズン通算成績の分析・マルチシーズン比較まで一貫して対応する。9種類のテーマ（球団カラー含む）をユーザーが自由に選択可能。</p>
 
-    <h3 class="sub-title" id="sec1-1">1.1 主要機能</h3>
+    <h3 class="sub-title" id="sec1-1">1.1 主要機能一覧</h3>
     <div class="card-grid">
-      <div class="card">
-        <div class="card-title">⚾ 打席記録</div>
-        <div class="card-body">打席結果（安打・アウト・出塁等）、打球方向、打点・得点・盗塁を入力。内野安打・エラー・FCの守備位置まで記録可能</div>
-      </div>
-      <div class="card">
-        <div class="card-title">⚾ 投手成績記録</div>
-        <div class="card-body">登板イニング数、勝敗・セーブ・ホールド、被安打・被本塁打・奪三振・四球・死球・自責点・球数を記録</div>
-      </div>
-      <div class="card">
-        <div class="card-title">📊 成績集計（打撃）</div>
-        <div class="card-body">打率・出塁率・長打率・OPS・IsoD・IsoP・RC27など高度な指標を自動算出。5タブで多角的に表示</div>
-      </div>
-      <div class="card">
-        <div class="card-title">📊 成績集計（投手）</div>
-        <div class="card-body">ERA・WHIP・K/9・K/BB・FIPを自動算出</div>
-      </div>
-      <div class="card">
-        <div class="card-title">📋 ダッシュボード</div>
-        <div class="card-body">最近の試合結果と今シーズン主要成績をサマリー表示</div>
-      </div>
-      <div class="card">
-        <div class="card-title">🎯 打球方向分析</div>
-        <div class="card-body">打球方向チャート（グラフィカル表示）</div>
-      </div>
-      <div class="card">
-        <div class="card-title">📅 マルチシーズン</div>
-        <div class="card-body">シーズン単位での成績管理・切り替え</div>
-      </div>
-      <div class="card">
-        <div class="card-title">🌙 テーマ切替 <span class="tag new">NEW</span></div>
-        <div class="card-body">ライト・ダーク・システム設定に対応。設定画面から切替可能</div>
-      </div>
-      <div class="card">
-        <div class="card-title">✏️ 試合編集 <span class="tag new">NEW</span></div>
-        <div class="card-body">登録済み試合の日付・対戦相手・スコア・メモを後から編集可能</div>
-      </div>
+      <div class="card"><div class="card-title">&#9918; 打席記録</div><div class="card-body">打席結果・打球方向・打点・得点・盗塁を入力。内野安打方向・エラー守備位置・フィールダーズチョイスを詳細記録。ボールカウント記録対応</div></div>
+      <div class="card"><div class="card-title">&#9918; 投手成績記録</div><div class="card-body">登板イニング数・勝敗セーブホールド・被安打/本塁打・奪三振・四球死球・失点/自責点・球数を記録</div></div>
+      <div class="card"><div class="card-title">&#128202; 成績集計（打撃）</div><div class="card-body">打率・出塁率・長打率・OPS・IsoD・IsoP・RC27を自動算出。シーズン累計/試合別/打席ログ/方向/分析の6タブ表示</div></div>
+      <div class="card"><div class="card-title">&#128202; 成績集計（投手）</div><div class="card-body">ERA（7回制換算）・WHIP・K/9・K/BB・FIP 自動算出。デュアルラインチャートで推移表示</div></div>
+      <div class="card"><div class="card-title">&#128203; ダッシュボード</div><div class="card-body">シーズン成績サマリー・チーム戦績・直近5試合・連続安打ストリーク・実績バッジ・目標打率メーター</div></div>
+      <div class="card"><div class="card-title">&#127919; 打球方向分析</div><div class="card-body">外野5方向 + 内野6ポジション対応のグラフィカル打球方向チャート</div></div>
+      <div class="card"><div class="card-title">&#128197; マルチシーズン</div><div class="card-body">シーズン単位での成績管理。ダッシュボードセレクター・複数シーズン比較グラフ・前シーズン比サマリーカード</div></div>
+      <div class="card"><div class="card-title">&#127942; マイルストーン</div><div class="card-body">9種のバッジ（.300打者・5/10HR・10打点・10盗塁・OPS .800+/.900+・20安打・無三振10打席）初達成時にトースト通知</div></div>
+      <div class="card"><div class="card-title">&#127775; テーマ切替</div><div class="card-body">9テーマ: ライト/ダーク/自動 + ABM/NTD/HNF/HTG/TYS/TRG。球団カラーテーマは公式サイト実測値</div></div>
+      <div class="card"><div class="card-title">&#128247; PWA対応</div><div class="card-body">ホーム画面追加・オフライン打席記録（IndexedDB キュー）・Service Worker キャッシュ対応</div></div>
+      <div class="card"><div class="card-title">&#128190; CSV エクスポート</div><div class="card-body">試合別・打席別データを CSV ファイルとしてダウンロード</div></div>
+      <div class="card"><div class="card-title">&#128226; SNS コピー</div><div class="card-body">シーズン成績をリッチテキストでクリップボードにコピー（Twitter/LINE 等に貼り付け可能）</div></div>
+      <div class="card"><div class="card-title">&#9999; 試合メモ</div><div class="card-body">試合ごとにひとことメモを記録・編集（games.notes カラム活用）</div></div>
+      <div class="card"><div class="card-title">&#128273; クライアントキャッシュ</div><div class="card-body">SessionStorage ベースの QueryCache でページ再読み込み時のネットワークリクエストを削減</div></div>
     </div>
   </section>
 
-  <!-- ══ 2. システム構成図 ══ -->
   <section id="sec2">
     <h2 class="sec-title">2. システム構成図</h2>
-    <p>本システムは、フロントエンド・BaaS・CDN/ホスティングの3層で構成されるサーバーレスアーキテクチャを採用する。</p>
-    <div class="code-block">  ┌─────────────────────────────────────────────────────────────────┐
-  │                         ユーザー (Browser / Mobile)              │
-  └────────────────────────────────┬────────────────────────────────┘
-                                   │ HTTPS
-  ┌────────────────────────────────▼────────────────────────────────┐
-  │                          Vercel Edge Network                     │
-  │  ┌─────────────────────────────────────────────────────────┐   │
-  │  │              Next.js 14 App Router                       │   │
-  │  │                                                           │   │
-  │  │  ┌──────────────────┐    ┌──────────────────────────┐   │   │
-  │  │  │  Server Components│    │   Client Components       │   │   │
-  │  │  │  (dashboard, etc) │    │   (at-bats, stats, etc)   │   │   │
-  │  │  └────────┬─────────┘    └────────────┬─────────────┘   │   │
-  │  │           │  server-side fetch          │  browser fetch  │   │
-  │  │  ┌────────▼────────────────────────────▼─────────────┐  │   │
-  │  │  │                  Middleware (auth guard)           │  │   │
-  │  │  └──────────────────────────┬────────────────────────┘  │   │
-  │  └─────────────────────────────┼───────────────────────────┘   │
-  └────────────────────────────────┼────────────────────────────────┘
-                                   │ Supabase JS SDK (REST / Realtime)
-  ┌────────────────────────────────▼────────────────────────────────┐
-  │                          Supabase (BaaS)                         │
-  │                                                                   │
-  │  ┌───────────────┐  ┌────────────────┐  ┌──────────────────┐   │
-  │  │  Auth Service  │  │  PostgreSQL DB  │  │  Row Level Sec.  │   │
-  │  │ (OAuth / Magic │  │  ┌──────────┐  │  │  (per-user data  │   │
-  │  │   Link)        │  │  │  users   │  │  │   isolation)     │   │
-  │  └───────────────┘  │  ├──────────┤  │  └──────────────────┘   │
-  │                     │  │  games   │  │                           │
-  │  ┌───────────────┐  │  ├──────────┤  │  ┌──────────────────┐   │
-  │  │ Storage (将来) │  │  │ at_bats  │  │  │  DB Trigger      │   │
-  │  │               │  │  ├──────────┤  │  │ (auto-create     │   │
-  │  └───────────────┘  │  │pitching  │  │  │  user record)    │   │
-  │                     │  │ _stats   │  │  └──────────────────┘   │
-  │                     │  └──────────┘  │                           │
-  │                     └────────────────┘                           │
-  └───────────────────────────────────────────────────────────────────┘
-                                   │
-  ┌────────────────────────────────▼────────────────────────────────┐
-  │            GitHub (du0000du/baseball-score-app)                  │
-  │         ← git push → Vercel 自動デプロイ (CI/CD)                │
-  └─────────────────────────────────────────────────────────────────┘</div>
+    <p>フロントエンド・BaaS・CDN/ホスティングの3層サーバーレスアーキテクチャ。PWA Service Worker による4層目（オフラインキャッシュ層）を追加。</p>
+    <div class="code-block">  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+  &#9474;                     &#12518;&#12540;&#12470;&#12540; (Browser / Mobile)                          &#9474;
+  &#9474;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;   PWA Layer                         &#9474;
+  &#9474;  &#9474; Service Worker          &#9474;   &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;                   &#9474;
+  &#9474;  &#9474; (sw.js)                 &#9474;   &#9474; IndexedDB Queue &#9474; &#8592; &#12458;&#12501;&#12521;&#12452;&#12531;&#25171;&#24352;&#12461;&#12517;&#12540;           &#9474;
+  &#9474;  &#9474; &#12459;&#12483;&#12471;&#12517;&#12398;&#12467;&#12531;&#12488;&#12525;&#12540;&#12523;         &#9474;   &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;                   &#9474;
+  &#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;                                       &#9474;
+  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+                               &#9474; HTTPS
+  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;▼&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+  &#9474;                      Vercel Edge Network                         &#9474;
+  &#9474;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;   &#9474;
+  &#9474;  &#9474;               Next.js 14 App Router                         &#9474;   &#9474;
+  &#9474;  &#9474;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;    &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9474;   &#9474;
+  &#9474;  &#9474;  &#9474; Server Components &#9474;    &#9474; Client Components &#9474;  &#9474; Cache   &#9474; &#9474;   &#9474;
+  &#9474;  &#9474;  &#9474; (dashboard, etc)  &#9474;    &#9474; (stats,at-bats)   &#9474;  &#9474; (lib/   &#9474; &#9474;   &#9474;
+  &#9474;  &#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;    &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;  &#9474;query-  &#9474; &#9474;   &#9474;
+  &#9474;  &#9474;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;  &#9474;cache)  &#9474; &#9474;   &#9474;
+  &#9474;  &#9474;  &#9474;            Middleware (auth guard)            &#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9474;   &#9474;
+  &#9474;  &#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;           &#9474;   &#9474;
+  &#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;   &#9474;
+  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+                               &#9474; Supabase JS SDK
+  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;▼&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+  &#9474;                       Supabase (BaaS)                          &#9474;
+  &#9474;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;   &#9474;
+  &#9474;  &#9474; Auth Service  &#9474; &#9474; PostgreSQL DB       &#9474; &#9474; Row Level Sec.  &#9474;   &#9474;
+  &#9474;  &#9474; (Magic Link / &#9474; &#9474; users / games /    &#9474; &#9474; (per-user data  &#9474;   &#9474;
+  &#9474;  &#9474; OAuth)        &#9474; &#9474; at_bats / pitching &#9474; &#9474;  isolation)     &#9474;   &#9474;
+  &#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;   &#9474;
+  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+                               &#9474;
+  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;▼&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+  &#9474;         GitHub (du0000du/baseball-score-app)                    &#9474;
+  &#9474;      &#8592; git push &#8594; Vercel &#33258;&#21205;&#12487;&#12503;&#12525;&#12452; (CI/CD)                      &#9474;
+  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</div>
   </section>
 
-  <!-- ══ 3. アーキテクチャ詳細 ══ -->
   <section id="sec3">
     <h2 class="sec-title">3. アーキテクチャ詳細</h2>
 
@@ -705,11 +279,13 @@
       <tr><th>フレームワーク</th><td>Next.js 14.2.29（App Router）</td></tr>
       <tr><th>UIライブラリ</th><td>React 18</td></tr>
       <tr><th>言語</th><td>TypeScript 5</td></tr>
-      <tr><th>スタイリング</th><td>Tailwind CSS 3.4（カスタムカラー: <code class="code-inline">crimson</code> / <code class="code-inline">night</code> / <code class="code-inline">field</code>、<code class="code-inline">darkMode: 'class'</code>）</td></tr>
+      <tr><th>スタイリング</th><td>Tailwind CSS 3.4（CSS カスタムプロパティ + <code class="code-inline">darkMode: 'selector'</code> でマルチテーマ制御）</td></tr>
       <tr><th>レンダリング</th><td>Server Components（データ取得）+ Client Components（インタラクション）混在</td></tr>
       <tr><th>ルーティング</th><td>App Router + Route Groups（<code class="code-inline">/(protected)</code> で認証保護）</td></tr>
-      <tr><th>テーマ管理</th><td><code class="code-inline">ThemeProvider</code>（Context API）による light / dark / system 切替。<code class="code-inline">localStorage</code> 永続化</td></tr>
-      <tr><th>レイアウト</th><td>モバイル: 上部ナビバー、デスクトップ (<code class="code-inline">lg:</code>): 左固定サイドバー <code class="code-inline">w-60</code>、コンテンツ <code class="code-inline">lg:pl-60 max-w-5xl</code></td></tr>
+      <tr><th>テーマ管理</th><td><code class="code-inline">ThemeProvider</code>（Context API）による9テーマ切替。<code class="code-inline">localStorage</code> 永続化</td></tr>
+      <tr><th>レイアウト</th><td>モバイル: 上部ナビバー、デスクトップ (lg:): 左固定サイドバー <code class="code-inline">w-60</code></td></tr>
+      <tr><th>グラフ</th><td>recharts（LineChart・BarChart・PieChart）</td></tr>
+      <tr><th>クライアントキャッシュ</th><td><code class="code-inline">lib/query-cache.ts</code>（SessionStorage ベース）</td></tr>
     </table>
 
     <h3 class="sub-title" id="sec3-2">3.2 認証・セキュリティ層</h3>
@@ -719,177 +295,378 @@
       <tr><th>認証方式</th><td>OAuth / Magic Link（Supabase提供）</td></tr>
       <tr><th>認証ガード</th><td>Next.js Middleware（全ルートに適用）</td></tr>
       <tr><th>未認証時</th><td><code class="code-inline">/login</code> へリダイレクト</td></tr>
-      <tr><th>認証済みで/login</th><td><code class="code-inline">/dashboard</code> へリダイレクト</td></tr>
-      <tr><th>OAuthコールバック</th><td><code class="code-inline">/auth/callback/route.ts</code> がコード交換 → セッション確立</td></tr>
-      <tr><th>データ保護</th><td>Supabase Row Level Security（全テーブルに適用）</td></tr>
+      <tr><th>データ保護</th><td>Supabase Row Level Security（全テーブルに適用。<code class="code-inline">auth.uid() = user_id</code>）</td></tr>
     </table>
 
     <h3 class="sub-title" id="sec3-3">3.3 データ層（Supabase / PostgreSQL）</h3>
-    <p>全テーブルにRow Level Securityを有効化し、<code class="code-inline">auth.uid() = user_id</code> の条件でユーザー固有データのみアクセス可能とする。</p>
-
-    <h4 class="sub-sub">テーブル構成</h4>
     <table class="data-table">
-      <thead><tr><th style="width:18%">テーブル名</th><th style="width:40%">主なカラム</th><th>説明</th></tr></thead>
+      <thead><tr><th style="width:18%">テーブル名</th><th style="width:45%">主なカラム</th><th>説明</th></tr></thead>
       <tbody>
-        <tr>
-          <td><code>users</code></td>
-          <td><code>id</code>, <code>name</code>, <code>position</code>, <code>team_name</code></td>
-          <td>ユーザープロフィール。認証登録時にDBトリガーで自動作成</td>
-        </tr>
-        <tr>
-          <td><code>games</code></td>
-          <td><code>id</code>, <code>user_id</code>, <code>game_date</code>, <code>opponent</code>, <code>result</code>, <code>score_us</code>, <code>score_them</code>, <code>stadium</code>, <code>notes</code>, <code>season</code></td>
-          <td>試合記録。シーズン管理対応。<code>notes</code> で試合メモを記録</td>
-        </tr>
-        <tr>
-          <td><code>at_bats</code></td>
-          <td><code>id</code>, <code>game_id</code>, <code>user_id</code>, <code>at_bat_number</code>, <code>batting_order</code>, <code>result_type</code>, <code>hit_type</code>, <code>direction</code>, <code>is_rbi</code>, <code>rbi_count</code>, <code>is_run</code>, <code>is_stolen_base</code>, <code>stolen_base_count</code>, <code>is_caught_stealing</code>, <code>is_error</code>, <code>input_method</code></td>
-          <td>打席記録。打球方向・守備位置含む。盗塁死フラグあり</td>
-        </tr>
-        <tr>
-          <td><code>pitching_stats</code></td>
-          <td><code>id</code>, <code>game_id</code>, <code>user_id</code>, <code>innings_pitched</code>, <code>result</code>, <code>hits_allowed</code>, <code>home_runs_allowed</code>, <code>strikeouts</code>, <code>walks</code>, <code>hit_batsmen</code>, <code>runs_allowed</code>, <code>earned_runs</code>, <code>complete_game</code>, <code>pitch_count</code></td>
-          <td>投手成績。イニングは1/3単位の整数。被本塁打・死球・失点・完投フラグ・球数も記録</td>
-        </tr>
+        <tr><td><code>users</code></td><td><code>id</code>, <code>name</code>, <code>position</code>, <code>team_name</code></td><td>プロフィール。DBトリガーで自動作成</td></tr>
+        <tr><td><code>games</code></td><td><code>id</code>, <code>user_id</code>, <code>game_date</code>, <code>opponent</code>, <code>result</code>, <code>score_us</code>, <code>score_them</code>, <code>stadium</code>, <code>notes</code>, <code>season</code></td><td>試合記録。<code>season</code>（年度）でマルチシーズン管理。<code>notes</code>で試合メモ</td></tr>
+        <tr><td><code>at_bats</code></td><td><code>id</code>, <code>game_id</code>, <code>user_id</code>, <code>at_bat_number</code>, <code>batting_order</code>, <code>result_type</code>, <code>hit_type</code>, <code>direction</code>, <code>is_rbi</code>, <code>rbi_count</code>, <code>is_run</code>, <code>is_stolen_base</code>, <code>stolen_base_count</code>, <code>is_caught_stealing</code>, <code>is_error</code>, <code>input_method</code>, <code>fielding_position</code>, <code>count_balls</code>, <code>count_strikes</code></td><td>打席記録。守備位置・ボールカウント対応（migration 006/007）</td></tr>
+        <tr><td><code>pitching_stats</code></td><td><code>id</code>, <code>game_id</code>, <code>user_id</code>, <code>innings_pitched</code>, <code>result</code>, <code>hits_allowed</code>, <code>home_runs_allowed</code>, <code>strikeouts</code>, <code>walks</code>, <code>hit_batsmen</code>, <code>runs_allowed</code>, <code>earned_runs</code>, <code>complete_game</code>, <code>pitch_count</code></td><td>投手成績。イニングは1/3単位の整数保存</td></tr>
       </tbody>
-    </table>
-
-    <h4 class="sub-sub">インデックス</h4>
-    <table class="info-table">
-      <tr><th><code class="code-inline">idx_games_user_id_game_date</code></th><td>games (user_id, game_date DESC) — ダッシュボード・一覧取得の高速化</td></tr>
-      <tr><th><code class="code-inline">idx_at_bats_game_id</code></th><td>at_bats (game_id) — 試合別打席取得</td></tr>
-      <tr><th><code class="code-inline">idx_at_bats_user_id</code></th><td>at_bats (user_id) — ユーザー全打席集計</td></tr>
-    </table>
-
-    <h4 class="sub-sub">DBトリガー</h4>
-    <table class="info-table">
-      <tr><th><code class="code-inline">on_auth_user_created</code></th><td>auth.users INSERT後、public.usersレコードを自動生成（handle_new_user関数）。OAuth初回ログイン時にユーザーテーブルが自動セットアップされる</td></tr>
     </table>
 
     <h3 class="sub-title" id="sec3-4">3.4 ホスティング・CI/CD層</h3>
     <table class="info-table">
-      <tr><th>ホスティング</th><td>Vercel（Serverless / Edge Functions）</td></tr>
-      <tr><th>CI/CD</th><td>GitHub連携による自動デプロイ（mainブランチへのpushで即時デプロイ）</td></tr>
-      <tr><th>リポジトリ</th><td>github.com/du0000du/baseball-score-app</td></tr>
-      <tr><th>ビルドコマンド</th><td><code class="code-inline">next build</code></td></tr>
-      <tr><th>デプロイ手順</th><td><code class="code-inline">deploy_v2.bat</code> → PowerShell(<code class="code-inline">do_copy.ps1</code>) → git push → Vercel自動ビルド</td></tr>
+      <tr><th>ホスティング</th><td>Vercel（Serverless / Edge Functions）Hobby プラン</td></tr>
+      <tr><th>CI/CD</th><td>GitHub mainブランチへのpush → Vercel 自動ビルド・デプロイ</td></tr>
+      <tr><th>ビルド時間</th><td>約30〜50秒</td></tr>
+      <tr><th>デプロイ方法</th><td>bash スクリプト（push-*.sh）+ Windows bat（run-*.bat）によるセミオート。エクスプローラーから bat をダブルクリックで実行</td></tr>
+    </table>
+
+    <h3 class="sub-title" id="sec3-5">3.5 PWA・オフライン対応</h3>
+    <table class="info-table">
+      <tr><th>マニフェスト</th><td><code class="code-inline">public/manifest.json</code>。アイコン・テーマカラー・display: standalone</td></tr>
+      <tr><th>Service Worker</th><td><code class="code-inline">public/sw.js</code>。キャッシュ戦略 + オフラインキュー制御</td></tr>
+      <tr><th>オフラインキュー</th><td>IndexedDB（<code class="code-inline">baseball_offline_queue</code> ストア）に打席データを保存。オンライン復帰時に自動送信</td></tr>
+      <tr><th>インストール</th><td>iOS Safari「ホーム画面に追加」/ Android Chrome「インストール」対応</td></tr>
     </table>
   </section>
 
-  <!-- ══ 4. カラーシステム ══ -->
   <section id="sec4">
-    <h2 class="sec-title">4. カラーシステム <span class="tag new">v1.1.0 改訂</span></h2>
-    <p>v1.1.0よりカラーパレットを刷新。旧 <code class="code-inline">navy</code> パレットを廃止し、野球赤をイメージした <code class="code-inline">crimson</code> をメインアクセントとして採用。ダークモード専用に深い赤黒系の <code class="code-inline">night</code> パレットを追加した。Tailwind CSS の <code class="code-inline">darkMode: 'class'</code> を使用し、<code class="code-inline">dark:</code> プレフィックスで全コンポーネントのライト/ダーク両対応を実装する。</p>
+    <h2 class="sec-title">4. デザイントークンシステム <span class="tag new">v2.0.0 刷新</span></h2>
+    <p>v2.0.0 より CSS カスタムプロパティ（変数）主体のデザイントークン体系に移行した。各テーマは <code class="code-inline">globals.css</code> で <code class="code-inline">.light</code> / <code class="code-inline">.dark</code> / <code class="code-inline">.abema</code> 等のクラスごとに変数を定義し、<code class="code-inline">tailwind.config.ts</code> で <code class="code-inline">bg-lv1</code> / <code class="code-inline">text-accent</code> 等の Tailwind クラスに紐付ける。</p>
+    <div class="note-box blue">ハードコードカラー禁止: <code class="code-inline">bg-blue-500</code> / <code class="code-inline">style={{ color: '#xxx' }}</code> は使用不可。必ずデザイントークン（<code class="code-inline">bg-theme</code>, <code class="code-inline">text-accent</code> 等）を使用すること。</div>
 
-    <h3 class="sub-title" id="sec4-1">4.1 Crimson パレット（メインアクセント）</h3>
-    <p>UIの主要アクセント色。ナビゲーション背景・ボタン・ページタイトルに使用。</p>
-    <div class="swatch-grid">
-      <div class="swatch"><div class="swatch-color" style="background:#fff1f0"></div><div class="swatch-label"><strong>crimson-50</strong>#fff1f0</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#ffe0da"></div><div class="swatch-label"><strong>crimson-100</strong>#ffe0da</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#ffc5bc"></div><div class="swatch-label"><strong>crimson-200</strong>#ffc5bc</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#f4907e"></div><div class="swatch-label"><strong>crimson-300</strong>#f4907e</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#e05252"></div><div class="swatch-label"><strong>crimson-400</strong>#e05252</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#b83227"></div><div class="swatch-label"><strong>crimson-500</strong>#b83227 ★主要</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#9d2a1e"></div><div class="swatch-label"><strong>crimson-600</strong>#9d2a1e</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#7f2117"></div><div class="swatch-label"><strong>crimson-700</strong>#7f2117 ★Nav</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#641810"></div><div class="swatch-label"><strong>crimson-800</strong>#641810</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#4a1009"></div><div class="swatch-label"><strong>crimson-900</strong>#4a1009</div></div>
-    </div>
-    <table class="info-table">
-      <tr><th>ナビゲーション背景</th><td><code class="code-inline">bg-crimson-700</code> (#7f2117) — モバイル上部バー・デスクトップサイドバーのライトモード背景</td></tr>
-      <tr><th>ページタイトル</th><td><code class="code-inline">text-crimson-500</code> (#b83227) — ライトモード時</td></tr>
-      <tr><th>プライマリボタン</th><td><code class="code-inline">bg-crimson-500</code> hover: <code class="code-inline">bg-crimson-600</code></td></tr>
-      <tr><th>フォーカスリング</th><td><code class="code-inline">focus:ring-crimson-500</code></td></tr>
+    <h3 class="sub-title" id="sec4-1">4.1 カラートークン体系</h3>
+    <table class="data-table">
+      <thead><tr><th>Tailwind クラス</th><th>CSS 変数</th><th>Light 値</th><th>Dark 値</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td><code>bg-lv1</code></td><td><code>--bg_lv1</code></td><td>#FFFFFF</td><td>#1E2530</td><td>カード・フォーム背景</td></tr>
+        <tr><td><code>bg-lv2</code></td><td><code>--bg_lv2</code></td><td>#EEF1F5</td><td>#141920</td><td>ページ背景</td></tr>
+        <tr><td><code>bg-theme</code> / <code>text-theme</code></td><td><code>--theme</code></td><td>#3474CE</td><td>#7AABDE</td><td>プライマリボタン・アクティブ</td></tr>
+        <tr><td><code>text-accent</code></td><td><code>--accent</code></td><td>#FF6B6A</td><td>#FF9796</td><td>ページタイトル・KPI数値</td></tr>
+        <tr><td><code>text-main</code></td><td><code>--main_text</code></td><td>#333333</td><td>#E2E8F0</td><td>本文テキスト</td></tr>
+        <tr><td><code>text-sub1</code></td><td><code>--sub_text_lv1</code></td><td>#666666</td><td>#A0AABA</td><td>ラベル・補助テキスト</td></tr>
+        <tr><td><code>text-sub2</code></td><td><code>--sub_text_lv2</code></td><td>#999999</td><td>#6E7888</td><td>キャプション・日付</td></tr>
+        <tr><td><code>border-s1</code></td><td><code>--stroke_lv1</code></td><td>#BBBBBB</td><td>#4B5563</td><td>目立つ罫線</td></tr>
+        <tr><td><code>border-s2</code></td><td><code>--stroke_lv2</code></td><td>#DCDCDC</td><td>#2D3748</td><td>細い罫線・カード境界</td></tr>
+        <tr><td><code>bg-pos</code> / <code>text-pos-t</code></td><td><code>--pos_bg</code> / <code>--pos_text</code></td><td>緑系</td><td>緑系</td><td>安打・勝利・達成</td></tr>
+        <tr><td><code>bg-neg</code> / <code>text-neg-t</code></td><td><code>--neg_bg</code> / <code>--neg_text</code></td><td>赤系</td><td>赤系</td><td>アウト・敗戦・未達</td></tr>
+        <tr><td><code>bg-neu</code> / <code>text-neu-t</code></td><td><code>--neu_bg</code> / <code>--neu_text</code></td><td>黄系</td><td>黄系</td><td>引き分け・中間状態</td></tr>
+      </tbody>
     </table>
 
-    <h3 class="sub-title" id="sec4-2">4.2 Night パレット（ダークモード用）</h3>
-    <p>ダークモード時のベース色。深い赤黒系で野球夜間照明をイメージしたパレット。<code class="code-inline">dark:</code> プレフィックスと組み合わせて使用する。</p>
-    <div class="swatch-grid">
-      <div class="swatch"><div class="swatch-color" style="background:#0b0808"></div><div class="swatch-label"><strong>night-950</strong>#0b0808 ★メインbg</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#120d0d"></div><div class="swatch-label"><strong>night-900</strong>#120d0d ★サイドバーbg</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#1c1414"></div><div class="swatch-label"><strong>night-800</strong>#1c1414 ★カード</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#231b1b"></div><div class="swatch-label"><strong>night-750</strong>#231b1b ★テーブルヘッダ</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#2c2020"></div><div class="swatch-label"><strong>night-700</strong>#2c2020 ★elevated</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#3d2828"></div><div class="swatch-label"><strong>night-600</strong>#3d2828 ★ボーダー</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#523535"></div><div class="swatch-label"><strong>night-500</strong>#523535 ★subtle境界</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#a08888"></div><div class="swatch-label"><strong>night-400</strong>#a08888 ★セカンダリ文字</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#c4b0b0"></div><div class="swatch-label"><strong>night-300</strong>#c4b0b0 ★muted文字</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#e0d0d0"></div><div class="swatch-label"><strong>night-200</strong>#e0d0d0 ★subdued文字</div></div>
-      <div class="swatch"><div class="swatch-color" style="background:#f2eaea"></div><div class="swatch-label"><strong>night-100</strong>#f2eaea ★準白文字</div></div>
+    <h4 class="sub-sub">recharts 内でのトークン使用</h4>
+    <div class="code-block">// recharts の stroke/fill には CSS 変数を直接渡す
+stroke="var(--theme)"        // ラインチャート・ボーダー
+fill="var(--pos_text)"       // 安打系バー
+stroke="var(--sub_text_lv2)" // 軸ラベル
+stroke="var(--border_lv2)"   // グリッド線</div>
+
+    <h3 class="sub-title" id="sec4-2">4.2 テーマ一覧（9種）</h3>
+    <p>設定ページ（/settings）のテーマセクションから選択。選択状態は <code class="code-inline">localStorage</code>（キー: <code class="code-inline">'theme'</code>）に保存。</p>
+    <div class="theme-demo">
+      <div class="theme-chip">
+        <div class="tc-header" style="background:#3474CE;">&#9728;&#65039; ライト（デフォルト）</div>
+        <div class="tc-body">--theme: #3474CE<br>--accent: #FF6B6A<br>bg: #EEF1F5 / #FFFFFF</div>
+      </div>
+      <div class="theme-chip">
+        <div class="tc-header" style="background:#7AABDE;">&#127769; ダーク</div>
+        <div class="tc-body">--theme: #7AABDE<br>--accent: #FF9796<br>bg: #141920 / #1E2530</div>
+      </div>
+      <div class="theme-chip">
+        <div class="tc-header" style="background:#555;">&#128187; 自動（システム）</div>
+        <div class="tc-body">OS のダークモード設定に追従<br>prefers-color-scheme 監視</div>
+      </div>
+      <div class="theme-chip">
+        <div class="tc-header" style="background:#000000;">&#128250; ABM（ABEMA）</div>
+        <div class="tc-body">--theme: #00D484 (緑)<br>--accent: #FF2D55 (ピンク)<br>bg: #0A0A0A / #111111<br>font: YakuHanJPs + Noto Sans JP</div>
+      </div>
+      <div class="theme-chip">
+        <div class="tc-header" style="background:#231e1e;">&#127918; NTD（任天堂）</div>
+        <div class="tc-body">--theme: #e60012 (赤)<br>--accent: #e60012<br>bg: #231e1e / #918787<br>font: YakuHanJP + rounded</div>
+      </div>
+      <div class="theme-chip">
+        <div class="tc-header" style="background:#006298;">&#128309; HNF（ファイターズ）</div>
+        <div class="tc-body">--theme: #006298 (blue)<br>--accent: #006298<br>bg: white + blue accents<br>公式サイト実測値</div>
+      </div>
+      <div class="theme-chip">
+        <div class="tc-header" style="background:#1a1a1a;">&#128047; HTG（タイガース）</div>
+        <div class="tc-body">--theme: #1a1a1a (黒)<br>--accent: #f5c400 (金)<br>勝利bg: rgba(255,225,0,0.22)<br>公式サイト実測値</div>
+      </div>
+      <div class="theme-chip">
+        <div class="tc-header" style="background:#040730;">&#127744; TYS（スワローズ）</div>
+        <div class="tc-body">--theme: #040730 (紺)<br>--accent: #c8102e (赤)<br>bg: white + navy accents<br>公式サイト実測値</div>
+      </div>
+      <div class="theme-chip">
+        <div class="tc-header" style="background:#870011;">&#129413; TRG（イーグルス）</div>
+        <div class="tc-body">--theme: #870011 (クリムゾン)<br>--accent: #f6ab00 (金)<br>bg: white + dark red accents<br>公式サイト実測値</div>
+      </div>
     </div>
-    <table class="info-table">
-      <tr><th>ページ背景</th><td><code class="code-inline">dark:bg-night-950</code> (#0b0808)</td></tr>
-      <tr><th>ナビゲーション背景</th><td><code class="code-inline">dark:bg-night-900</code> (#120d0d)</td></tr>
-      <tr><th>カード・フォーム背景</th><td><code class="code-inline">dark:bg-night-800</code> (#1c1414)</td></tr>
-      <tr><th>入力フィールド背景</th><td><code class="code-inline">dark:bg-night-750</code> (#231b1b)</td></tr>
-      <tr><th>ボーダー</th><td><code class="code-inline">dark:border-night-600</code> (#3d2828)</td></tr>
-      <tr><th>主要テキスト</th><td><code class="code-inline">dark:text-white</code></td></tr>
-      <tr><th>セカンダリテキスト</th><td><code class="code-inline">dark:text-night-300</code> (#c4b0b0)</td></tr>
-      <tr><th>ラベル・見出し</th><td><code class="code-inline">dark:text-night-200</code> (#e0d0d0)</td></tr>
+
+    <h4 class="sub-sub">球団テーマカラーコード一覧（公式サイト実測値）</h4>
+    <table class="data-table">
+      <thead><tr><th>テーマ</th><th>主色（--theme）</th><th>アクセント（--accent）</th><th>その他</th></tr></thead>
+      <tbody>
+        <tr><td>HNF ファイターズ</td><td>#006298（ファイターズブルー）</td><td>#006298</td><td>白ベース</td></tr>
+        <tr><td>HTG タイガース</td><td>#1a1a1a（黒CTA）</td><td>#f5c400（金KPI）</td><td>勝利bg: rgba(255,225,0,0.22)、主黄: #f5c400</td></tr>
+        <tr><td>TYS スワローズ</td><td>#040730（ネイビー）</td><td>#c8102e（赤）</td><td>サブカラー: #001e73</td></tr>
+        <tr><td>TRG イーグルス</td><td>#870011（クリムゾン）</td><td>#f6ab00（ゴールド）</td><td>ネイビー補色: #00205b</td></tr>
+        <tr><td>NTD 任天堂</td><td>#e60012（レッド）</td><td>#e60012</td><td>store-black: #231e1e、store-gray: #918787</td></tr>
+        <tr><td>ABM ABEMA</td><td>#00D484（緑）</td><td>#FF2D55（ピンク）</td><td>bg: #0A0A0A（ピュアブラック）</td></tr>
+      </tbody>
     </table>
-
-    <h4 class="sub-sub">フォームスタイリング定数（共通パターン）</h4>
-    <p>全フォーム画面（試合登録・試合編集）でライト/ダーク両対応のための定数を定義し、コンポーネント内で再利用する。</p>
-    <div class="code-block">// 入力フィールド
-const INPUT = 'w-full border border-gray-200 dark:border-night-600 rounded-lg px-3 py-2 text-sm
-              bg-white dark:bg-night-750 text-gray-900 dark:text-white
-              placeholder-gray-400 dark:placeholder-night-400
-              focus:outline-none focus:ring-2 focus:ring-crimson-500 dark:focus:ring-crimson-400'
-
-// 単行ラベル
-const LABEL  = 'block text-sm font-medium text-gray-700 dark:text-night-200 mb-1'
-
-// 複数ボタン選択肢向けラベル
-const LABEL2 = 'block text-sm font-medium text-gray-700 dark:text-night-200 mb-2'</div>
 
     <h3 class="sub-title" id="sec4-3">4.3 テーマ切替システム</h3>
-    <p><code class="code-inline">ThemeProvider</code>（<code class="code-inline">app/(protected)/_components/ThemeProvider.tsx</code>）が Context API でテーマ状態を管理する。</p>
+    <p><code class="code-inline">app/(protected)/_components/ThemeProvider.tsx</code> が Context API でテーマ状態を管理。</p>
     <table class="info-table">
-      <tr><th>管理する状態</th><td><code class="code-inline">theme: 'light' | 'dark' | 'system'</code></td></tr>
+      <tr><th>管理する状態</th><td><code class="code-inline">theme: 'light' | 'dark' | 'system' | 'abema' | 'nintendo' | 'hnf' | 'htg' | 'tys' | 'trg'</code></td></tr>
       <tr><th>永続化</th><td><code class="code-inline">localStorage</code>（キー: <code class="code-inline">'theme'</code>）</td></tr>
-      <tr><th>適用方法</th><td><code class="code-inline">document.documentElement.classList</code> の <code class="code-inline">dark</code> クラス追加/削除</td></tr>
-      <tr><th>system設定</th><td><code class="code-inline">window.matchMedia('prefers-color-scheme: dark')</code> を監視し、OS設定変化にリアルタイム追従</td></tr>
-      <tr><th>設定画面</th><td><code class="code-inline">/settings</code> のテーマセクションから切替。☀️ ライト / 🌙 ダーク / 💻 システム設定の3択ボタン</td></tr>
+      <tr><th>適用方法</th><td><code class="code-inline">document.documentElement.className</code> にテーマクラスを設定。<code class="code-inline">tailwind.config.ts</code> の <code class="code-inline">darkMode: 'selector'</code> が各クラスのトークン変数を参照</td></tr>
+      <tr><th>system設定</th><td><code class="code-inline">window.matchMedia('prefers-color-scheme: dark')</code> を監視。OS設定変化にリアルタイム追従</td></tr>
+      <tr><th>設定画面</th><td><code class="code-inline">/settings</code> のテーマセクションから3×3グリッドボタンで切替</td></tr>
+    </table>
+  </section>
+
+  <section id="sec5">
+    <h2 class="sec-title">5. ナビゲーション設計</h2>
+    <p><code class="code-inline">app/(protected)/_components/Nav.tsx</code> に実装。モバイルとデスクトップで異なるレイアウト。</p>
+    <table class="info-table">
+      <tr><th>モバイル（〜lg）</th><td>画面上部ナビバー。ロゴ + ダッシュボード・試合・成績（左）＋ 設定・ログアウト（右）</td></tr>
+      <tr><th>デスクトップ（lg〜）</th><td>左固定サイドバー <code class="code-inline">lg:fixed lg:w-60</code>。絵文字アイコン付きリンク</td></tr>
+      <tr><th>テーマ対応</th><td>背景・テキスト・ボーダーはすべてデザイントークン使用（<code class="code-inline">bg-theme</code>, <code class="code-inline">text-main</code> 等）</td></tr>
+      <tr><th>アクティブ状態</th><td><code class="code-inline">usePathname()</code> で現在パスを検知。アクティブリンクに強調スタイル適用</td></tr>
+    </table>
+  </section>
+
+  <section id="sec6">
+    <h2 class="sec-title">6. ディレクトリ構成</h2>
+    <div class="dir-tree"><span class="dir">app/</span>                                     <span class="note"># Next.js プロジェクトルート</span>
+&#9500;&#9472;&#9472; <span class="dir">app/</span>                                  <span class="note"># App Router</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="file">layout.tsx</span>                       <span class="note"># ルートレイアウト（ThemeProvider + metadata template）</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="file">globals.css</span>                      <span class="note"># CSS カスタムプロパティ（9テーマ分のトークン定義）</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="file">page.tsx</span>                         <span class="note"># / &#8594; /dashboard リダイレクト</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="file">error.tsx</span>                        <span class="note"># グローバルエラーUI</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="dir">(protected)/</span>                     <span class="note"># 認証保護ルートグループ</span>
+&#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="file">layout.tsx</span>                   <span class="note"># 保護ルート共通レイアウト（Nav + PageWrapper）</span>
+&#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="dir">_components/</span>                 <span class="note"># 保護ルート専用コンポーネント</span>
+&#9474;   &#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="file">Nav.tsx</span>              <span class="note"># モバイルバー + デスクトップサイドバー</span>
+&#9474;   &#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="file">PageWrapper.tsx</span>      <span class="note"># ページ遷移フェードアニメーション</span>
+&#9474;   &#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="file">ThemeProvider.tsx</span>    <span class="note"># 9テーマ管理 Context API</span>
+&#9474;   &#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="file">DirectionChart.tsx</span>   <span class="note"># 打球方向チャート（Recharts）</span>
+&#9474;   &#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="file">DashboardSeasonSelector.tsx</span> <span class="note"># &#9733;v2.0 ダッシュボードシーズンUI</span>
+&#9474;   &#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="file">DashboardTargetMeter.tsx</span>    <span class="note"># &#9733;v2.0 目標打率達成率メーター</span>
+&#9474;   &#9474;   &#9474;   &#9492;&#9472;&#9472; <span class="file">DashboardMilestoneToast.tsx</span> <span class="note"># &#9733;v2.0 マイルストーン初達成トースト</span>
+&#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="dir">dashboard/</span>
+&#9474;   &#9474;   &#9474;   &#9492;&#9472;&#9472; <span class="file">page.tsx</span>             <span class="note"># ダッシュボード（Server Component）</span>
+&#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="dir">games/</span>
+&#9474;   &#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="file">page.tsx</span>             <span class="note"># 試合一覧</span>
+&#9474;   &#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="dir">new/</span>
+&#9474;   &#9474;   &#9474;   &#9474;   &#9492;&#9472;&#9472; <span class="file">page.tsx</span>         <span class="note"># 試合登録（Client）</span>
+&#9474;   &#9474;   &#9474;   &#9492;&#9472;&#9472; <span class="dir">[id]/</span>
+&#9474;   &#9474;   &#9474;       &#9500;&#9472;&#9472; <span class="file">page.tsx</span>         <span class="note"># 試合詳細（メモ編集機能付き）</span>
+&#9474;   &#9474;   &#9474;       &#9500;&#9472;&#9472; <span class="dir">at-bats/</span>
+&#9474;   &#9474;   &#9474;       &#9474;   &#9492;&#9472;&#9472; <span class="file">page.tsx</span>     <span class="note"># 打席記録（Client）守備位置・カウント対応</span>
+&#9474;   &#9474;   &#9474;       &#9500;&#9472;&#9472; <span class="dir">edit/</span>
+&#9474;   &#9474;   &#9474;       &#9474;   &#9500;&#9472;&#9472; <span class="file">page.tsx</span>     <span class="note"># 試合編集（Server&#8594;Client渡し）</span>
+&#9474;   &#9474;   &#9474;       &#9474;   &#9492;&#9472;&#9472; <span class="file">_EditGameForm.tsx</span><span class="note"># 編集フォーム（Client）</span>
+&#9474;   &#9474;   &#9474;       &#9492;&#9472;&#9472; <span class="dir">pitching/</span>
+&#9474;   &#9474;   &#9474;           &#9492;&#9472;&#9472; <span class="file">page.tsx</span>     <span class="note"># 投手成績記録（Client）</span>
+&#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="dir">stats/</span>
+&#9474;   &#9474;   &#9474;   &#9492;&#9472;&#9472; <span class="file">page.tsx</span>             <span class="note"># 成績サマリー（6タブ: season/per-game/log/pitching/direction/analytics）</span>
+&#9474;   &#9474;   &#9492;&#9472;&#9472; <span class="dir">settings/</span>
+&#9474;   &#9474;       &#9492;&#9472;&#9472; <span class="file">page.tsx</span>             <span class="note"># 設定（9テーマ/プロフィール/シーズン管理/目標打率/アカウント）</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="dir">auth/callback/</span>
+&#9474;   &#9474;   &#9492;&#9472;&#9472; <span class="file">route.ts</span>                 <span class="note"># OAuth コールバック</span>
+&#9474;   &#9492;&#9472;&#9472; <span class="dir">login/</span>
+&#9474;       &#9492;&#9472;&#9472; <span class="file">page.tsx</span>                 <span class="note"># ログイン画面</span>
+&#9500;&#9472;&#9472; <span class="dir">lib/</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="dir">supabase/</span>
+&#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="file">client.ts</span>                <span class="note"># ブラウザ用 Supabase クライアント</span>
+&#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="file">server.ts</span>                <span class="note"># サーバー用 Supabase クライアント</span>
+&#9474;   &#9474;   &#9492;&#9472;&#9472; <span class="file">types.ts</span>                 <span class="note"># 型定義・定数（ResultType, Direction, Theme等）</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="file">stats.ts</span>                     <span class="note"># 成績計算ロジック（純粋関数）</span>
+&#9474;   &#9492;&#9472;&#9472; <span class="file">query-cache.ts</span>               <span class="note"># &#9733;v2.0 SessionStorage ベースクライアントキャッシュ</span>
+&#9500;&#9472;&#9472; <span class="dir">public/</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="file">design.html</span>                  <span class="note"># 本設計書</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="file">manifest.json</span>               <span class="note"># &#9733;v2.0 PWA マニフェスト</span>
+&#9474;   &#9492;&#9472;&#9472; <span class="file">sw.js</span>                        <span class="note"># &#9733;v2.0 Service Worker（オフラインキュー）</span>
+&#9500;&#9472;&#9472; <span class="dir">supabase/migrations/</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="file">001_initial_schema.sql</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="file">002_add_infield_positions.sql</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="file">003_add_rbi_count_stolen_base.sql</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="file">004_add_season_to_games.sql</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="file">005_add_liner_out.sql</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="file">006_add_fielding_position.sql</span>
+&#9474;   &#9492;&#9472;&#9472; <span class="file">007_add_count_balls_strikes.sql</span>
+&#9500;&#9472;&#9472; <span class="file">middleware.ts</span>                    <span class="note"># 認証ガード</span>
+&#9500;&#9472;&#9472; <span class="file">tailwind.config.ts</span>              <span class="note"># デザイントークン定義（darkMode: selector）</span>
+&#9492;&#9472;&#9472; <span class="file">next.config.ts</span>                   <span class="note"># Next.js 設定</span></div>
+  </section>
+
+  <section id="sec7">
+    <h2 class="sec-title">7. 画面・ルート一覧</h2>
+    <table class="data-table">
+      <thead><tr><th>パス</th><th>画面名</th><th>認証</th><th>種別</th><th>備考</th></tr></thead>
+      <tbody>
+        <tr><td><code>/</code></td><td>ルート</td><td><span class="tag green">不要</span></td><td>Server</td><td>/dashboard へ転送</td></tr>
+        <tr><td><code>/login</code></td><td>ログイン</td><td><span class="tag green">不要</span></td><td>Client</td><td></td></tr>
+        <tr><td><code>/auth/callback</code></td><td>OAuthコールバック</td><td><span class="tag green">不要</span></td><td>Route Handler</td><td></td></tr>
+        <tr><td><code>/dashboard</code></td><td>ダッシュボード</td><td><span class="tag">必要</span></td><td>Server</td><td>シーズンセレクター・目標打率メーター・マイルストーン</td></tr>
+        <tr><td><code>/games</code></td><td>試合一覧</td><td><span class="tag">必要</span></td><td>Server</td><td></td></tr>
+        <tr><td><code>/games/new</code></td><td>試合登録</td><td><span class="tag">必要</span></td><td>Client</td><td></td></tr>
+        <tr><td><code>/games/[id]</code></td><td>試合詳細</td><td><span class="tag">必要</span></td><td>Server</td><td>試合メモ編集機能付き</td></tr>
+        <tr><td><code>/games/[id]/at-bats</code></td><td>打席記録</td><td><span class="tag">必要</span></td><td>Client</td><td>守備位置・カウント・PWAオフライン対応</td></tr>
+        <tr><td><code>/games/[id]/edit</code></td><td>試合編集</td><td><span class="tag">必要</span></td><td>Server+Client</td><td></td></tr>
+        <tr><td><code>/games/[id]/pitching</code></td><td>投手成績記録</td><td><span class="tag">必要</span></td><td>Client</td><td></td></tr>
+        <tr><td><code>/stats</code></td><td>成績サマリー</td><td><span class="tag">必要</span></td><td>Client</td><td>6タブ・スワイプ操作・CSV エクスポート</td></tr>
+        <tr><td><code>/settings</code></td><td>設定</td><td><span class="tag">必要</span></td><td>Client</td><td>9テーマ/プロフィール/シーズン管理/目標打率/ログアウト</td></tr>
+      </tbody>
     </table>
 
-    <h4 class="sub-sub">Field パレット（グラウンド緑、補助）</h4>
+    <h3 class="sub-title">成績画面（/stats）のタブ構成</h3>
     <table class="data-table">
-      <thead><tr><th>トークン</th><th>カラーコード</th><th>用途</th></tr></thead>
+      <thead><tr><th>タブキー</th><th>表示名</th><th>主なコンテンツ</th></tr></thead>
       <tbody>
-        <tr><td><code>field-50</code></td><td>#f0fdf4</td><td>成功状態の薄い背景など</td></tr>
-        <tr><td><code>field-500</code></td><td>#16a34a</td><td>勝利・成功テキスト</td></tr>
-        <tr><td><code>field-600</code></td><td>#15803d</td><td>緑系アクセントhover</td></tr>
-        <tr><td><code>field-700</code></td><td>#166534</td><td>濃い緑</td></tr>
+        <tr><td><code>season</code></td><td>累計-打撃成績</td><td>AVG/OBP/SLG/OPS/IsoD/IsoP/RC27・安打内訳・実績バッジ・成績コピー・マルチシーズン比較・前シーズン比</td></tr>
+        <tr><td><code>per-game</code></td><td>試合別-打撃成績</td><td>試合ごとの成績一覧テーブル・CSV エクスポート</td></tr>
+        <tr><td><code>log</code></td><td>打席別-打撃成績</td><td>全打席ログ（対戦相手フィルター付き）</td></tr>
+        <tr><td><code>pitching</code></td><td>投手成績</td><td>ERA/WHIP/K/9/FIP・デュアルラインチャート（ERA + 球数推移）</td></tr>
+        <tr><td><code>direction</code></td><td>打球方向</td><td>グラフィカル打球方向チャート（外野5 + 内野6方向）</td></tr>
+        <tr><td><code>analytics</code></td><td>分析</td><td>打率推移・OPS推移・打順別成績・守備位置別成績・対戦相手別成績（PA+RBI）・月別BarChart・球場別</td></tr>
       </tbody>
     </table>
   </section>
 
-  <!-- ══ 5. ナビゲーション設計 ══ -->
-  <section id="sec5">
-    <h2 class="sec-title">5. ナビゲーション設計 <span class="tag new">v1.1.0 改訂</span></h2>
-    <p><code class="code-inline">app/(protected)/_components/Nav.tsx</code> に実装。モバイルとデスクトップで異なるレイアウトを提供する。</p>
-
-    <h3 class="sub-title">モバイル（〜lg未満）: 上部ナビバー</h3>
-    <table class="info-table">
-      <tr><th>配置</th><td>画面上部固定（スティッキーではなくページフローに乗る）</td></tr>
-      <tr><th>背景色</th><td><code class="code-inline">bg-crimson-700</code> ライト / <code class="code-inline">dark:bg-night-900</code> ダーク</td></tr>
-      <tr><th>ボーダー</th><td><code class="code-inline">border-b border-crimson-600</code> / <code class="code-inline">dark:border-night-600</code></td></tr>
-      <tr><th>リンクテキスト</th><td>通常: <code class="code-inline">text-crimson-100</code> / <code class="code-inline">dark:text-night-300</code>、アクティブ: <code class="code-inline">bg-white/20 text-white</code></td></tr>
-      <tr><th>表示項目</th><td>⚾ロゴ、ダッシュボード、試合、成績（左側）＋ 設定、ログアウト（右側）</td></tr>
-    </table>
-
-    <h3 class="sub-title">デスクトップ（lg以上）: 左固定サイドバー</h3>
-    <table class="info-table">
-      <tr><th>配置</th><td>左固定 <code class="code-inline">lg:fixed lg:inset-y-0 lg:left-0 lg:w-60</code></td></tr>
-      <tr><th>背景色</th><td><code class="code-inline">bg-crimson-700</code> ライト / <code class="code-inline">dark:bg-night-900</code> ダーク</td></tr>
-      <tr><th>コンテンツ左余白</th><td>メインコンテンツ側に <code class="code-inline">lg:pl-60</code> を指定してサイドバー幅分をクリア</td></tr>
-      <tr><th>アイコン付きリンク</th><td>絵文字アイコン + テキストラベル（🏠 ダッシュボード / ⚾ 試合 / 📊 成績 / ⚙️ 設定 / 🚪 ログアウト）</td></tr>
-      <tr><th>アクティブ状態</th><td><code class="code-inline">bg-white/20 text-white</code>（両テーマ共通）</td></tr>
+  <section id="sec8">
+    <h2 class="sec-title">8. 型システム</h2>
+    <table class="data-table">
+      <thead><tr><th style="width:28%">型名</th><th>値</th></tr></thead>
+      <tbody>
+        <tr><td><code>ResultType</code></td><td><code>hit</code> / <code>double</code> / <code>triple</code> / <code>hr</code> / <code>walk</code> / <code>hbp</code> / <code>strikeout</code> / <code>groundout</code> / <code>flyout</code> / <code>infield_flyout</code> / <code>liner_out</code> / <code>sac_bunt</code> / <code>sac_fly</code> / <code>error</code> / <code>fc</code></td></tr>
+        <tr><td><code>HitType</code></td><td><code>single</code> / <code>double</code> / <code>triple</code> / <code>hr</code></td></tr>
+        <tr><td><code>Direction</code></td><td>OutfieldDirection | InfieldPosition のユニオン（外野5方向 + 内野6ポジション）</td></tr>
+        <tr><td><code>FieldingPosition</code></td><td><code>pitcher</code> / <code>catcher</code> / <code>first_base</code> / <code>second_base</code> / <code>third_base</code> / <code>shortstop</code> / <code>left</code> / <code>center</code> / <code>right</code></td></tr>
+        <tr><td><code>PitchingResult</code></td><td><code>win</code> / <code>loss</code> / <code>save</code> / <code>hold</code> / <code>none</code></td></tr>
+        <tr><td><code>GameResult</code></td><td><code>win</code> / <code>loss</code> / <code>draw</code></td></tr>
+        <tr><td><code>Theme</code></td><td><code>light</code> / <code>dark</code> / <code>system</code> / <code>abema</code> / <code>nintendo</code> / <code>hnf</code> / <code>htg</code> / <code>tys</code> / <code>trg</code></td></tr>
+        <tr><td><code>BattingStats</code></td><td><code>pa, ab, hits, doubles, triples, hrs, rbi, runs, sb, cs, strikeouts, walks, hbp, sac_bunt, sac_fly, avg, obp, slg, ops, isod, isop, rc27</code></td></tr>
+      </tbody>
     </table>
   </section>
 
-  <!-- ══ 6. ディレクトリ構成 ══ -->
-  <section id="sec6">
-    <h2 class="sec-title">6. ディレクトリ構成</h2>
-    <div class="dir-tree"><span class="dir">app/</span>                              <span class="note"># Next.js プロジェクトルート</span>
-├�
+  <section id="sec9">
+    <h2 class="sec-title">9. 成績計算ロジック</h2>
+    <p><code class="code-inline">lib/stats.ts</code> に実装。すべてクライアントサイドで計算される純粋関数。</p>
+    <h3 class="sub-title">打撃成績（calcBattingStats）</h3>
+    <div class="formula-list">
+      <div class="fl-key">打数 (AB)</div><div class="fl-val">PA &#8722; BB &#8722; HBP &#8722; 犠打 &#8722; 犠飛</div>
+      <div class="fl-key">打率 (AVG)</div><div class="fl-val">H / AB</div>
+      <div class="fl-key">出塁率 (OBP)</div><div class="fl-val">(H + BB + HBP) / (AB + BB + HBP + 犠飛)</div>
+      <div class="fl-key">長打率 (SLG)</div><div class="fl-val">塁打 / AB（1B×1 + 2B×2 + 3B×3 + HR×4）</div>
+      <div class="fl-key">OPS</div><div class="fl-val">OBP + SLG</div>
+      <div class="fl-key">IsoD</div><div class="fl-val">OBP &#8722; AVG</div>
+      <div class="fl-key">IsoP</div><div class="fl-val">SLG &#8722; AVG</div>
+      <div class="fl-key">RC27</div><div class="fl-val">((H+BB+HBP) × TB / (AB+BB+HBP)) × 27 / (AB &#8722; H + CS)</div>
+    </div>
+    <h3 class="sub-title">投手成績（calcPitchingStats）</h3>
+    <div class="note-box">投球回（innings_pitched）は <strong>1/3イニング単位の整数</strong>で保存。ERA計算時は <code class="code-inline">outsToIPDecimal()</code> で小数換算。<strong>ERA は7回制換算（× 21/27 相当）</strong>を採用。表示は <code class="code-inline">formatIP()</code> で「3.1」形式。</div>
+    <div class="formula-list">
+      <div class="fl-key">ERA（7回制換算）</div><div class="fl-val">(自責点 / IP) × 7 × 3（草野球7回制対応）</div>
+      <div class="fl-key">WHIP</div><div class="fl-val">(被安打 + 四球) / IP</div>
+      <div class="fl-key">K/9</div><div class="fl-val">(奪三振 / IP) × 9</div>
+      <div class="fl-key">K/BB</div><div class="fl-val">奪三振 / 四球</div>
+      <div class="fl-key">FIP</div><div class="fl-val">(13×HR + 3×(BB+HBP) &#8722; 2×K) / IP + 3.10</div>
+      <div class="fl-key">勝率</div><div class="fl-val">勝 / (勝 + 敗)</div>
+    </div>
+  </section>
+
+  <section id="sec10">
+    <h2 class="sec-title">10. 認証フロー</h2>
+    <div class="flow">
+      <div class="flow-step" data-n="1"><div class="step-label">ユーザー操作</div><div class="step-desc"><code class="code-inline">/login</code> でOAuth / Magic Link を選択してボタンクリック</div></div>
+      <div class="flow-step" data-n="2"><div class="step-label">Supabase認証</div><div class="step-desc">Supabase Auth がプロバイダー認証ページへリダイレクト</div></div>
+      <div class="flow-step" data-n="3"><div class="step-label">コールバック受信</div><div class="step-desc"><code class="code-inline">/auth/callback</code> に認証コードが届く。<code class="code-inline">exchangeCodeForSession()</code> でセッションCookieを発行</div></div>
+      <div class="flow-step" data-n="4"><div class="step-label">ユーザーテーブル作成</div><div class="step-desc">初回ログイン時、DBトリガー <code class="code-inline">on_auth_user_created</code> が <code class="code-inline">public.users</code> レコードを自動生成</div></div>
+      <div class="flow-step" data-n="5"><div class="step-label">ダッシュボードへ</div><div class="step-desc"><code class="code-inline">/dashboard</code> へリダイレクト。以降はCookieでセッション維持</div></div>
+    </div>
+  </section>
+
+  <section id="sec11">
+    <h2 class="sec-title">11. 環境変数</h2>
+    <table class="env-table">
+      <thead><tr><th>変数名</th><th>説明</th><th>設定場所</th></tr></thead>
+      <tbody>
+        <tr><td>NEXT_PUBLIC_SUPABASE_URL</td><td>Supabase プロジェクトURL</td><td>.env.local / Vercel</td></tr>
+        <tr><td>NEXT_PUBLIC_SUPABASE_ANON_KEY</td><td>Supabase Anon Key（公開可）</td><td>.env.local / Vercel</td></tr>
+        <tr><td>SUPABASE_SERVICE_ROLE_KEY</td><td>管理者キー（サーバーサイドのみ・非公開）</td><td>Vercel環境変数のみ</td></tr>
+      </tbody>
+    </table>
+    <div class="note-box"><code class="code-inline">.env.local</code> は <code class="code-inline">.gitignore</code> に含まれリポジトリには含まれない。本番環境はVercelの環境変数設定で管理。</div>
+  </section>
+
+  <section id="sec12">
+    <h2 class="sec-title">12. 主要ライブラリ</h2>
+    <table class="data-table">
+      <thead><tr><th>ライブラリ</th><th>バージョン</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>next</td><td>14.2.29</td><td>Webフレームワーク（App Router）</td></tr>
+        <tr><td>react / react-dom</td><td>18</td><td>UIライブラリ</td></tr>
+        <tr><td>typescript</td><td>5</td><td>型付きJavaScript</td></tr>
+        <tr><td>@supabase/supabase-js</td><td>2.x</td><td>SupabaseクライアントSDK</td></tr>
+        <tr><td>@supabase/ssr</td><td>0.x</td><td>SSR対応Supabaseクライアント（Cookie管理）</td></tr>
+        <tr><td>tailwindcss</td><td>3.4</td><td>ユーティリティCSS（darkMode: selector、デザイントークン体系）</td></tr>
+        <tr><td>recharts</td><td>2.x</td><td>LineChart・BarChart・PieChart（成績グラフ全般）</td></tr>
+        <tr><td>lucide-react</td><td>0.x</td><td>アイコンセット</td></tr>
+        <tr><td>YakuHanJP / YakuHanJPs</td><td>—</td><td>NTD/ABMテーマ用 Web フォント（CDN読込）</td></tr>
+        <tr><td>Service Worker (sw.js)</td><td>—</td><td>PWAオフラインキュー（IndexedDB）・キャッシュ制御</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="sec13">
+    <h2 class="sec-title">13. DBマイグレーション履歴</h2>
+    <div class="migration">
+      <div class="mig-item">
+        <div class="mig-title">001_initial_schema.sql</div>
+        <div class="mig-desc">初期スキーマ。<code class="code-inline">users</code> / <code class="code-inline">games</code> / <code class="code-inline">at_bats</code> / <code class="code-inline">pitching_stats</code> テーブル。RLS・インデックス・DBトリガー（on_auth_user_created）設定</div>
+      </div>
+      <div class="mig-item">
+        <div class="mig-title">002_add_infield_positions.sql</div>
+        <div class="mig-desc"><code class="code-inline">at_bats.direction</code> カラムに内野守備位置（pitcher / catcher / first_base / second_base / third_base / shortstop）を追加。内野安打方向の詳細記録に対応</div>
+      </div>
+      <div class="mig-item">
+        <div class="mig-title">003_add_rbi_count_stolen_base.sql</div>
+        <div class="mig-desc"><code class="code-inline">at_bats</code> に <code class="code-inline">rbi_count</code>（打点数）/ <code class="code-inline">stolen_base_count</code>（盗塁数）/ <code class="code-inline">is_caught_stealing</code>（盗塁死フラグ）を追加。複数打点・複数盗塁の記録に対応</div>
+      </div>
+      <div class="mig-item">
+        <div class="mig-title">004_add_season_to_games.sql</div>
+        <div class="mig-desc"><code class="code-inline">games</code> テーブルに <code class="code-inline">season</code>（INTEGER、年度）カラムを追加。マルチシーズン成績管理に対応。既存レコードには作成年を自動補完</div>
+      </div>
+      <div class="mig-item">
+        <div class="mig-title">005_add_liner_out.sql</div>
+        <div class="mig-desc"><code class="code-inline">result_type</code> の ENUM に <code class="code-inline">liner_out</code>（ライナーアウト）を追加。打球方向チャートの <code class="code-inline">OUT_TYPES</code> に対応</div>
+      </div>
+      <div class="mig-item">
+        <div class="mig-title">006_add_fielding_position.sql</div>
+        <div class="mig-desc"><code class="code-inline">at_bats</code> に <code class="code-inline">fielding_position</code> カラムを追加。守備位置別成績集計（分析タブ）のデータソースとして使用</div>
+      </div>
+      <div class="mig-item">
+        <div class="mig-title">007_add_count_balls_strikes.sql</div>
+        <div class="mig-desc"><code class="code-inline">at_bats</code> に <code class="code-inline">count_balls</code>（INTEGER）/ <code class="code-inline">count_strikes</code>（INTEGER）カラムを追加。打席ごとのカウント記録に対応</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const sections = document.querySelectorAll('section[id], div[id]');
+  const navLinks = document.querySelectorAll('#sidebar nav a');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`#sidebar nav a[href="#${entry.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
