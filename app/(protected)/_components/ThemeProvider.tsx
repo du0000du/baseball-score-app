@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 
-export type Theme = 'light' | 'dark' | 'system' | 'abema' | 'nintendo'
+export type Theme = 'light' | 'dark' | 'system' | 'abema' | 'nintendo' | 'hnf' | 'htg' | 'tys' | 'trg'
 
 interface ThemeContextValue {
   theme: Theme
@@ -20,7 +20,7 @@ export function useTheme() {
 
 function applyTheme(theme: Theme) {
   const root = document.documentElement
-  root.classList.remove('dark', 'abema', 'nintendo')
+  root.classList.remove('dark', 'abema', 'nintendo', 'hnf', 'htg', 'tys', 'trg')
 
   if (theme === 'dark') {
     root.classList.add('dark')
@@ -28,6 +28,14 @@ function applyTheme(theme: Theme) {
     root.classList.add('abema')
   } else if (theme === 'nintendo') {
     root.classList.add('nintendo')
+  } else if (theme === 'hnf') {
+    root.classList.add('hnf')
+  } else if (theme === 'htg') {
+    root.classList.add('htg')
+  } else if (theme === 'tys') {
+    root.classList.add('tys')
+  } else if (theme === 'trg') {
+    root.classList.add('trg')
   } else if (theme === 'light') {
     // 何も付けない
   } else {
@@ -45,7 +53,7 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   useEffect(() => {
     try {
       const stored = localStorage.getItem('theme') as Theme | null
-      if (stored === 'light' || stored === 'dark' || stored === 'system' || stored === 'abema' || stored === 'nintendo') {
+      if (stored === 'light' || stored === 'dark' || stored === 'system' || stored === 'abema' || stored === 'nintendo' || stored === 'hnf' || stored === 'htg' || stored === 'tys' || stored === 'trg') {
         setThemeState(stored)
       }
     } catch {}

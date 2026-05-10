@@ -13,6 +13,10 @@ const THEME_OPTIONS: { value: Theme; label: string; icon: string }[] = [
   { value: 'system',   label: '自動',    icon: '💻' },
   { value: 'abema',    label: 'ABM',     icon: '📺' },
   { value: 'nintendo', label: 'NTD',     icon: '🎮' },
+  { value: 'hnf',      label: 'HNF',     icon: '🔵' },
+  { value: 'htg',      label: 'HTG',     icon: '🐯' },
+  { value: 'tys',      label: 'TYS',     icon: '🌀' },
+  { value: 'trg',      label: 'TRG',     icon: '🦅' },
 ]
 
 export default function SettingsPage() {
@@ -113,7 +117,7 @@ export default function SettingsPage() {
         <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-4">
           表示テーマ
         </h2>
-        <div className="grid grid-cols-5 gap-1.5">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
           {THEME_OPTIONS.map(({ value, label, icon }) => (
             <button
               key={value}

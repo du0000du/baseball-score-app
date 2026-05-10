@@ -195,6 +195,12 @@
                  "ヒラギノ角ゴ ProN W3", "Noto Sans JP", Arial, sans-serif;
     letter-spacing: 0.01em;
   }
+
+  /* ── 球団テーマ: 共通フォントスタック（ゴシック体） ─────────────── */
+  .hnf, .htg, .tys, .trg {
+    font-family: "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3",
+                 "BIZ UDGothic", Meiryo, sans-serif;
+  }
 }
 
 @layer components {
@@ -237,4 +243,140 @@
 }
 .animate-fade-in-out {
   animation: fade-in-out 0.8s ease forwards;
+}
+
+/* ── HNF theme (北海道日本ハムファイターズ) ──────────────────────── */
+/* 参照: fighters.co.jp 実測値（2026-05-10）                           */
+/* ファイターズブルー(#006298) × クリーンホワイト基調                  */
+.hnf {
+  /* Surface */
+  --bg_lv2:       #f5f7fa;               /* ページ背景（薄ブルー系）           */
+  --bg_lv1:       #ffffff;               /* カード / モーダル                  */
+
+  /* Brand */
+  --theme:        #006298;               /* ファイターズネイビー (CTA/active)  */
+  --accent:       #006da2;               /* 明るめブルー (KPI/リンク)          */
+
+  /* Text */
+  --main_text:    #212121;               /* 本文 (実測 body text)              */
+  --sub_text_lv1: #4c4c4c;               /* ラベル (スコアボードヘッダー色)    */
+  --sub_text_lv2: #888888;               /* キャプション                       */
+
+  /* Border */
+  --stroke_lv1:   #006298;               /* 強調罫線 (ブランドカラー)          */
+  --stroke_lv2:   #d4e6f0;               /* カード枠線 (淡ブルー)              */
+
+  /* State — positive */
+  --pos_bg:       #d1fae5;
+  --pos_text:     #065f46;
+
+  /* State — negative */
+  --neg_bg:       rgba(0, 98, 152, 0.10);
+  --neg_text:     #cc2200;
+
+  /* State — neutral */
+  --neu_bg:       rgba(255, 204, 0, 0.18);
+  --neu_text:     #7a5c00;
+}
+
+/* ── HTG theme (阪神タイガース) ──────────────────────────────────── */
+/* 参照: m.hanshintigers.jp 実測値（2026-05-10）                       */
+/* タイガースレッド(#d71518) × タイガースイエロー(#f5c400)             */
+.htg {
+  /* Surface */
+  --bg_lv2:       #faf9f5;               /* ページ背景 (実測 body相当)         */
+  --bg_lv1:       #ffffff;               /* カード                             */
+
+  /* Brand */
+  --theme:        #d71518;               /* タイガースレッド (CTA/active)      */
+  --accent:       #f5c400;               /* タイガースイエロー (KPI/強調)      */
+
+  /* Text */
+  --main_text:    #1a1a1a;               /* 本文 (near-black)                  */
+  --sub_text_lv1: #555555;               /* ラベル                             */
+  --sub_text_lv2: #888888;               /* キャプション                       */
+
+  /* Border */
+  --stroke_lv1:   #d71518;               /* 強調罫線 (タイガースレッド)        */
+  --stroke_lv2:   #eeeeee;               /* カード枠線                         */
+
+  /* State — positive (黄でスポーツ感を演出) */
+  --pos_bg:       rgba(245, 196, 0, 0.18);
+  --pos_text:     #7a5000;
+
+  /* State — negative */
+  --neg_bg:       rgba(215, 21, 24, 0.10);
+  --neg_text:     #d71518;
+
+  /* State — neutral */
+  --neu_bg:       #f5f5f5;
+  --neu_text:     #555555;
+}
+
+/* ── TYS theme (東京ヤクルトスワローズ) ─────────────────────────── */
+/* 参照: yakult-swallows.co.jp 実測値（2026-05-10）                    */
+/* スワローズネイビー(#040730) × スワローズレッド(#c8102e)             */
+.tys {
+  /* Surface */
+  --bg_lv2:       #f2f3f4;               /* ページ背景 (カレンダーヘッダー色)  */
+  --bg_lv1:       #ffffff;               /* カード                             */
+
+  /* Brand */
+  --theme:        #040730;               /* スワローズネイビー (CTA/active)    */
+  --accent:       #c8102e;               /* スワローズレッド (KPI/強調)        */
+
+  /* Text */
+  --main_text:    #040730;               /* 本文 (実測 link/primary color)     */
+  --sub_text_lv1: #737a8c;               /* ラベル (実測 lose-label color)     */
+  --sub_text_lv2: #a0a8b8;               /* キャプション (上記の薄め)          */
+
+  /* Border */
+  --stroke_lv1:   #040730;               /* 強調罫線 (ネイビー)                */
+  --stroke_lv2:   #dde0e8;               /* カード枠線 (淡ネイビー)            */
+
+  /* State — positive */
+  --pos_bg:       #d1fae5;
+  --pos_text:     #065f46;
+
+  /* State — negative */
+  --neg_bg:       rgba(200, 16, 46, 0.10);
+  --neg_text:     #c8102e;
+
+  /* State — neutral */
+  --neu_bg:       rgba(4, 7, 48, 0.08);
+  --neu_text:     #040730;
+}
+
+/* ── TRG theme (東北楽天ゴールデンイーグルス) ───────────────────── */
+/* 参照: rakuteneagles.jp 実測値（2026-05-10）                         */
+/* イーグルスクリムゾン(#870011) × イーグルスゴールド(#f6ab00)        */
+.trg {
+  /* Surface */
+  --bg_lv2:       #f4f4f4;               /* ページ背景 (実測 card bg)          */
+  --bg_lv1:       #ffffff;               /* カード                             */
+
+  /* Brand */
+  --theme:        #870011;               /* イーグルスクリムゾン (CTA/active)  */
+  --accent:       #f6ab00;               /* イーグルスゴールド (KPI/強調)      */
+
+  /* Text */
+  --main_text:    #262626;               /* 本文 (ナビダーク = 実態の本文色)   */
+  --sub_text_lv1: #4c4c4c;               /* ラベル (スコアボードヘッダー色)    */
+  --sub_text_lv2: #888888;               /* キャプション                       */
+
+  /* Border */
+  --stroke_lv1:   #870011;               /* 強調罫線 (クリムゾン)              */
+  --stroke_lv2:   #e0e0e0;               /* カード枠線                         */
+
+  /* State — positive (ゴールド薄め) */
+  --pos_bg:       rgba(246, 171, 0, 0.18);
+  --pos_text:     #7a5000;
+
+  /* State — negative */
+  --neg_bg:       rgba(135, 0, 17, 0.10);
+  --neg_text:     #870011;
+
+  /* State — neutral */
+  --neu_bg:       #f4f4f4;
+  --neu_text:     #4c4c4c;
 }

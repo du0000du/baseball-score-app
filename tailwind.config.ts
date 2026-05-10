@@ -2,7 +2,7 @@ import type { Config } from 'tailwindcss'
 
 const config: Config = {
   darkMode: ['selector', ':is(.dark, .abema) &'],
-  // Note: .nintendo is a light theme — no dark: utilities needed
+  // Note: .nintendo/.hnf/.htg/.tys/.trg are light themes — no dark: utilities needed
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
