@@ -27,6 +27,9 @@ export default function GameDetailPage() {
   const [atBats, setAtBats] = useState<AtBat[]>([])
   const [pitching, setPitching] = useState<PitchingStat | null>(null)
   const [loading, setLoading] = useState(true)
+  const [memo, setMemo] = useState('')
+  const [savingMemo, setSavingMemo] = useState(false)
+  const [savedMemo, setSavedMemo] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -38,6 +41,7 @@ export default function GameDetailPage() {
       setGame(g)
       setAtBats(ab ?? [])
       setPitching(ps)
+      setMemo((g as Game)?.notes ?? '')
       setLoading(false)
     }
     load()
@@ -103,6 +107,39 @@ export default function GameDetailPage() {
             {game.notes}
           </div>
         )}
+      </div>
+
+      {/* メモ */}
+      <div className={`${card} p-4`}>
+        <h2 className={`${sectionTitle} mb-2`}>ひとことメモ</h2>
+        <textarea
+          value={memo}
+          onChange={(e) => setMemo(e.target.value)}
+          placeholder="コンディション・天気・反省点など..."
+          rows={3}
+          className="w-full border border-s2 rounded-lg px-3 py-2 text-sm bg-lv2 text-main placeholder:text-sub2 focus:outline-none focus:ring-2 focus:ring-theme resize-none"
+        />
+        <div className="flex items-center justify-between mt-2">
+          {savedMemo && <span className="text-xs text-pos-t font-medium">✓ 保存しました</span>}
+          {!savedMemo && <span />}
+          <button
+            type="button"
+            disabled={savingMemo}
+            onClick={async () => {
+              setSavingMemo(true)
+              const { data: { user } } = await supabase.auth.getUser()
+              if (user) {
+                await supabase.from('games').update({ notes: memo || null }).eq('id', gameId).eq('user_id', user.id)
+              }
+              setSavingMemo(false)
+              setSavedMemo(true)
+              setTimeout(() => setSavedMemo(false), 2000)
+            }}
+            className="text-xs bg-theme text-white px-3 py-1.5 rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            {savingMemo ? '保存中...' : '保存'}
+          </button>
+        </div>
       </div>
 
       {/* アクションボタン */}

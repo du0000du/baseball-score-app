@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { calcBattingStats, calcPitchingStats, fmtAvg, fmtDec, fmtERA, formatIP } from '@/lib/stats'
 import type { AtBat, Game, User, PitchingStat, BattingStats } from '@/lib/supabase/types'
 import DashboardSeasonSelector from '@/app/(protected)/_components/DashboardSeasonSelector'
+import DashboardTargetMeter from '@/app/(protected)/_components/DashboardTargetMeter'
+import DashboardMilestoneToast from '@/app/(protected)/_components/DashboardMilestoneToast'
 
 export const metadata: Metadata = {
   title: 'ダッシュボード',
@@ -118,8 +120,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
   const smallLabel = "text-[10px] text-sub2"
   const divider = "border-t border-s2"
 
+  const earnedIds = BADGES.filter(b => b.cond(stats)).map(b => b.id)
+  const BADGE_LABELS: Record<string, string> = Object.fromEntries(
+    BADGES.map(b => [b.id, `${b.emoji} ${b.label}`])
+  )
+
   return (
     <div className="space-y-6">
+      {/* L7-4: マイルストーン初回達成トースト */}
+      <DashboardMilestoneToast earnedIds={earnedIds} badgeLabels={BADGE_LABELS} />
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -229,6 +238,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
             )}
           </div>
 
+          {/* L7-3: 目標打率メーター（Client Component — localStorage を読む） */}
+          {allAtBats.length > 0 && (
+            <DashboardTargetMeter currentAvg={stats.avg} />
+          )}
+
           {/* 直近5試合成績サマリー */}
           {recentAtBats.length > 0 && (
             <div className={`${card} p-5`}>
@@ -310,27 +324,4 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
                           <span className="font-medium text-main">
                             {gameStats.hits}/{gameStats.ab}
                             {gameStats.hrs > 0 && <span className="text-accent ml-1">{gameStats.hrs}HR</span>}
-                          </span>
-                        ) : (
-                          <span className="text-sub2">記録なし</span>
-                        )}
-                        <div className="flex gap-2">
-                          <Link href={`/games/${game.id}`} className="btn text-theme hover:underline text-xs">
-                            詳細
-                          </Link>
-                          <Link href={`/games/${game.id}/at-bats`} className="btn text-accent hover:underline text-xs">
-                            打席入力
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+                      

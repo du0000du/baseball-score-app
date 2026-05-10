@@ -37,6 +37,8 @@ export default function SettingsPage() {
   const [availableSeasons, setAvailableSeasons] = useState<number[]>([])
   const [defaultSeason, setDefaultSeason] = useState<number>(currentYear)
   const [seasonSaved, setSeasonSaved] = useState(false)
+  const [targetAvg, setTargetAvg] = useState('')
+  const [targetSaved, setTargetSaved] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -65,6 +67,8 @@ export default function SettingsPage() {
         const parsed = parseInt(savedSeason)
         if (!isNaN(parsed)) setDefaultSeason(parsed)
       }
+      const storedTarget = localStorage.getItem('baseball_target_avg')
+      if (storedTarget) setTargetAvg(storedTarget)
       setLoading(false)
     }
     load()
@@ -209,6 +213,45 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* 目標打率 */}
+      <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-6 space-y-4">
+        <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide">
+          目標打率
+        </h2>
+        <div>
+          <label className={labelClass}>目標打率（例: .300）</label>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              inputMode="decimal"
+              step="0.001"
+              min="0"
+              max="1"
+              value={targetAvg}
+              onChange={(e) => setTargetAvg(e.target.value)}
+              placeholder="例: 0.300"
+              className={inputClass}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const val = parseFloat(targetAvg)
+                if (!isNaN(val) && val > 0 && val <= 1) {
+                  localStorage.setItem('baseball_target_avg', String(val))
+                  setTargetSaved(true)
+                  setTimeout(() => setTargetSaved(false), 2000)
+                }
+              }}
+              className="shrink-0 bg-theme hover:opacity-90 text-white font-medium px-4 py-2 rounded-lg transition-colors text-sm btn"
+            >
+              設定
+            </button>
+          </div>
+          {targetSaved && <p className="text-xs text-pos-t mt-1 font-medium">✓ 目標打率を設定しました</p>}
+          <p className="text-xs text-sub2 mt-1">ダッシュボードに達成度メーターが表示されます</p>
+        </div>
+      </div>
+
       {/* アカウント */}
       <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-6">
         <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-4">
@@ -217,11 +260,4 @@ export default function SettingsPage() {
         <button
           onClick={handleLogout}
           disabled={loggingOut}
-          className="w-full border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 font-medium py-2.5 rounded-lg transition-colors text-sm btn"
-        >
-          {loggingOut ? 'ログアウト中...' : 'ログアウト'}
-        </button>
-      </div>
-    </div>
-  )
-}
+          className="w-full border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:

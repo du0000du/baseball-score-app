@@ -1049,7 +1049,7 @@ export default function StatsPage() {
                   )
                 })()}
 
-                {/* 7. 対戦相手別成績 (B-2) */}
+                {/* 7. 対戦相手別成績 (B-2 / L7-1: PA + RBI 追加 → table 形式) */}
                 {(() => {
                   const opponents = [...new Set(games.map(g => g.opponent))]
                   if (opponents.length < 2) return null
@@ -1058,25 +1058,41 @@ export default function StatsPage() {
                     const oppABs = oppGames.flatMap(g => g.at_bats)
                     const s = calcBattingStats(oppABs)
                     const oppWins = oppGames.filter(g => g.result === 'win').length
-                    return { opp, games: oppGames.length, wins: oppWins, avg: s.avg, hits: s.hits, hrs: s.hrs }
+                    return { opp, games: oppGames.length, wins: oppWins, avg: s.avg, pa: s.pa, hits: s.hits, hrs: s.hrs, rbi: s.rbi }
                   }).sort((a, b) => (b.avg ?? 0) - (a.avg ?? 0))
                   return (
                     <div className={`${card} p-5 lg:col-span-2`}>
                       <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">対戦相手別成績</h2>
-                      <div className="space-y-2">
-                        {rows.map(r => (
-                          <div key={r.opp} className="flex items-center justify-between py-1.5 border-b border-s2 last:border-0">
-                            <div>
-                              <span className="text-sm font-medium text-main">vs {r.opp}</span>
-                              <span className="text-xs text-sub2 ml-2">{r.games}試合 {r.wins}勝</span>
-                            </div>
-                            <div className="flex gap-3 text-sm">
-                              <span className={`font-bold ${avgColor(r.avg)}`}>{fmtAvg(r.avg)}</span>
-                              <span className="text-sub1">{r.hits}安打</span>
-                              {r.hrs > 0 && <span className="text-accent font-bold">{r.hrs}HR</span>}
-                            </div>
-                          </div>
-                        ))}
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="text-xs text-sub2 border-b border-s2">
+                              <th className="text-left py-2">相手</th>
+                              <th className="px-2 py-2">試合</th>
+                              <th className="px-2 py-2">打席</th>
+                              <th className="px-2 py-2">打率</th>
+                              <th className="px-2 py-2">安打</th>
+                              <th className="px-2 py-2">HR</th>
+                              <th className="px-2 py-2">打点</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-s2">
+                            {rows.map(r => (
+                              <tr key={r.opp} className="text-center">
+                                <td className="text-left py-2 text-xs font-medium text-main">
+                                  vs {r.opp}
+                                  <span className="text-sub2 font-normal ml-1">{r.wins}勝</span>
+                                </td>
+                                <td className="px-2 py-2 text-sub1">{r.games}</td>
+                                <td className="px-2 py-2 text-sub1">{r.pa}</td>
+                                <td className={`px-2 py-2 font-bold ${avgColor(r.avg)}`}>{fmtAvg(r.avg)}</td>
+                                <td className="px-2 py-2 text-main">{r.hits}</td>
+                                <td className="px-2 py-2 text-main">{r.hrs > 0 ? r.hrs : '-'}</td>
+                                <td className="px-2 py-2 text-main">{r.rbi}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   )
@@ -1258,6 +1274,43 @@ export default function StatsPage() {
                           </div>
                         ))}
                       </div>
+                      {/* L7-5: 前シーズン比サマリーカード */}
+                      {seasonData.length >= 2 && (() => {
+                        const latest = seasonData[seasonData.length - 1]
+                        const prev   = seasonData[seasonData.length - 2]
+                        const avgDiff = latest.avg - prev.avg
+                        const opsDiff = latest.ops - prev.ops
+                        const hitsDiff = latest.hits - prev.hits
+                        const hrsDiff  = latest.hrs - prev.hrs
+                        const fmtRateDiff = (n: number) => {
+                          const abs = Math.abs(n).toFixed(3).replace(/^0/, '')
+                          return (n >= 0 ? '+' : '-') + abs
+                        }
+                        const fmtIntDiff = (n: number) => (n >= 0 ? '+' : '') + n
+                        const diffCls = (n: number, threshold = 0.010) =>
+                          n >= threshold ? 'text-pos-t' : n <= -threshold ? 'text-neg-t' : 'text-sub1'
+                        return (
+                          <div className="mt-3 pt-3 border-t border-s2 bg-lv2 rounded-lg p-3">
+                            <p className="text-xs text-sub2 mb-2">
+                              📊 前シーズン比 {prev.year} → {latest.year}
+                            </p>
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                              <span className={diffCls(avgDiff)}>
+                                打率 {fmtRateDiff(avgDiff)}
+                              </span>
+                              <span className={diffCls(opsDiff)}>
+                                OPS {fmtRateDiff(opsDiff)}
+                              </span>
+                              <span className={hitsDiff >= 0 ? 'text-pos-t' : 'text-neg-t'}>
+                                安打 {fmtIntDiff(hitsDiff)}本
+                              </span>
+                              <span className={hrsDiff >= 0 ? 'text-pos-t' : 'text-neg-t'}>
+                                HR {fmtIntDiff(hrsDiff)}本
+                              </span>
+                            </div>
+                          </div>
+                        )
+                      })()}
                     </div>
                   )
                 })()}
