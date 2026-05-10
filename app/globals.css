@@ -111,6 +111,40 @@
   --neu_text:     #ffb74d;
 }
 
+/* ── Nintendo-inspired (NTD) theme ───────────────────────────────── */
+/* 参照: Nintendo DESIGN.md (nintendo.com/jp)                          */
+/* 白基調 × 任天堂レッド(#e60012) × YakuHanJPs フォント               */
+.nintendo {
+  /* Surface */
+  --bg_lv1:       #f8f7f6;               /* カード（Surface 100）             */
+  --bg_lv2:       #ffffff;               /* ページ背景（純白）                 */
+
+  /* Brand */
+  --theme:        #e60012;               /* CTA / active（任天堂レッド）       */
+  --accent:       #1b1b1b;               /* タイトル / KPI                     */
+
+  /* Text */
+  --main_text:    #3c3c3c;               /* 本文テキスト                       */
+  --sub_text_lv1: #8c8c8c;               /* 補足テキスト                       */
+  --sub_text_lv2: #c8c8c8;               /* キャプション                       */
+
+  /* Border */
+  --stroke_lv1:   #c8c8c8;               /* 強調罫線                           */
+  --stroke_lv2:   #e6e6e6;               /* カード枠線                         */
+
+  /* State — positive */
+  --pos_bg:       #dcfce7;
+  --pos_text:     #166534;
+
+  /* State — negative（Brand Red 薄め） */
+  --neg_bg:       rgba(230,0,18,0.10);
+  --neg_text:     #cf0001;
+
+  /* State — neutral */
+  --neu_bg:       #fef9c3;
+  --neu_text:     #92400e;
+}
+
 @layer base {
   /* M6-1: テーマ切替アニメーション */
   html {
@@ -153,6 +187,13 @@
   .abema select option {
     background-color: var(--bg_lv1);
     color: var(--main_text);
+  }
+
+  /* ── NTD テーマ: フォントファミリー（Nintendo推奨スタック） ──────── */
+  .nintendo {
+    font-family: "YakuHanJPs", "Roboto", "Hiragino Kaku Gothic ProN",
+                 "ヒラギノ角ゴ ProN W3", Arial, sans-serif;
+    letter-spacing: 0.01em;
   }
 }
 

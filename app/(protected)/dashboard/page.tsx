@@ -103,7 +103,7 @@ export default async function DashboardPage() {
 
   const card = "bg-lv1 rounded-xl shadow-sm border border-s2"
   const sectionTitle = "text-sm font-semibold text-sub1 uppercase tracking-wide"
-  const bigStat = "text-2xl font-bold text-accent truncate"
+  const bigStat = "text-xl font-bold text-accent truncate tabular-nums"
   const subLabel = "text-xs text-sub2 mt-1"
   const smallVal = "text-xs font-semibold text-main"
   const smallLabel = "text-[10px] text-sub2"
@@ -169,10 +169,10 @@ export default async function DashboardPage() {
             ) : (
               <>
                 <div className="grid grid-cols-4 gap-2 mb-4">
-                  <div className="text-center min-w-0"><div className={`text-2xl font-bold truncate ${avgColor(stats.avg)}`}>{fmtAvg(stats.avg)}</div><div className={subLabel}>打率</div></div>
+                  <div className="text-center min-w-0"><div className={`text-xl font-bold tabular-nums truncate ${avgColor(stats.avg)}`}>{fmtAvg(stats.avg)}</div><div className={subLabel}>打率</div></div>
                   <div className="text-center min-w-0"><div className={bigStat}>{fmtAvg(stats.obp)}</div><div className={subLabel}>出塁率</div></div>
                   <div className="text-center min-w-0"><div className={bigStat}>{fmtAvg(stats.slg)}</div><div className={subLabel}>長打率</div></div>
-                  <div className="text-center min-w-0"><div className={`text-2xl font-bold truncate ${opsColor(stats.ops)}`}>{fmtDec(stats.ops, 3).replace(/^0/, '')}</div><div className={subLabel}>OPS</div></div>
+                  <div className="text-center min-w-0"><div className={`text-xl font-bold tabular-nums truncate ${opsColor(stats.ops)}`}>{fmtDec(stats.ops, 3).replace(/^0/, '')}</div><div className={subLabel}>OPS</div></div>
                 </div>
                 {/* FX-1: 7列グリッド — gap-1 で列幅を確保、smallVal/smallLabel で文字縮小済み */}
                 <div className={`grid grid-cols-7 gap-1 pt-4 ${divider} text-center`}>

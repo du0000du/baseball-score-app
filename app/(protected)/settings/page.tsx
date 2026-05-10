@@ -8,10 +8,11 @@ import { ThemeContext } from '@/app/(protected)/_components/ThemeProvider'
 import type { Theme } from '@/app/(protected)/_components/ThemeProvider'
 
 const THEME_OPTIONS: { value: Theme; label: string; icon: string }[] = [
-  { value: 'light',  label: 'light',   icon: '☀️' },
-  { value: 'dark',   label: 'dark',    icon: '🌙' },
-  { value: 'system', label: 'system',  icon: '💻' },
-  { value: 'abema',  label: 'ABEMA',   icon: '📺' },
+  { value: 'light',    label: 'ライト',  icon: '☀️' },
+  { value: 'dark',     label: 'ダーク',  icon: '🌙' },
+  { value: 'system',   label: '自動',    icon: '💻' },
+  { value: 'abema',    label: 'ABM',     icon: '📺' },
+  { value: 'nintendo', label: 'NTD',     icon: '🎮' },
 ]
 
 export default function SettingsPage() {
@@ -29,7 +30,6 @@ export default function SettingsPage() {
   const [name, setName] = useState('')
   const [teamName, setTeamName] = useState('')
   const [position, setPosition] = useState('')
-  // L6-1: season management
   const [availableSeasons, setAvailableSeasons] = useState<number[]>([])
   const [defaultSeason, setDefaultSeason] = useState<number>(currentYear)
   const [seasonSaved, setSeasonSaved] = useState(false)
@@ -45,7 +45,6 @@ export default function SettingsPage() {
         setTeamName(profile.team_name ?? '')
         setPosition(profile.position ?? '')
       }
-      // L6-1: fetch season list from DB
       const { data: gamesData } = await supabase
         .from('games')
         .select('season')
@@ -57,7 +56,6 @@ export default function SettingsPage() {
         if (!seasons.includes(currentYear)) seasons.unshift(currentYear)
         setAvailableSeasons(seasons)
       }
-      // restore default season from localStorage
       const savedSeason = localStorage.getItem('baseball_stats_season')
       if (savedSeason && savedSeason !== 'all') {
         const parsed = parseInt(savedSeason)
@@ -87,7 +85,7 @@ export default function SettingsPage() {
       position: position.trim() || null,
     })
     if (err) {
-      setError('Failed to save: ' + err.message)
+      setError('保存に失敗しました: ' + err.message)
     } else {
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
@@ -98,7 +96,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="min-h-[520px] flex items-center justify-center text-sub2">
-        Loading...
+        読み込み中...
       </div>
     )
   }
@@ -108,80 +106,80 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-lg space-y-6">
-      <h1 className="text-2xl font-bold text-accent">Profile Settings</h1>
+      <h1 className="text-2xl font-bold text-accent">設定</h1>
 
-      {/* Theme */}
+      {/* テーマ */}
       <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-6">
         <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-4">
-          Display Theme
+          表示テーマ
         </h2>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-5 gap-1.5">
           {THEME_OPTIONS.map(({ value, label, icon }) => (
             <button
               key={value}
               onClick={() => setTheme(value)}
-              className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-150 text-sm font-medium btn ${
+              className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all duration-150 text-xs font-medium btn ${
                 theme === value
                   ? 'border-theme bg-theme/10 dark:bg-theme/10 text-accent'
                   : 'border-s2 text-sub1 hover:border-s1'
               }`}
             >
-              <span className="text-2xl">{icon}</span>
+              <span className="text-xl">{icon}</span>
               {label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Profile */}
+      {/* プロフィール */}
       <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-6 space-y-5">
         <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide">
-          Profile
+          プロフィール
         </h2>
         <div>
-          <label className={labelClass}>Team Name</label>
-          <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="e.g. Tigers" className={inputClass} />
+          <label className={labelClass}>チーム名</label>
+          <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="例: タイガース" className={inputClass} />
         </div>
         <div>
-          <label className={labelClass}>Name</label>
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Taro Yamada" className={inputClass} />
+          <label className={labelClass}>名前</label>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例: 山田 太郎" className={inputClass} />
         </div>
         <div>
-          <label className={labelClass}>Position</label>
-          <input type="text" value={position} onChange={(e) => setPosition(e.target.value)} placeholder="e.g. Outfielder" className={inputClass} />
+          <label className={labelClass}>ポジション</label>
+          <input type="text" value={position} onChange={(e) => setPosition(e.target.value)} placeholder="例: 外野手" className={inputClass} />
         </div>
 
         {error && <p className="text-sm text-red-500">{error}</p>}
-        {saved && <p className="text-sm text-green-500 font-medium">Saved</p>}
+        {saved && <p className="text-sm text-green-500 font-medium">保存しました</p>}
 
         <button
           onClick={handleSave}
           disabled={saving}
           className="w-full bg-theme hover:opacity-90 disabled:opacity-50 text-white font-medium py-2.5 rounded-lg transition-colors text-sm btn"
         >
-          {saving ? 'Saving...' : 'Save'}
+          {saving ? '保存中...' : '保存'}
         </button>
       </div>
 
-      {/* L6-1: Season Management */}
+      {/* シーズン管理 */}
       <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-6 space-y-4">
         <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide">
-          Season Management
+          シーズン管理
         </h2>
         <div>
-          <label className={labelClass}>Default Season</label>
+          <label className={labelClass}>デフォルトシーズン</label>
           <select
             value={defaultSeason}
             onChange={(e) => setDefaultSeason(parseInt(e.target.value))}
             className={inputClass}
           >
             {availableSeasons.map(y => (
-              <option key={y} value={y}>{y}</option>
+              <option key={y} value={y}>{y}年</option>
             ))}
           </select>
-          <p className="text-xs text-sub2 mt-1">Season shown when opening the stats page</p>
+          <p className="text-xs text-sub2 mt-1">成績ページを開いたときに表示されるシーズン</p>
         </div>
-        {seasonSaved && <p className="text-sm text-green-500 font-medium">Season setting saved</p>}
+        {seasonSaved && <p className="text-sm text-green-500 font-medium">シーズン設定を保存しました</p>}
         <div className="flex gap-2">
           <button
             onClick={() => {
@@ -191,7 +189,7 @@ export default function SettingsPage() {
             }}
             className="flex-1 border border-s2 hover:border-theme text-main font-medium py-2 rounded-lg transition-colors text-sm btn"
           >
-            Save Season
+            保存
           </button>
           <button
             onClick={() => {
@@ -202,22 +200,22 @@ export default function SettingsPage() {
             }}
             className="flex-1 bg-theme hover:opacity-90 text-white font-medium py-2 rounded-lg transition-colors text-sm btn"
           >
-            Start {currentYear} Season
+            {currentYear}年シーズン開始
           </button>
         </div>
       </div>
 
-      {/* M6-6: Logout */}
+      {/* アカウント */}
       <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-6">
         <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-4">
-          Account
+          アカウント
         </h2>
         <button
           onClick={handleLogout}
           disabled={loggingOut}
           className="w-full border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 font-medium py-2.5 rounded-lg transition-colors text-sm btn"
         >
-          {loggingOut ? 'Logging out...' : 'Logout'}
+          {loggingOut ? 'ログアウト中...' : 'ログアウト'}
         </button>
       </div>
     </div>

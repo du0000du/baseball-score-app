@@ -136,7 +136,12 @@ function DirectionChart({ atBats }: Props) {
         {MODE_TABS.map(({ value, label }) => (
           <button
             key={value}
-            onClick={() => setMode(value)}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              setMode(value)
+              ;(e.currentTarget as HTMLButtonElement).blur()
+            }}
             className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
               mode === value
                 ? 'bg-theme text-white border-theme'
@@ -150,7 +155,7 @@ function DirectionChart({ atBats }: Props) {
       </div>
 
       {/* ───── 外野 ───── */}
-      <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-5 min-h-[200px]">
+      <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-5 min-h-[260px]">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-semibold text-sub1 uppercase tracking-wide">外野方向</h3>
           <span className="text-xs text-sub2">{ofTotal} 打球</span>
@@ -212,7 +217,7 @@ function DirectionChart({ atBats }: Props) {
       </div>
 
       {/* ───── 内野 ───── */}
-      <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-5 min-h-[280px]">
+      <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-5 min-h-[330px]">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-semibold text-sub1 uppercase tracking-wide">内野方向</h3>
           <span className="text-xs text-sub2">{ifTotal} 打球</span>

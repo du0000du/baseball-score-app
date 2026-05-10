@@ -7,7 +7,7 @@ import { RESULT_TYPE_LABELS, DIRECTION_LABELS, FIELDING_POSITIONS } from '@/lib/
 import type { AtBat, Direction, Game, ResultType, PitchingStat } from '@/lib/supabase/types'
 import DirectionChart from '@/app/(protected)/_components/DirectionChart'
 import { ThemeContext } from '@/app/(protected)/_components/ThemeProvider'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
 
 interface GameWithAtBats extends Game {
   at_bats: AtBat[]
@@ -769,9 +769,12 @@ export default function StatsPage() {
               const totalER = (prev?.totalER ?? 0) + ps.earned_runs
               const totalIP = (prev?.totalIP ?? 0) + ps.innings_pitched
               const era = totalIP > 0 ? parseFloat(((totalER * 21) / totalIP).toFixed(2)) : 0
+              const gameEra = ps.innings_pitched > 0
+                ? parseFloat(((ps.earned_runs * 21) / ps.innings_pitched).toFixed(2))
+                : null
               const g = games.find(gm => gm.id === ps.game_id)
-              return [...acc, { date: g ? formatDate(g.game_date) : '', era, totalER, totalIP }]
-            }, [] as { date: string; era: number; totalER: number; totalIP: number }[])
+              return [...acc, { date: g ? formatDate(g.game_date) : '', era, gameEra, totalER, totalIP }]
+            }, [] as { date: string; era: number; gameEra: number | null; totalER: number; totalIP: number }[])
 
             return (
               <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
@@ -919,25 +922,44 @@ export default function StatsPage() {
                   )}
                 </div>
 
-                {/* 5. ERA トレンド */}
+                {/* 5. ERA 推移（累積実線 + 単試合破線） */}
                 {pitchingStats.length > 0 && (
                   <div className={`${card} p-5`}>
-                    <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">防御率トレンド（累積）</h2>
+                    <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">防御率推移</h2>
                     {pitchingStats.length < 3 ? (
                       <p className="text-sub2 text-sm text-center py-4">登板数が増えると表示されます</p>
                     ) : (
-                      <ResponsiveContainer width="100%" height={140}>
+                      <ResponsiveContainer width="100%" height={160}>
                         <LineChart data={eraData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border_lv2)" />
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--stroke_lv2)" />
                           <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} />
                           <YAxis tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} />
-                          <Tooltip formatter={(v: number) => [fmtERA(v), '累積防御率']} />
+                          <Tooltip
+                            formatter={(v: number, name: string) => [
+                              fmtERA(v),
+                              name === 'era' ? '累積防御率' : '単試合防御率',
+                            ]}
+                          />
+                          <Legend
+                            formatter={(value) => value === 'era' ? '累積（実線）' : '単試合（破線）'}
+                            wrapperStyle={{ fontSize: 11 }}
+                          />
                           <Line
                             type="monotone"
                             dataKey="era"
                             stroke="var(--theme)"
                             strokeWidth={2}
                             dot={{ r: 3, fill: 'var(--theme)' }}
+                            connectNulls
+                          />
+                          <Line
+                            type="monotone"
+                            dataKey="gameEra"
+                            stroke="var(--accent)"
+                            strokeWidth={1.5}
+                            strokeDasharray="4 2"
+                            dot={{ r: 2, fill: 'var(--accent)' }}
+                            connectNulls
                           />
                         </LineChart>
                       </ResponsiveContainer>

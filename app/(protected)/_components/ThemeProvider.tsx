@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 
-export type Theme = 'light' | 'dark' | 'system' | 'abema'
+export type Theme = 'light' | 'dark' | 'system' | 'abema' | 'nintendo'
 
 interface ThemeContextValue {
   theme: Theme
@@ -20,13 +20,14 @@ export function useTheme() {
 
 function applyTheme(theme: Theme) {
   const root = document.documentElement
-  // 先に両クラスをリセット
-  root.classList.remove('dark', 'abema')
+  root.classList.remove('dark', 'abema', 'nintendo')
 
   if (theme === 'dark') {
     root.classList.add('dark')
   } else if (theme === 'abema') {
     root.classList.add('abema')
+  } else if (theme === 'nintendo') {
+    root.classList.add('nintendo')
   } else if (theme === 'light') {
     // 何も付けない
   } else {
@@ -44,7 +45,7 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   useEffect(() => {
     try {
       const stored = localStorage.getItem('theme') as Theme | null
-      if (stored === 'light' || stored === 'dark' || stored === 'system' || stored === 'abema') {
+      if (stored === 'light' || stored === 'dark' || stored === 'system' || stored === 'abema' || stored === 'nintendo') {
         setThemeState(stored)
       }
     } catch {}
