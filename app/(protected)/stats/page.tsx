@@ -422,82 +422,8 @@ export default function StatsPage() {
 
           {/* タブ2: 試合別 */}
           {tab === 'per-game' && (() => {
-            const sortedGames = [...games].sort((a, b) => a.game_date.localeCompare(b.game_date))
-            const chartData = sortedGames.reduce((acc, game) => {
-              const prev = acc[acc.length - 1]
-              const gStats = calcBattingStats(game.at_bats)
-              const cumAB = (prev?.cumAB ?? 0) + gStats.ab
-              const cumHits = (prev?.cumHits ?? 0) + gStats.hits
-              return [...acc, {
-                date: `${parseInt(game.game_date.split('-')[1])}/${parseInt(game.game_date.split('-')[2])}`,
-                cumAvg: cumAB > 0 ? cumHits / cumAB : null,
-                gameAvg: gStats.ab > 0 ? gStats.hits / gStats.ab : null,
-                cumAB, cumHits,
-                ab: gStats.ab, hits: gStats.hits,
-              }]
-            }, [] as any[])
             return (
             <div className="space-y-4">
-              {/* 打率推移グラフ */}
-              {games.length < 3 ? (
-                <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-6 text-center text-sub2 text-sm">
-                  試合数が増えると推移グラフが表示されます
-                </div>
-              ) : (
-                <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-5">
-                  <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">打率推移</h2>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={chartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border_lv2)" />
-                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} />
-                      <YAxis
-                        tickFormatter={(v) => fmtAvg(v)}
-                        tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }}
-                        domain={[0, 1]}
-                      />
-                      <Tooltip
-                        formatter={(value: number, name: string) => {
-                          if (name === 'cumAvg') return [fmtAvg(value), '累積']
-                          if (name === 'gameAvg') return [fmtAvg(value), '単試合']
-                          return [value, name]
-                        }}
-                        content={({ active, payload, label }) => {
-                          if (!active || !payload?.length) return null
-                          const cum = payload.find(p => p.dataKey === 'cumAvg')
-                          const game = payload.find(p => p.dataKey === 'gameAvg')
-                          const gameEntry = chartData.find((d: any) => d.date === label)
-                          return (
-                            <div className="bg-lv1 border border-s2 rounded-lg px-3 py-2 text-xs shadow-sm">
-                              <div className="font-semibold text-main mb-1">{label}</div>
-                              {cum?.value != null && <div className="text-sub1">累積 {fmtAvg(cum.value as number)}</div>}
-                              {game?.value != null && gameEntry && (
-                                <div className="text-sub2">単試合 {fmtAvg(game.value as number)}（{gameEntry.ab}打数{gameEntry.hits}安打）</div>
-                              )}
-                            </div>
-                          )
-                        }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="cumAvg"
-                        stroke="var(--theme)"
-                        strokeWidth={2}
-                        dot={{ r: 3, fill: 'var(--theme)' }}
-                        connectNulls
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="gameAvg"
-                        stroke="var(--sub_text_lv2)"
-                        strokeWidth={1.5}
-                        strokeDasharray="4 2"
-                        dot={{ r: 2, fill: 'var(--sub_text_lv2)' }}
-                        connectNulls
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
               <div className="bg-lv1 rounded-xl shadow-sm border border-s2 overflow-hidden">
               {games.length === 0 ? (
                 <div className="p-12 text-center text-sub2">試合データがありません</div>
@@ -755,6 +681,22 @@ export default function StatsPage() {
 
             // 2. 試合別 RBI/HR データ（古い順）
             const sortedGames = [...games].sort((a, b) => a.game_date.localeCompare(b.game_date))
+
+            // CH-1: 打率推移データ（累積 + 単試合）
+            const avgChartData = sortedGames.reduce((acc, game) => {
+              const prev = acc[acc.length - 1]
+              const gStats = calcBattingStats(game.at_bats)
+              const cumAB = (prev?.cumAB ?? 0) + gStats.ab
+              const cumHits = (prev?.cumHits ?? 0) + gStats.hits
+              return [...acc, {
+                date: `${parseInt(game.game_date.split('-')[1])}/${parseInt(game.game_date.split('-')[2])}`,
+                cumAvg: cumAB > 0 ? cumHits / cumAB : null,
+                gameAvg: gStats.ab > 0 ? gStats.hits / gStats.ab : null,
+                cumAB, cumHits,
+                ab: gStats.ab, hits: gStats.hits,
+              }]
+            }, [] as any[])
+
             const rbiHrData = sortedGames.map((g) => {
               const gs = calcBattingStats(g.at_bats)
               return { date: formatDate(g.game_date), rbi: gs.rbi, hr: gs.hrs }
@@ -833,11 +775,51 @@ export default function StatsPage() {
                   </div>
                 )}
 
-                {/* 新: OPS 推移 */}
+                {/* CH-1: 打率推移 — 安打種別の直後・PC全幅 */}
+                {sortedGames.length >= 3 && (
+                  <div className={`${card} p-5 lg:col-span-2`}>
+                    <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">打率推移</h2>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <LineChart data={avgChartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border_lv2)" />
+                        <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} />
+                        <YAxis
+                          tickFormatter={(v) => fmtAvg(v)}
+                          tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }}
+                          domain={[0, 1]}
+                        />
+                        <Tooltip
+                          content={({ active, payload, label }) => {
+                            if (!active || !payload?.length) return null
+                            const cum = payload.find(p => p.dataKey === 'cumAvg')
+                            const game = payload.find(p => p.dataKey === 'gameAvg')
+                            const gameEntry = avgChartData.find((d: any) => d.date === label)
+                            return (
+                              <div className="bg-lv1 border border-s2 rounded-lg px-3 py-2 text-xs shadow-sm">
+                                <div className="font-semibold text-main mb-1">{label}</div>
+                                {cum?.value != null && <div className="text-sub1">累積 {fmtAvg(cum.value as number)}</div>}
+                                {game?.value != null && gameEntry && (
+                                  <div className="text-sub2">単試合 {fmtAvg(game.value as number)}（{gameEntry.ab}打数{gameEntry.hits}安打）</div>
+                                )}
+                              </div>
+                            )
+                          }}
+                        />
+                        <Line type="monotone" dataKey="cumAvg" stroke="var(--theme)" strokeWidth={2}
+                          dot={{ r: 3, fill: 'var(--theme)' }} connectNulls />
+                        <Line type="monotone" dataKey="gameAvg" stroke="var(--sub_text_lv2)" strokeWidth={1.5}
+                          strokeDasharray="4 2" dot={{ r: 2, fill: 'var(--sub_text_lv2)' }} connectNulls />
+                      </LineChart>
+                    </ResponsiveContainer>
+                    <p className="text-xs text-sub2 text-right mt-1">実線: 累積打率　破線: 単試合打率</p>
+                  </div>
+                )}
+
+                {/* CH-2: OPS 推移 — PC全幅 */}
                 {sortedGames.length >= 2 && (
-                  <div className={`${card} p-5`}>
+                  <div className={`${card} p-5 lg:col-span-2`}>
                     <h2 className="text-sm font-semibold text-sub1 uppercase tracking-wide mb-3">OPS 推移</h2>
-                    <ResponsiveContainer width="100%" height={160}>
+                    <ResponsiveContainer width="100%" height={200}>
                       <LineChart data={opsData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border_lv2)" />
                         <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--sub_text_lv2)' }} />
