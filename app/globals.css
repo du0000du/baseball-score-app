@@ -280,16 +280,18 @@
 }
 
 /* ── HTG theme (阪神タイガース) ──────────────────────────────────── */
-/* 参照: m.hanshintigers.jp 実測値（2026-05-10）                       */
-/* タイガースレッド(#d71518) × タイガースイエロー(#f5c400)             */
+/* 参照: m.hanshintigers.jp 実測値（2026-05-10 再設計）                */
+/* タイガースブラック(#1a1a1a) × タイガースイエロー(#f5c400)           */
+/* H3セクションヘッダー: 黒bg+白文字 → --theme=black                  */
+/* ナビ強調: 黄グラデ(#ffea01) → --accent=gold                        */
 .htg {
   /* Surface */
-  --bg_lv2:       #faf9f5;               /* ページ背景 (実測 body相当)         */
+  --bg_lv2:       #faf9f5;               /* ページ背景 (クリーム白)            */
   --bg_lv1:       #ffffff;               /* カード                             */
 
-  /* Brand */
-  --theme:        #d71518;               /* タイガースレッド (CTA/active)      */
-  --accent:       #f5c400;               /* タイガースイエロー (KPI/強調)      */
+  /* Brand — 黒ベース + 黄アクセント (公式HPのH3/フッター実測値)       */
+  --theme:        #1a1a1a;               /* タイガースブラック (CTA/active)    */
+  --accent:       #f5c400;               /* タイガースゴールド (KPI/強調)      */
 
   /* Text */
   --main_text:    #1a1a1a;               /* 本文 (near-black)                  */
@@ -297,19 +299,19 @@
   --sub_text_lv2: #888888;               /* キャプション                       */
 
   /* Border */
-  --stroke_lv1:   #d71518;               /* 強調罫線 (タイガースレッド)        */
+  --stroke_lv1:   #1a1a1a;               /* 強調罫線 (タイガースブラック)      */
   --stroke_lv2:   #eeeeee;               /* カード枠線                         */
 
-  /* State — positive (黄でスポーツ感を演出) */
-  --pos_bg:       rgba(245, 196, 0, 0.18);
-  --pos_text:     #7a5000;
+  /* State — positive (タイガースイエロー薄め = 勝利感) */
+  --pos_bg:       rgba(255, 225, 0, 0.22);/* 実測 #ffe100 薄め                 */
+  --pos_text:     #7a5000;               /* gold-dark                          */
 
-  /* State — negative */
+  /* State — negative (レッドを維持) */
   --neg_bg:       rgba(215, 21, 24, 0.10);
-  --neg_text:     #d71518;
+  --neg_text:     #d71518;               /* タイガースレッド                   */
 
   /* State — neutral */
-  --neu_bg:       #f5f5f5;
+  --neu_bg:       #f0f0f0;
   --neu_text:     #555555;
 }
 

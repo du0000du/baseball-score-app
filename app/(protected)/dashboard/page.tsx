@@ -36,7 +36,7 @@ function opsColor(ops: number | null): string {
 
 function ScoreDisplay({ game }: { game: Game }) {
   const score = (
-    <span className="text-white dark:text-white">
+    <span className="text-main dark:text-white">
       {game.score_us}<span className="text-sub2 font-normal mx-0.5">-</span>{game.score_them}
     </span>
   )
