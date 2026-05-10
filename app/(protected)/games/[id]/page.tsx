@@ -166,21 +166,29 @@ export default function GameDetailPage() {
         </div>
       </div>
 
-      {/* アクションボタン */}
+      {/* アクションボタン（M8-2: 入力済みで文言・色を出し分け） */}
       <div className="grid grid-cols-3 gap-3">
         <Link
           href={`/games/${game.id}/at-bats`}
-          className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl font-semibold text-sm bg-pos text-pos-t border border-pos/40 hover:opacity-90 transition-opacity shadow-sm"
+          className={`flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm ${
+            atBats.length > 0
+              ? 'bg-lv2 text-main border border-s2'
+              : 'bg-pos text-pos-t border border-pos/40'
+          }`}
         >
           <span className="text-2xl leading-none">🏏</span>
-          <span>打席入力</span>
+          <span>{atBats.length > 0 ? '打席を編集' : '打席入力'}</span>
         </Link>
         <Link
           href={`/games/${game.id}/pitching`}
-          className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl font-semibold text-sm bg-theme text-white hover:opacity-90 transition-opacity shadow-sm"
+          className={`flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm ${
+            pitching
+              ? 'bg-lv2 text-main border border-s2'
+              : 'bg-theme text-white'
+          }`}
         >
           <span className="text-2xl leading-none">⚾</span>
-          <span>投球入力</span>
+          <span>{pitching ? '投球を編集' : '投球入力'}</span>
         </Link>
         <Link
           href={`/games/${game.id}/edit`}
@@ -269,6 +277,17 @@ export default function GameDetailPage() {
                     <span className={`text-sm font-medium flex-1 min-w-0 truncate ${isHit ? 'text-green-600 dark:text-green-400' : 'text-main'}`}>
                       {label}
                     </span>
+                    {/* M8-3: 最終カウント・打球方向バッジ */}
+                    {(ab.count_balls !== null && ab.count_strikes !== null) && (
+                      <span className="text-[10px] text-sub2 shrink-0 tabular-nums">
+                        {ab.count_balls}-{ab.count_strikes}
+                      </span>
+                    )}
+                    {ab.direction && (
+                      <span className="text-[10px] text-sub2 shrink-0">
+                        {DIRECTION_LABELS[ab.direction as Direction] ?? ab.direction}
+                      </span>
+                    )}
                     <div className="flex gap-1 shrink-0 flex-wrap justify-end">
                       {rbiVal > 0 && (
                         <span className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded">

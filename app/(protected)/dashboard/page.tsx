@@ -95,6 +95,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
   const pitchingStats = (pitchingData ?? []) as PitchingStat[]
   const pStats = calcPitchingStats(pitchingStats)
 
+  // M8-6: 直近2登板（typedGames は game_date desc 順なので先頭から検索）
+  const recentPitching = typedGames
+    .filter(g => pitchingStats.some(ps => ps.game_id === g.id))
+    .slice(0, 2)
+    .map(g => ({
+      game: g,
+      ps: pitchingStats.find(ps => ps.game_id === g.id)!,
+    }))
+
   // N-2: 連続安打ストリーク算出
   const sortedByDate = [...typedGames].sort((a, b) => b.game_date.localeCompare(a.game_date))
   let hitStreak = 0
@@ -293,6 +302,34 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
                 <div><div className={smallVal}>{pStats.saves}</div><div className={smallLabel}>S</div></div>
                 <div><div className={smallVal}>{pStats.holds}</div><div className={smallLabel}>H</div></div>
               </div>
+              {/* M8-6: 直近登板サマリ */}
+              {recentPitching.length > 0 && (
+                <div className={`pt-4 mt-4 ${divider}`}>
+                  <p className="text-xs text-sub2 mb-2">直近の登板</p>
+                  <div className="space-y-2">
+                    {recentPitching.map(({ game, ps }) => {
+                      const resultEmoji = ps.result === 'win' ? '○' : ps.result === 'loss' ? '●' : ps.result === 'save' ? 'S' : ps.result === 'hold' ? 'H' : '-'
+                      const resultClass = ps.result === 'win' ? 'text-pos-t' : ps.result === 'loss' ? 'text-neg-t' : 'text-sub2'
+                      return (
+                        <Link
+                          key={ps.id}
+                          href={`/games/${game.id}`}
+                          className="flex items-center justify-between rounded-lg bg-lv2 px-3 py-2 hover:bg-s2 transition-colors"
+                        >
+                          <div className="text-xs text-sub1">
+                            <span className="text-sub2">{formatDate(game.game_date)}</span>
+                            <span className="ml-1.5">vs {game.opponent}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="text-sub1">{formatIP(ps.innings_pitched)}回 {ps.earned_runs}失</span>
+                            <span className={`font-bold ${resultClass}`}>{resultEmoji}</span>
+                          </div>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

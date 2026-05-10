@@ -7,6 +7,7 @@ import { RESULT_TYPE_LABELS, DIRECTION_LABELS, FIELDING_POSITIONS } from '@/lib/
 import type { AtBat, Direction, Game, ResultType, PitchingStat } from '@/lib/supabase/types'
 import DirectionChart from '@/app/(protected)/_components/DirectionChart'
 import { ThemeContext } from '@/app/(protected)/_components/ThemeProvider'
+import StatTooltip from '@/app/(protected)/_components/StatTooltip'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
 
 interface GameWithAtBats extends Game {
@@ -46,90 +47,6 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
       <div className="text-2xl font-bold text-accent">{value}</div>
       <div className="text-xs text-sub2 mt-0.5">{label}</div>
     </div>
-  )
-}
-
-// セイバーメトリクス指標のツールチップ定義
-const STAT_TOOLTIPS: Record<string, string> = {
-  'RC27': '得点創出能力。その打者が9人打線に並んだと仮定した場合の1試合あたり得点数。高いほど攻撃に貢献している。',
-  'IsoD': '出塁率 − 打率。四球や死球を引き出す選球眼の指標。高いほど四球が多い。',
-  'IsoP': '長打率 − 打率。長打力の純粋な指標。高いほど長打が多い。',
-  'OPS': '出塁率 + 長打率。打撃の総合力を示す最も一般的な指標。.800以上は高水準。',
-  // H8-2 / H8-3: 投手指標の解説
-  'FIP': '本塁打・四死球・奪三振だけで投手の地力を評価する指標。守備や運の影響を排除し、防御率より「真の投球内容」を表すと言われる。3.50前後がリーグ平均、3.00以下は優秀。',
-  '防御率': '7イニング（草野球基準）あたりの自責点。低いほど良い。3.00未満で優秀、4.00超は要改善。',
-  'WHIP': '1イニングあたりに許した走者数（被安打 + 与四球）÷ 投球回。1.20未満で優秀、1.50超は要改善。',
-  'K/9': '9イニングあたりの奪三振数。奪三振能力の指標。7.0以上で優秀。',
-  'K/BB': '奪三振 ÷ 与四球。コントロールと支配力の総合指標。3.0以上で優秀、1.0未満は要改善。',
-  '被打率': '相手打者の打率。被安打 ÷ (投球回 × 3 + 被安打) で簡易計算。.250以下で優秀、.300超は要改善。',
-}
-
-function StatTooltip({ label }: { label: string }) {
-  const [show, setShow] = useState(false)
-  const [isTouch, setIsTouch] = useState(false)
-  const [tipPos, setTipPos] = useState<{ top: number; left: number } | null>(null)
-  const btnRef = useRef<HTMLButtonElement>(null)
-  const tip = STAT_TOOLTIPS[label]
-
-  useEffect(() => {
-    const mq = window.matchMedia('(pointer: coarse)')
-    setIsTouch(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-
-  const handleMouseEnter = () => {
-    if (!btnRef.current) return
-    const rect = btnRef.current.getBoundingClientRect()
-    const TIP_W = 256   // w-64
-    const GAP = 8
-    const rawLeft = rect.left + rect.width / 2 - TIP_W / 2
-    const left = Math.max(GAP, Math.min(rawLeft, window.innerWidth - TIP_W - GAP))
-    const top = rect.top - GAP  // -translateY(100%) で上に出る
-    setTipPos({ top, left })
-    setShow(true)
-  }
-
-  if (!tip) return <>{label}</>
-
-  return (
-    <span className="relative inline-flex items-center gap-1">
-      {label}
-      <button
-        ref={btnRef}
-        type="button"
-        onMouseEnter={isTouch ? undefined : handleMouseEnter}
-        onMouseLeave={isTouch ? undefined : () => setShow(false)}
-        onClick={isTouch ? () => setShow(v => !v) : undefined}
-        className="text-sub2 hover:text-theme transition-colors text-xs leading-none"
-        aria-label={`${label}の説明`}
-      >
-        ⓘ
-      </button>
-      {/* デスクトップ: fixed位置ツールチップ（viewport クランプ済み） */}
-      {!isTouch && show && tipPos && (
-        <span
-          className="fixed z-50 bg-lv1 border border-s2 text-sub1 text-xs rounded-lg shadow-lg p-2.5 w-64 pointer-events-none block font-normal"
-          style={{ top: tipPos.top, left: tipPos.left, transform: 'translateY(calc(-100% - 8px))' }}
-        >
-          {tip}
-        </span>
-      )}
-      {/* スマホ: 画面下部モーダルシート（変更なし） */}
-      {isTouch && show && (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-black/30"
-            onClick={() => setShow(false)}
-          />
-          <div className="fixed inset-x-0 bottom-0 z-50 bg-lv1 border-t border-s2 rounded-t-2xl p-6 shadow-2xl">
-            <div className="text-sm font-bold text-accent mb-2">{label}</div>
-            <p className="text-sm text-sub1 leading-relaxed">{tip}</p>
-          </div>
-        </>
-      )}
-    </span>
   )
 }
 
@@ -782,6 +699,7 @@ export default function StatsPage() {
                             <th className="px-3 py-3 font-medium">BB</th>
                             <th className="px-3 py-3 font-medium">失点</th>
                             <th className="px-3 py-3 font-medium">自責</th>
+                            <th className="px-3 py-3 font-medium">防御率</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-s2">
@@ -804,6 +722,12 @@ export default function StatsPage() {
                                 <td className="px-3 py-3 text-center text-main">{ps.walks}</td>
                                 <td className="px-3 py-3 text-center text-main">{ps.runs_allowed}</td>
                                 <td className="px-3 py-3 text-center text-main">{ps.earned_runs}</td>
+                                {/* M8-4: 単試合防御率 */}
+                                <td className="px-3 py-3 text-center text-main whitespace-nowrap">
+                                  {ps.innings_pitched > 0
+                                    ? fmtERA((ps.earned_runs * 21) / ps.innings_pitched)
+                                    : '-'}
+                                </td>
                               </tr>
                             )
                           })}

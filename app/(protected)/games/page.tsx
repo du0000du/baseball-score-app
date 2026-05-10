@@ -6,6 +6,11 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { AtBat, GameWithAtBats } from '@/lib/supabase/types'
 
+// M8-5: pitching_stats の有無チェック用型拡張
+interface GameWithPitching extends GameWithAtBats {
+  pitching_stats: { id: string }[]
+}
+
 function formatDate(dateStr: string) {
   const [y, m, d] = dateStr.split('-')
   return `${y}年${parseInt(m)}月${parseInt(d)}日`
@@ -63,7 +68,7 @@ function SkeletonRow() {
 type ResultFilter = 'all' | 'win' | 'loss' | 'draw'
 
 export default function GamesPage() {
-  const [games, setGames] = useState<GameWithAtBats[]>([])
+  const [games, setGames] = useState<GameWithPitching[]>([])
   const [loading, setLoading] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmId, setConfirmId] = useState<string | null>(null)
@@ -77,9 +82,9 @@ export default function GamesPage() {
   const fetchGames = useCallback(async () => {
     const { data } = await supabase
       .from('games')
-      .select('*, at_bats(*)')
+      .select('*, at_bats(*), pitching_stats(id)')
       .order('game_date', { ascending: false })
-    setGames((data ?? []) as GameWithAtBats[])
+    setGames((data ?? []) as GameWithPitching[])
     setLoading(false)
   }, [supabase])
 
@@ -226,6 +231,10 @@ export default function GamesPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                  {/* M8-5: 投手成績入力済バッジ */}
+                  {game.pitching_stats?.length > 0 && (
+                    <span className="text-sm" title="投手成績入力済">⚾</span>
+                  )}
                   <AtBatStats atBats={game.at_bats ?? []} />
                   <svg className="w-4 h-4 text-sub2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
