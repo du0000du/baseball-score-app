@@ -240,8 +240,9 @@ export default function StatsPage() {
         </select>
       </div>
 
-      {/* タブ */}
-      <div className="border-b border-s2">
+      {/* タブ: PC は横スクロール型、スマホは画面下部固定 */}
+      {/* PC 用タブ */}
+      <div className="hidden lg:block border-b border-s2">
         <div className="flex overflow-x-auto">
           {TAB_LIST.map(({ key, label }) => (
             <button
@@ -258,9 +259,25 @@ export default function StatsPage() {
           ))}
         </div>
       </div>
+      {/* スマホ用: 画面下部固定タブバー */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-lv1 border-t border-s2">
+        <div className="flex">
+          {TAB_LIST.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => handleTabChange(key)}
+              className={`flex-1 py-3 text-xs font-medium transition-colors duration-150 ${
+                tab === key ? 'text-theme' : 'text-sub2 hover:text-main'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {loading ? (
-        <div className="space-y-3 min-h-[520px]">
+        <div className="space-y-3 min-h-[520px] pb-16 lg:pb-0">
           {[1,2,3].map(i => (
             <div key={i} className="bg-lv1 rounded-xl border border-s2 p-6 animate-pulse">
               <div className="h-4 bg-lv2 rounded w-1/4 mb-4" />
@@ -272,7 +289,7 @@ export default function StatsPage() {
         </div>
       ) : (
         <div
-          className="space-y-4 min-h-[520px]"
+          className="space-y-4 min-h-[520px] pb-16 lg:pb-0"
           style={{
             opacity: tabVisible ? 1 : 0,
             transition: tabVisible ? 'opacity 0.14s ease-out' : 'none',
@@ -1331,13 +1348,13 @@ export default function StatsPage() {
 
       {/* L-2: コピートースト */}
       {copiedFlash && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-pos text-pos-t text-sm font-semibold px-4 py-2 rounded-full shadow-lg animate-fade-in-out z-50 whitespace-nowrap">
+        <div className="fixed bottom-16 lg:bottom-6 left-1/2 -translate-x-1/2 bg-pos text-pos-t text-sm font-semibold px-4 py-2 rounded-full shadow-lg animate-fade-in-out z-50 whitespace-nowrap">
           ✓ コピーしました
         </div>
       )}
       {/* L6-2: CSV ダウンロードトースト */}
       {csvFlash && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-lv1 border border-s2 text-main text-sm font-semibold px-4 py-2 rounded-full shadow-lg animate-fade-in-out z-50 whitespace-nowrap">
+        <div className="fixed bottom-16 lg:bottom-6 left-1/2 -translate-x-1/2 bg-lv1 border border-s2 text-main text-sm font-semibold px-4 py-2 rounded-full shadow-lg animate-fade-in-out z-50 whitespace-nowrap">
           ⬇ CSV downloaded
         </div>
       )}

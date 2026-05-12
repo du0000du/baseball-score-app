@@ -98,11 +98,19 @@ export default function GameDetailPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
-      {/* 戻るリンク + 前後ナビ */}
+      {/* 戻るリンク + 試合登録ショートカット + 前後ナビ */}
       <div className="space-y-2">
-        <Link href="/games" className="text-sub2 hover:text-main transition-colors text-sm flex items-center gap-1">
-          ← 試合一覧
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/games" className="text-sub2 hover:text-main transition-colors text-sm flex items-center gap-1">
+            ← 試合一覧
+          </Link>
+          <Link
+            href="/games/new"
+            className="text-xs bg-theme text-white rounded-lg px-3 py-1.5 font-medium hover:opacity-90 transition-opacity"
+          >
+            ＋ 新しい試合を登録
+          </Link>
+        </div>
         <GameNavBar prevGame={prevGame} nextGame={nextGame} />
       </div>
 
