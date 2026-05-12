@@ -114,6 +114,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
     else break
   }
 
+  // P-3: 打席未入力試合カウント
+  const unrecordedCount = typedGames.filter(g => g.at_bats.length === 0).length
+
   const recentAtBats = recentGames.flatMap((g) => g.at_bats)
   const recentStats = calcBattingStats(recentAtBats)
   const recentN = Math.min(5, typedGames.length)
@@ -138,6 +141,20 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
     <div className="space-y-6">
       {/* L7-4: マイルストーン初回達成トースト */}
       <DashboardMilestoneToast earnedIds={earnedIds} badgeLabels={BADGE_LABELS} />
+      {/* P-3: 打席未入力警告バナー */}
+      {unrecordedCount > 0 && (
+        <div className="flex items-center justify-between gap-3 bg-neu/30 border border-neu/50 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="text-neu-t text-lg">⚠️</span>
+            <span className="text-sm text-neu-t font-medium">
+              打席未入力の試合が {unrecordedCount} 件あります
+            </span>
+          </div>
+          <Link href="/games" className="text-xs text-theme font-medium underline underline-offset-2 whitespace-nowrap shrink-0">
+            試合一覧へ →
+          </Link>
+        </div>
+      )}
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">

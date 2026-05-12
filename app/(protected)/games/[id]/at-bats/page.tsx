@@ -372,7 +372,7 @@ export default function AtBatsPage() {
       }).eq('id', editingAtBatId)
 
       if (error) {
-        setSubmitError('更新に失敗しました: ' + error.message)
+        setSubmitError('更新に失敗しました。もう一度お試しください。')
         setSubmitting(false)
         return
       }
@@ -400,7 +400,7 @@ export default function AtBatsPage() {
       })
 
       if (error) {
-        setSubmitError('登録に失敗しました: ' + error.message)
+        setSubmitError('登録に失敗しました。もう一度お試しください。')
         setSubmitting(false)
         return
       }
@@ -549,7 +549,23 @@ export default function AtBatsPage() {
             </button>
           </div>
         ) : (
-          <h2 className="font-semibold text-main">打席を追加</h2>
+          // P-4: 前打席コピーボタン
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-main">打席を追加</h2>
+            {atBats.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const last = atBats[atBats.length - 1]
+                  setResultType(last.result_type as ResultType)
+                  setDirection(last.direction as Direction | null)
+                }}
+                className="text-xs text-theme border border-theme/40 rounded-lg px-2.5 py-1 hover:bg-theme/10 transition-colors"
+              >
+                前打席をコピー（{RESULT_SHORT[atBats[atBats.length - 1].result_type as ResultType]}）
+              </button>
+            )}
+          </div>
         )}
 
         {submitError && (

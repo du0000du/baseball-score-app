@@ -32,6 +32,7 @@ export default function GameDetailPage() {
   const [memo, setMemo] = useState('')
   const [savingMemo, setSavingMemo] = useState(false)
   const [savedMemo, setSavedMemo] = useState(false)
+  const [isEditingNote, setIsEditingNote] = useState(false)
   const [prevGame, setPrevGame] = useState<NavGame | null>(null)
   const [nextGame, setNextGame] = useState<NavGame | null>(null)
 
@@ -133,37 +134,77 @@ export default function GameDetailPage() {
         )}
       </div>
 
-      {/* メモ */}
+      {/* P-6: メモ — クリックで編集 */}
       <div className={`${card} p-4`}>
-        <h2 className={`${sectionTitle} mb-2`}>ひとことメモ</h2>
-        <textarea
-          value={memo}
-          onChange={(e) => setMemo(e.target.value)}
-          placeholder="コンディション・天気・反省点など..."
-          rows={3}
-          className="w-full border border-s2 rounded-lg px-3 py-2 text-sm bg-lv2 text-main placeholder:text-sub2 focus:outline-none focus:ring-2 focus:ring-theme resize-none"
-        />
-        <div className="flex items-center justify-between mt-2">
-          {savedMemo && <span className="text-xs text-pos-t font-medium">✓ 保存しました</span>}
-          {!savedMemo && <span />}
+        <div className="flex items-center justify-between mb-2">
+          <h2 className={sectionTitle}>ひとことメモ</h2>
+          {!isEditingNote && (
+            <button
+              type="button"
+              onClick={() => setIsEditingNote(true)}
+              className="text-xs text-theme hover:opacity-70 transition-opacity"
+            >
+              ✏️ 編集
+            </button>
+          )}
+        </div>
+        {isEditingNote ? (
+          <>
+            <textarea
+              value={memo}
+              onChange={(e) => setMemo(e.target.value)}
+              placeholder="コンディション・天気・反省点など..."
+              rows={3}
+              maxLength={2000}
+              autoFocus
+              className="w-full border border-s2 rounded-lg px-3 py-2 text-sm bg-lv2 text-main placeholder:text-sub2 focus:outline-none focus:ring-2 focus:ring-theme resize-none"
+            />
+            <div className="flex items-center justify-between mt-2">
+              {savedMemo && <span className="text-xs text-pos-t font-medium">✓ 保存しました</span>}
+              {!savedMemo && <span className="text-xs text-sub2">{memo.length}/2000</span>}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setMemo(game.notes ?? ''); setIsEditingNote(false) }}
+                  className="text-xs bg-lv2 text-main border border-s2 px-3 py-1.5 rounded-lg hover:bg-s2 transition-colors"
+                >
+                  キャンセル
+                </button>
+                <button
+                  type="button"
+                  disabled={savingMemo}
+                  onClick={async () => {
+                    setSavingMemo(true)
+                    const { data: { user } } = await supabase.auth.getUser()
+                    if (user) {
+                      await supabase.from('games').update({ notes: memo || null }).eq('id', gameId).eq('user_id', user.id)
+                    }
+                    setSavingMemo(false)
+                    setSavedMemo(true)
+                    setIsEditingNote(false)
+                    setTimeout(() => setSavedMemo(false), 2000)
+                  }}
+                  className="text-xs bg-theme text-white px-3 py-1.5 rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+                >
+                  {savingMemo ? '保存中...' : '保存'}
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
           <button
             type="button"
-            disabled={savingMemo}
-            onClick={async () => {
-              setSavingMemo(true)
-              const { data: { user } } = await supabase.auth.getUser()
-              if (user) {
-                await supabase.from('games').update({ notes: memo || null }).eq('id', gameId).eq('user_id', user.id)
-              }
-              setSavingMemo(false)
-              setSavedMemo(true)
-              setTimeout(() => setSavedMemo(false), 2000)
-            }}
-            className="text-xs bg-theme text-white px-3 py-1.5 rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+            onClick={() => setIsEditingNote(true)}
+            className="w-full text-left text-sm rounded-lg px-2 py-1.5 hover:bg-lv2 transition-colors group"
           >
-            {savingMemo ? '保存中...' : '保存'}
+            {savedMemo
+              ? <span className="text-xs text-pos-t font-medium">✓ 保存しました</span>
+              : memo
+              ? <span className="text-main whitespace-pre-wrap">{memo}</span>
+              : <span className="text-sub2">タップしてメモを追加…</span>
+            }
           </button>
-        </div>
+        )}
       </div>
 
       {/* アクションボタン（M8-2: 入力済みで文言・色を出し分け） */}

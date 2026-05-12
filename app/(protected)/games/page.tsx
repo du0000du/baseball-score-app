@@ -23,9 +23,24 @@ const AB_COUNTING_TYPES: AtBat['result_type'][] = [
 ]
 const HIT_TYPES: AtBat['result_type'][] = ['hit', 'double', 'triple', 'hr']
 
+// P-1: 期間フィルターヘルパー
+function matchPeriod(gameDate: string, filter: string): boolean {
+  if (filter === 'all') return true
+  const y = parseInt(gameDate.slice(0, 4))
+  const m = parseInt(gameDate.slice(5, 7))
+  if (filter.includes('-H1')) return y === parseInt(filter.split('-')[0]) && m >= 1 && m <= 6
+  if (filter.includes('-H2')) return y === parseInt(filter.split('-')[0]) && m >= 7 && m <= 12
+  return y === parseInt(filter)
+}
+
 function AtBatStats({ atBats }: { atBats: AtBat[] }) {
+  // P-5: 未入力バッジ
   if (atBats.length === 0) {
-    return <span className="text-sm text-sub2">記録なし</span>
+    return (
+      <span className="text-xs text-neu-t bg-neu/20 rounded-md px-1.5 py-0.5 font-medium shrink-0">
+        未入力
+      </span>
+    )
   }
   const ab = atBats.filter(a => AB_COUNTING_TYPES.includes(a.result_type)).length
   const hits = atBats.filter(a => HIT_TYPES.includes(a.result_type)).length
@@ -67,14 +82,19 @@ function SkeletonRow() {
 
 type ResultFilter = 'all' | 'win' | 'loss' | 'draw'
 
+const PAGE_SIZE = 50
+
 export default function GamesPage() {
   const [games, setGames] = useState<GameWithPitching[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmId, setConfirmId] = useState<string | null>(null)
   const [searchText, setSearchText] = useState('')
   const [resultFilter, setResultFilter] = useState<ResultFilter>('all')
   const [stadiumFilter, setStadiumFilter] = useState('')
+  const [periodFilter, setPeriodFilter] = useState<string>('all')
   const supabaseRef = useRef(createClient())
   const supabase = supabaseRef.current
   const router = useRouter()
@@ -84,9 +104,25 @@ export default function GamesPage() {
       .from('games')
       .select('*, at_bats(*), pitching_stats(id)')
       .order('game_date', { ascending: false })
-    setGames((data ?? []) as GameWithPitching[])
+      .range(0, PAGE_SIZE - 1)
+    const rows = (data ?? []) as GameWithPitching[]
+    setGames(rows)
+    setHasMore(rows.length === PAGE_SIZE)
     setLoading(false)
   }, [supabase])
+
+  const loadMore = useCallback(async () => {
+    setLoadingMore(true)
+    const { data } = await supabase
+      .from('games')
+      .select('*, at_bats(*), pitching_stats(id)')
+      .order('game_date', { ascending: false })
+      .range(games.length, games.length + PAGE_SIZE - 1)
+    const rows = (data ?? []) as GameWithPitching[]
+    setGames((prev) => [...prev, ...rows])
+    setHasMore(rows.length === PAGE_SIZE)
+    setLoadingMore(false)
+  }, [supabase, games.length])
 
   useEffect(() => { fetchGames() }, [fetchGames])
 
@@ -97,19 +133,42 @@ export default function GamesPage() {
     return Array.from(s).sort()
   }, [games])
 
+  // P-1: 期間オプションを動的生成
+  const periodOptions = useMemo(() => {
+    const years = new Set<number>()
+    for (const g of games) years.add(parseInt(g.game_date.slice(0, 4)))
+    const opts: { value: string; label: string }[] = []
+    const sortedYears = Array.from(years).sort((a, b) => b - a)
+    for (const y of sortedYears) {
+      opts.push({ value: `${y}`,     label: `${y}年` })
+      opts.push({ value: `${y}-H1`, label: `${y}年 上期（1〜6月）` })
+      opts.push({ value: `${y}-H2`, label: `${y}年 下期（7〜12月）` })
+    }
+    return opts
+  }, [games])
+
   // フィルタリング
   const filteredGames = useMemo(() => {
     return games.filter(g => {
       const needle = searchText.trim().normalize('NFKC').toLowerCase()
       const hay = g.opponent.normalize('NFKC').toLowerCase()
-      const matchText = needle === '' || hay.includes(needle)
-      const matchResult = resultFilter === 'all' || g.result === resultFilter
+      const matchText    = needle === '' || hay.includes(needle)
+      const matchResult  = resultFilter === 'all' || g.result === resultFilter
       const matchStadium = stadiumFilter === '' || g.stadium === stadiumFilter
-      return matchText && matchResult && matchStadium
+      const matchPd      = matchPeriod(g.game_date, periodFilter)
+      return matchText && matchResult && matchStadium && matchPd
     })
-  }, [games, searchText, resultFilter, stadiumFilter])
+  }, [games, searchText, resultFilter, stadiumFilter, periodFilter])
 
-  const isFiltered = searchText.trim() !== '' || resultFilter !== 'all' || stadiumFilter !== ''
+  const isFiltered = searchText.trim() !== '' || resultFilter !== 'all' || stadiumFilter !== '' || periodFilter !== 'all'
+
+  // P-2: 一括リセット
+  const resetFilters = () => {
+    setSearchText('')
+    setResultFilter('all')
+    setStadiumFilter('')
+    setPeriodFilter('all')
+  }
 
   const handleDelete = async (id: string) => {
     setDeletingId(id)
@@ -155,9 +214,17 @@ export default function GamesPage() {
               />
             </div>
             {isFiltered && (
-              <span className="text-xs text-sub2 whitespace-nowrap shrink-0">
-                {filteredGames.length}件 / 全{games.length}件
-              </span>
+              <>
+                <span className="text-xs text-sub2 whitespace-nowrap shrink-0">
+                  {filteredGames.length}件 / 全{games.length}件
+                </span>
+                <button
+                  onClick={resetFilters}
+                  className="text-xs text-theme underline underline-offset-2 whitespace-nowrap shrink-0 hover:opacity-70"
+                >
+                  リセット
+                </button>
+              </>
             )}
           </div>
 
@@ -178,6 +245,19 @@ export default function GamesPage() {
                 </button>
               ))}
             </div>
+            {/* P-1: 期間フィルター */}
+            {periodOptions.length > 0 && (
+              <select
+                value={periodFilter}
+                onChange={e => setPeriodFilter(e.target.value)}
+                className="text-xs border border-s2 rounded-lg px-2 py-1 bg-lv1 text-main focus:outline-none focus:ring-2 focus:ring-theme"
+              >
+                <option value="all">期間: すべて</option>
+                {periodOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            )}
             {stadiums.length > 0 && (
               <select
                 value={stadiumFilter}
@@ -213,6 +293,9 @@ export default function GamesPage() {
         </div>
       ) : (
         <div className="space-y-2">
+          {hasMore && !searchText && resultFilter === 'all' && !stadiumFilter && periodFilter === 'all' && (
+            <p className="text-xs text-sub2 text-center">最新{games.length}件を表示中</p>
+          )}
           {filteredGames.map((game) => (
             <div key={game.id} className={`${card} overflow-hidden`}>
               {/* メイン行 → 詳細ページへ */}
@@ -292,6 +375,17 @@ export default function GamesPage() {
               )}
             </div>
           ))}
+          {hasMore && (
+            <div className="pt-2 text-center">
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="px-6 py-2 text-sm font-medium text-sub1 border border-s2 rounded-lg bg-lv1 hover:bg-lv2 transition-colors disabled:opacity-50"
+              >
+                {loadingMore ? '読み込み中...' : 'さらに読み込む'}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
