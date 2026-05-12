@@ -240,10 +240,11 @@ export default function StatsPage() {
         </select>
       </div>
 
-      {/* タブ: PC は横スクロール型、スマホは画面下部固定 */}
-      {/* PC 用タブ */}
-      <div className="hidden lg:block border-b border-s2">
-        <div className="flex overflow-x-auto">
+      {/* R-6: 二重タブ実装（PC=hidden lg:block / スマホ=fixed bottom-0）を撤廃し、
+            sticky top-0 z-30 の 1 つのタブに統合。R-1 グローバルナビ(z-40) と非干渉、
+            ページ内タブはサブナビとして上部 sticky にする方針（標準パターン）。 */}
+      <div className="sticky top-0 z-30 bg-lv2 border-b border-s2 -mx-4 px-4">
+        <div className="flex overflow-x-auto max-w-5xl mx-auto">
           {TAB_LIST.map(({ key, label }) => (
             <button
               key={key}
@@ -259,25 +260,9 @@ export default function StatsPage() {
           ))}
         </div>
       </div>
-      {/* スマホ用: 画面下部固定タブバー */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-lv1 border-t border-s2">
-        <div className="flex">
-          {TAB_LIST.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => handleTabChange(key)}
-              className={`flex-1 py-3 text-xs font-medium transition-colors duration-150 ${
-                tab === key ? 'text-theme' : 'text-sub2 hover:text-main'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {loading ? (
-        <div className="space-y-3 min-h-[520px] pb-16 lg:pb-0">
+        <div className="space-y-3 min-h-[520px]">
           {[1,2,3].map(i => (
             <div key={i} className="bg-lv1 rounded-xl border border-s2 p-6 animate-pulse">
               <div className="h-4 bg-lv2 rounded w-1/4 mb-4" />
@@ -289,7 +274,7 @@ export default function StatsPage() {
         </div>
       ) : (
         <div
-          className="space-y-4 min-h-[520px] pb-16 lg:pb-0"
+          className="space-y-4 min-h-[520px]"
           style={{
             opacity: tabVisible ? 1 : 0,
             transition: tabVisible ? 'opacity 0.14s ease-out' : 'none',
