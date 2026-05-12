@@ -24,12 +24,14 @@ export default function Nav() {
     { href: '/dashboard', label: 'ダッシュボード', icon: '🏠' },
     { href: '/games',     label: '試合',           icon: '⚾' },
     { href: '/stats',     label: '成績',           icon: '📊' },
+    { href: '/settings',  label: '設定',           icon: '⚙️' },
   ]
 
-  const mobileLinkClass = (href: string) =>
-    isActive(href)
-      ? 'bg-white/20 text-white dark:bg-theme/20 dark:text-theme'
-      : 'text-white/70 hover:text-white hover:bg-white/10 dark:text-sub1 dark:hover:text-main dark:hover:bg-s2'
+  // R-1: モバイル下部固定タブ用の縦並びスタイル
+  const mobileTabClass = (active: boolean) =>
+    `flex flex-col items-center justify-center py-2 transition-colors ${
+      active ? 'text-theme' : 'text-sub2 hover:text-main'
+    }`
 
   const sidebarLinkClass = (href: string) =>
     isActive(href)
@@ -38,36 +40,32 @@ export default function Nav() {
 
   return (
     <>
-      {/* モバイル: 上部ナビ */}
-      <nav className="lg:hidden bg-theme dark:bg-lv2 shadow-lg border-b border-theme/30 dark:border-s2">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            <span className="text-white dark:text-theme font-bold text-lg mr-3">⚾</span>
-            {navLinks.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`text-sm font-medium px-3 py-1.5 rounded-md transition-all duration-150 ${mobileLinkClass(href)}`}
-              >
-                {label}
-              </Link>
-            ))}
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/settings"
-              className={`text-sm font-medium px-3 py-1.5 rounded-md transition-all duration-150 ${mobileLinkClass('/settings')}`}
-            >
-              設定
-            </Link>
-            <button
-              onClick={handleSignOut}
-              className="text-sm text-white/70 dark:text-sub1 hover:text-white dark:hover:text-main transition-all duration-150"
-            >
-              ログアウト
-            </button>
-          </div>
-        </div>
+      {/* R-1: モバイル下部固定タブバー（5列均等：ダッシュボード/試合/成績/設定/ログアウト） */}
+      <nav
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-lv1 border-t border-s2 grid grid-cols-5"
+        role="navigation"
+        aria-label="モバイルナビゲーション"
+      >
+        {navLinks.map(({ href, label, icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className={mobileTabClass(isActive(href))}
+            aria-current={isActive(href) ? 'page' : undefined}
+          >
+            <span className="text-lg leading-none">{icon}</span>
+            <span className="text-[10px] mt-0.5">{label}</span>
+          </Link>
+        ))}
+        <button
+          type="button"
+          onClick={handleSignOut}
+          className={mobileTabClass(false)}
+          aria-label="ログアウト"
+        >
+          <span className="text-lg leading-none">⏻</span>
+          <span className="text-[10px] mt-0.5">ログアウト</span>
+        </button>
       </nav>
 
       {/* デスクトップ: 左サイドバー */}
@@ -77,7 +75,7 @@ export default function Nav() {
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {navLinks.map(({ href, label, icon }) => (
+          {navLinks.slice(0, 3).map(({ href, label, icon }) => (
             <Link
               key={href}
               href={href}

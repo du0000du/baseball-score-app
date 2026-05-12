@@ -4,12 +4,47 @@ import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import type { AtBat, GameWithAtBats } from '@/lib/supabase/types'
+import { FIELDING_POSITIONS, type AtBat, type FieldingPosition, type GameWithAtBats, type PitchingStat } from '@/lib/supabase/types'
+import { formatIP } from '@/lib/stats'
 import GamesCalendar from './_components/GamesCalendar'
 
-// M8-5: pitching_stats の有無チェック用型拡張
+// M8-5 / R-4: pitching_stats を一括取得して投手サマリも算出
 interface GameWithPitching extends GameWithAtBats {
-  pitching_stats: { id: string }[]
+  pitching_stats: PitchingStat[]
+}
+
+// R-3: ひとことメモの引用プレビュー（1行目の先頭10文字 + 超過時 …）
+function memoPreview(notes: string | null | undefined): string | null {
+  if (!notes) return null
+  const first = notes.replace(/\r\n/g, '\n').split('\n')[0].trim()
+  if (!first) return null
+  return first.length > 10 ? first.slice(0, 10) + '…' : first
+}
+
+// R-4: 打席の打順最頻値（同率時は打順の小さい方を採用）
+function topBattingOrder(atBats: AtBat[]): number | null {
+  if (atBats.length === 0) return null
+  const counts = new Map<number, number>()
+  for (const a of atBats) counts.set(a.batting_order, (counts.get(a.batting_order) ?? 0) + 1)
+  const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0] - b[0])
+  return sorted[0][0]
+}
+
+// R-4: 守備位置の最頻値
+function topFieldingPosition(atBats: AtBat[]): FieldingPosition | null {
+  const counts = new Map<FieldingPosition, number>()
+  for (const a of atBats) {
+    if (a.fielding_position) counts.set(a.fielding_position, (counts.get(a.fielding_position) ?? 0) + 1)
+  }
+  if (counts.size === 0) return null
+  const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1])
+  return sorted[0][0]
+}
+
+// R-4: 投手成績の超短縮サマリ（⚾ X.Y回 NK M自責）
+function pitchingSummary(ps: PitchingStat | undefined): string | null {
+  if (!ps) return null
+  return `⚾ ${formatIP(ps.innings_pitched)}回 ${ps.strikeouts}K ${ps.earned_runs}自責`
 }
 
 function formatDate(dateStr: string) {
@@ -110,7 +145,7 @@ export default function GamesPage() {
   const fetchGames = useCallback(async () => {
     const { data } = await supabase
       .from('games')
-      .select('*, at_bats(*), pitching_stats(id)')
+      .select('*, at_bats(*), pitching_stats(*)')
       .order('game_date', { ascending: false })
       .range(0, PAGE_SIZE - 1)
     const rows = (data ?? []) as GameWithPitching[]
@@ -123,7 +158,7 @@ export default function GamesPage() {
     setLoadingMore(true)
     const { data } = await supabase
       .from('games')
-      .select('*, at_bats(*), pitching_stats(id)')
+      .select('*, at_bats(*), pitching_stats(*)')
       .order('game_date', { ascending: false })
       .range(games.length, games.length + PAGE_SIZE - 1)
     const rows = (data ?? []) as GameWithPitching[]
@@ -345,7 +380,16 @@ export default function GamesPage() {
           {hasMore && !searchText && resultFilter === 'all' && !stadiumFilter && periodFilter === 'all' && (
             <p className="text-xs text-sub2 text-center">最新{games.length}件を表示中</p>
           )}
-          {filteredGames.map((game) => (
+          {filteredGames.map((game) => {
+            // R-3: メモ引用プレビュー
+            const memo = memoPreview(game.notes)
+            // R-4: 打順・守備位置・投手サマリ
+            const order = topBattingOrder(game.at_bats ?? [])
+            const pos = topFieldingPosition(game.at_bats ?? [])
+            const posLabel = pos ? FIELDING_POSITIONS.find(p => p.value === pos)?.label ?? null : null
+            const pitch = pitchingSummary(game.pitching_stats?.[0])
+            const hasMetaExtras = memo || order || posLabel || pitch
+            return (
             <div key={game.id} className={`${card} overflow-hidden`}>
               {/* メイン行 → 詳細ページへ */}
               <Link
@@ -360,6 +404,22 @@ export default function GamesPage() {
                       {formatDate(game.game_date)}
                       {game.stadium && <span className="ml-1.5">・ {game.stadium}</span>}
                     </div>
+                    {/* R-3 / R-4: メモ引用・打順守備・投手サマリ（情報が無い試合は行ごと省略） */}
+                    {hasMetaExtras && (
+                      <div className="flex items-center gap-2 flex-wrap text-xs text-sub2 mt-1 min-w-0">
+                        {(order || posLabel) && (
+                          <span className="shrink-0">
+                            {order ? `${order}番` : ''}{posLabel ? ` ${posLabel}` : ''}
+                          </span>
+                        )}
+                        {pitch && <span className="shrink-0">{pitch}</span>}
+                        {memo && (
+                          <span className="truncate flex items-center gap-1 min-w-0">
+                            📝 {memo}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -423,7 +483,8 @@ export default function GamesPage() {
                 </div>
               )}
             </div>
-          ))}
+            )
+          })}
           {hasMore && (
             <div className="pt-2 text-center">
               <button

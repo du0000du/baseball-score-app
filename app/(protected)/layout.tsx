@@ -18,7 +18,8 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     <div className="min-h-screen bg-lv2">
       <OfflineBanner />
       <Nav />
-      <main className="lg:pl-60 px-4 py-6">
+      {/* R-1: モバイル下部固定ナビ分の余白を確保（lg 以上は不要） */}
+      <main className="lg:pl-60 px-4 py-6 pb-20 lg:pb-6">
         <div className="max-w-5xl mx-auto">
           <PageWrapper>{children}</PageWrapper>
         </div>

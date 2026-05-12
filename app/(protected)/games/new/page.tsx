@@ -11,6 +11,22 @@ const INPUT  = 'w-full border border-s2 rounded-lg px-3 py-2 text-base bg-lv1 te
 const LABEL  = 'block text-sm font-medium text-main mb-1'
 const LABEL2 = 'block text-sm font-medium text-main mb-2'
 
+// R-5: 直前に登録した試合日を覚えるための localStorage キー
+const LAST_DATE_STORAGE_KEY = 'games_last_registered_date'
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+function loadInitialGameDate(): string {
+  const today = new Date().toISOString().split('T')[0]
+  if (typeof window === 'undefined') return today
+  try {
+    const saved = window.localStorage.getItem(LAST_DATE_STORAGE_KEY)
+    if (saved && DATE_PATTERN.test(saved)) return saved
+  } catch {
+    // localStorage が利用不可（プライベートモード等）の場合はフォールバック
+  }
+  return today
+}
+
 export default function NewGamePage() {
   const router = useRouter()
   const supabaseRef = useRef(createClient())
@@ -21,9 +37,9 @@ export default function NewGamePage() {
   const [pastOpponents, setPastOpponents] = useState<string[]>([])
   const [pastStadiums, setPastStadiums] = useState<string[]>([])
 
-  const today = new Date().toISOString().split('T')[0]
+  // R-5: 初期試合日は localStorage の前回登録日を復元（無ければ今日）
   const [form, setForm] = useState({
-    game_date: today,
+    game_date: loadInitialGameDate(),
     opponent: '',
     result: 'win' as 'win' | 'loss' | 'draw',
     score_us: '0',
@@ -84,6 +100,12 @@ export default function NewGamePage() {
     }).select().single()
 
     if (dbError) { setError('登録に失敗しました。もう一度お試しください。'); setLoading(false); return }
+    // R-5: 登録成功時のみ試合日を localStorage に保存（次回登録のデフォルト値に使用）
+    try {
+      window.localStorage.setItem(LAST_DATE_STORAGE_KEY, form.game_date)
+    } catch {
+      // localStorage が使えない環境（プライベートモード等）は無視
+    }
     router.push(`/games/${newGame.id}/at-bats`)
   }
 

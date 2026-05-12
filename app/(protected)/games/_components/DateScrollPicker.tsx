@@ -17,7 +17,8 @@ export function DateScrollPicker({ value, onChange }: Props) {
   const day   = parseInt(parts[2])
 
   const currentYear = today.getFullYear()
-  const years  = Array.from({ length: 6 }, (_, i) => currentYear - 2 + i)
+  // R-2: 「現在 -20 年 〜 現在 +5 年」（合計 26 年）に拡大
+  const years  = Array.from({ length: 26 }, (_, i) => currentYear - 20 + i)
   const months = Array.from({ length: 12 }, (_, i) => i + 1)
   const maxDay = new Date(year, month, 0).getDate()
   const days   = Array.from({ length: maxDay }, (_, i) => i + 1)
