@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { AtBat, GameWithAtBats } from '@/lib/supabase/types'
+import GamesCalendar from './_components/GamesCalendar'
 
 // M8-5: pitching_stats の有無チェック用型拡張
 interface GameWithPitching extends GameWithAtBats {
@@ -92,9 +93,16 @@ export default function GamesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmId, setConfirmId] = useState<string | null>(null)
   const [searchText, setSearchText] = useState('')
-  const [resultFilter, setResultFilter] = useState<ResultFilter>('all')
-  const [stadiumFilter, setStadiumFilter] = useState('')
-  const [periodFilter, setPeriodFilter] = useState<string>('all')
+  const [resultFilter, setResultFilter] = useState<ResultFilter>(
+    () => (typeof window !== 'undefined' ? (sessionStorage.getItem('games_result') as ResultFilter) ?? 'all' : 'all')
+  )
+  const [stadiumFilter, setStadiumFilter] = useState(
+    () => (typeof window !== 'undefined' ? sessionStorage.getItem('games_stadium') ?? '' : '')
+  )
+  const [periodFilter, setPeriodFilter] = useState<string>(
+    () => (typeof window !== 'undefined' ? sessionStorage.getItem('games_period') ?? 'all' : 'all')
+  )
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const supabaseRef = useRef(createClient())
   const supabase = supabaseRef.current
   const router = useRouter()
@@ -168,6 +176,11 @@ export default function GamesPage() {
     setResultFilter('all')
     setStadiumFilter('')
     setPeriodFilter('all')
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('games_result')
+      sessionStorage.removeItem('games_stadium')
+      sessionStorage.removeItem('games_period')
+    }
   }
 
   const handleDelete = async (id: string) => {
@@ -190,7 +203,29 @@ export default function GamesPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-accent">試合一覧</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-accent">試合一覧</h1>
+          {!loading && games.length > 0 && (
+            <div className="flex gap-1">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`text-xs px-2.5 py-1 rounded-lg border font-medium transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-theme text-white border-theme'
+                    : 'bg-lv2 border-s2 text-sub2 hover:text-main'
+                }`}
+              >☰ リスト</button>
+              <button
+                onClick={() => setViewMode('calendar')}
+                className={`text-xs px-2.5 py-1 rounded-lg border font-medium transition-colors ${
+                  viewMode === 'calendar'
+                    ? 'bg-theme text-white border-theme'
+                    : 'bg-lv2 border-s2 text-sub2 hover:text-main'
+                }`}
+              >📅 月別</button>
+            </div>
+          )}
+        </div>
         <Link href="/games/new" className="btn bg-theme hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium">
           ＋ 試合を登録
         </Link>
@@ -234,7 +269,10 @@ export default function GamesPage() {
               {RESULT_FILTERS.map(({ value, label }) => (
                 <button
                   key={value}
-                  onClick={() => setResultFilter(value)}
+                  onClick={() => {
+                    setResultFilter(value)
+                    sessionStorage.setItem('games_result', value)
+                  }}
                   className={`px-3 py-1 text-xs rounded-lg border font-medium transition-colors ${
                     resultFilter === value
                       ? 'bg-theme text-white border-theme'
@@ -249,7 +287,10 @@ export default function GamesPage() {
             {periodOptions.length > 0 && (
               <select
                 value={periodFilter}
-                onChange={e => setPeriodFilter(e.target.value)}
+                onChange={e => {
+                setPeriodFilter(e.target.value)
+                sessionStorage.setItem('games_period', e.target.value)
+              }}
                 className="text-xs border border-s2 rounded-lg px-2 py-1 bg-lv1 text-main focus:outline-none focus:ring-2 focus:ring-theme"
               >
                 <option value="all">期間: すべて</option>
@@ -261,7 +302,10 @@ export default function GamesPage() {
             {stadiums.length > 0 && (
               <select
                 value={stadiumFilter}
-                onChange={e => setStadiumFilter(e.target.value)}
+                onChange={e => {
+                setStadiumFilter(e.target.value)
+                sessionStorage.setItem('games_stadium', e.target.value)
+              }}
                 className="text-xs border border-s2 rounded-lg px-2 py-1 bg-lv1 text-main focus:outline-none focus:ring-2 focus:ring-theme"
               >
                 <option value="">球場: すべて</option>
@@ -274,7 +318,12 @@ export default function GamesPage() {
         </div>
       )}
 
-      {loading ? (
+      {/* P-8: カレンダービュー */}
+      {!loading && viewMode === 'calendar' && (
+        <GamesCalendar games={games} />
+      )}
+
+      {viewMode !== 'calendar' && (loading ? (
         <div className={`min-h-[520px] ${card} divide-y divide-s2`}>
           {[1,2,3].map(i => <SkeletonRow key={i} />)}
         </div>
@@ -387,7 +436,7 @@ export default function GamesPage() {
             </div>
           )}
         </div>
-      )}
+      ))}
     </div>
   )
 }

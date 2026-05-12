@@ -114,8 +114,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
     else break
   }
 
-  // P-3: 打席未入力試合カウント
-  const unrecordedCount = typedGames.filter(g => g.at_bats.length === 0).length
+  // P-3: 打席未入力試合カウント（メモあり試合は除外）
+  const unrecordedCount = typedGames.filter(
+    g => g.at_bats.length === 0 && !(g.notes && g.notes.trim() !== '')
+  ).length
 
   const recentAtBats = recentGames.flatMap((g) => g.at_bats)
   const recentStats = calcBattingStats(recentAtBats)

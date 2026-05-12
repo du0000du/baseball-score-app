@@ -154,6 +154,7 @@
   body {
     background-color: var(--bg_lv2);
     color: var(--main_text);
+    font-size: 1.0625rem; /* 17px: スマホ可読性向上 (Q-5) */
   }
 
   /* ── Form elements: override browser-default white in dark mode ── */
@@ -200,6 +201,18 @@
   .hnf, .htg, .tys, .trg {
     font-family: "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3",
                  "BIZ UDGothic", Meiryo, sans-serif;
+  }
+
+  /* Q-8: iOS Safari のズーム防止 — font-size を 16px 以上に強制 */
+  @media screen and (max-width: 1024px) {
+    input[type="number"],
+    input[type="date"],
+    input[type="text"],
+    input[type="search"],
+    input[type="email"],
+    textarea {
+      font-size: max(1rem, 16px);
+    }
   }
 }
 
