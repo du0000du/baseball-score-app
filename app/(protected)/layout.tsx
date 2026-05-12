@@ -18,8 +18,12 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     <div className="min-h-screen bg-lv2">
       <OfflineBanner />
       <Nav />
-      {/* R-1: モバイル下部固定ナビ分の余白を確保（lg 以上は不要） */}
-      <main className="lg:pl-60 px-4 py-6 pb-20 lg:pb-6">
+      {/* R-1: モバイル下部固定ナビ分の余白を確保（lg 以上は不要）
+          R-7: PWA standalone モードでは下部ナビが safe-area-inset-bottom 分さらに
+          下に余白を持つため、main の paddingBottom も同分を合算しコンテンツ被りを防ぐ。
+          Tailwind arbitrary value で lg: 以上では pb-6 に切り替え、デスクトップに
+          過剰な余白を生まないようレスポンシブ対応。 */}
+      <main className="lg:pl-60 px-4 py-6 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-6">
         <div className="max-w-5xl mx-auto">
           <PageWrapper>{children}</PageWrapper>
         </div>

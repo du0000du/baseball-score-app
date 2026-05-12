@@ -40,11 +40,19 @@ export default function Nav() {
 
   return (
     <>
-      {/* R-1: モバイル下部固定タブバー（5列均等：ダッシュボード/試合/成績/設定/ログアウト） */}
+      {/* R-1: モバイル下部固定タブバー（5列均等：ダッシュボード/試合/成績/設定/ログアウト）
+            R-7: PWA standalone モードで iOS の safe-area-inset を尊重して
+            左右端ラベル切れ・ホームインジケータ被りを防ぐ。`max()` で通常 Safari でも
+            最低 0.25rem (4px) のバッファを確保し、画面端ギリギリのタップ精度を改善。 */}
       <nav
         className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-lv1 border-t border-s2 grid grid-cols-5"
         role="navigation"
         aria-label="モバイルナビゲーション"
+        style={{
+          paddingLeft: 'max(env(safe-area-inset-left), 0.25rem)',
+          paddingRight: 'max(env(safe-area-inset-right), 0.25rem)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}
       >
         {navLinks.map(({ href, label, icon }) => (
           <Link

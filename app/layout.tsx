@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import ThemeProvider from './(protected)/_components/ThemeProvider'
 
@@ -8,6 +8,16 @@ export const metadata: Metadata = {
     default: '草野球記録',
   },
   description: '草野球の打撃成績を記録・管理するアプリ',
+}
+
+// R-7: PWA standalone モード（ホーム画面追加後の Web アプリ化）で
+// safe-area-inset 環境変数を有効化するため viewport-fit=cover を設定。
+// これにより Nav.tsx 等の fixed 要素が iOS ホームインジケータ／画面端の丸みを
+// 考慮した padding を `env(safe-area-inset-*)` で取得できるようになる。
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
