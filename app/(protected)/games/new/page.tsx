@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import SuggestInput from '@/app/(protected)/_components/SuggestInput'
+import { DateScrollPicker } from '../_components/DateScrollPicker'
 
-const INPUT  = 'w-full border border-s2 rounded-lg px-3 py-2 text-sm bg-lv1 text-main placeholder-sub2 focus:outline-none focus:ring-2 focus:ring-theme'
+const INPUT  = 'w-full border border-s2 rounded-lg px-3 py-2 text-base bg-lv1 text-main placeholder-sub2 focus:outline-none focus:ring-2 focus:ring-theme'
 const LABEL  = 'block text-sm font-medium text-main mb-1'
 const LABEL2 = 'block text-sm font-medium text-main mb-2'
 
@@ -56,6 +57,13 @@ export default function NewGamePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.opponent.trim()) { setError('対戦相手を入力してください'); return }
+    if (form.opponent.trim().length > 100) { setError('対戦相手は100字以内で入力してください'); return }
+    if (form.stadium.trim().length > 100) { setError('球場名は100字以内で入力してください'); return }
+    if (form.notes.length > 2000) { setError('メモは2000字以内で入力してください'); return }
+    const scoreUs = parseInt(form.score_us, 10)
+    const scoreThem = parseInt(form.score_them, 10)
+    if (isNaN(scoreUs) || scoreUs < 0 || scoreUs > 99) { setError('自チームのスコアは0〜99で入力してください'); return }
+    if (isNaN(scoreThem) || scoreThem < 0 || scoreThem > 99) { setError('相手チームのスコアは0〜99で入力してください'); return }
     setLoading(true)
     setError('')
 
@@ -68,14 +76,14 @@ export default function NewGamePage() {
       game_date: form.game_date,
       opponent: form.opponent.trim(),
       result: form.result,
-      score_us: parseInt(form.score_us) || 0,
-      score_them: parseInt(form.score_them) || 0,
+      score_us: scoreUs,
+      score_them: scoreThem,
       stadium: form.stadium.trim() || null,
       notes: form.notes.trim() || null,
       season,
     }).select().single()
 
-    if (dbError) { setError('登録に失敗しました: ' + dbError.message); setLoading(false); return }
+    if (dbError) { setError('登録に失敗しました。もう一度お試しください。'); setLoading(false); return }
     router.push(`/games/${newGame.id}/at-bats`)
   }
 
@@ -107,7 +115,7 @@ export default function NewGamePage() {
 
         <div>
           <label className={LABEL}>試合日 *</label>
-          <input type="date" value={form.game_date} onChange={(e) => set('game_date', e.target.value)} required className={INPUT} />
+          <DateScrollPicker value={form.game_date} onChange={(v) => set('game_date', v)} />
         </div>
 
         <div>
