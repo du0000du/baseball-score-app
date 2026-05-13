@@ -300,10 +300,10 @@ export default function BulkNewPage() {
 
       {/* テーブル（スマホ横スクロール） */}
       <div className="overflow-x-auto -mx-4 px-4">
-        <table className="min-w-[780px] w-full text-sm border-collapse">
+        <table className="min-w-[840px] w-full text-sm border-collapse">
           <thead>
             <tr className="border-b border-s2 text-xs text-sub2 font-medium">
-              <th className="text-left py-2 px-2 whitespace-nowrap w-32">試合日 *</th>
+              <th className="text-left py-2 px-2 whitespace-nowrap w-40">試合日 *</th>
               <th className="text-left py-2 px-2 whitespace-nowrap">対戦相手 *</th>
               <th className="text-left py-2 px-2 whitespace-nowrap w-28">球場</th>
               <th className="text-center py-2 px-2 whitespace-nowrap w-28">勝敗 *</th>
