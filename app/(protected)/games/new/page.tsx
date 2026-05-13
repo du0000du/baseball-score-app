@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import SuggestInput from '@/app/(protected)/_components/SuggestInput'
@@ -29,10 +29,13 @@ function loadInitialGameDate(): string {
 
 export default function NewGamePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const copyFromId = searchParams.get('copy')  // R-3: 複製元の game ID
   const supabaseRef = useRef(createClient())
   const supabase = supabaseRef.current
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [copyBanner, setCopyBanner] = useState('')  // R-3: 複製元試合名の表示
 
   const [pastOpponents, setPastOpponents] = useState<string[]>([])
   const [pastStadiums, setPastStadiums] = useState<string[]>([])
@@ -66,6 +69,29 @@ export default function NewGamePage() {
     }
     fetchSuggestions()
   }, [supabase])
+
+  // R-3: ?copy=<id> がある場合、その試合の対戦相手・球場を初期値として取得
+  useEffect(() => {
+    if (!copyFromId) return
+    supabase
+      .from('games')
+      .select('opponent, stadium, game_date')
+      .eq('id', copyFromId)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setForm(prev => ({
+            ...prev,
+            opponent: data.opponent ?? '',
+            stadium:  data.stadium  ?? '',
+          }))
+          const label = data.game_date
+            ? `${data.game_date.slice(0, 10)} vs ${data.opponent}`
+            : data.opponent
+          setCopyBanner(label)
+        }
+      })
+  }, [copyFromId, supabase])
 
   const set = (key: keyof typeof form, value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -129,6 +155,17 @@ export default function NewGamePage() {
         </Link>
         <h1 className="text-2xl font-bold text-accent">試合を登録</h1>
       </div>
+
+      {/* R-3: 複製元バナー */}
+      {copyBanner && (
+        <div className="mb-4 flex items-center gap-2 bg-theme/10 border border-theme/30 rounded-xl px-4 py-2.5 text-sm text-main">
+          <span className="text-theme">📋</span>
+          <span>
+            <strong>{copyBanner}</strong> の対戦相手・球場を引き継いでいます。
+            日付・スコア・勝敗を入力してください。
+          </span>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="bg-lv1 rounded-xl shadow-sm border border-s2 p-6 space-y-5">
         {error && (

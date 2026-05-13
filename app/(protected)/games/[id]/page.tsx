@@ -104,12 +104,21 @@ export default function GameDetailPage() {
           <Link href="/games" className="text-sub2 hover:text-main transition-colors text-sm flex items-center gap-1">
             ← 試合一覧
           </Link>
-          <Link
-            href="/games/new"
-            className="text-xs bg-theme text-white rounded-lg px-3 py-1.5 font-medium hover:opacity-90 transition-opacity"
-          >
-            ＋ 新しい試合を登録
-          </Link>
+          <div className="flex items-center gap-2">
+            {/* R-3: 複製して新規登録（対戦相手・球場を引き継ぐ） */}
+            <Link
+              href={`/games/new?copy=${game.id}`}
+              className="text-xs bg-lv2 text-main border border-s2 rounded-lg px-3 py-1.5 font-medium hover:bg-lv1 transition-colors"
+            >
+              複製して登録
+            </Link>
+            <Link
+              href="/games/new"
+              className="text-xs bg-theme text-white rounded-lg px-3 py-1.5 font-medium hover:opacity-90 transition-opacity"
+            >
+              ＋ 新しい試合を登録
+            </Link>
+          </div>
         </div>
         <GameNavBar prevGame={prevGame} nextGame={nextGame} />
       </div>
