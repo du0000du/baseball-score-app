@@ -93,7 +93,7 @@ export default function EditGameForm({
       .eq('id', game.id)
 
     if (dbError) { setError('更新に失敗しました。もう一度お試しください。'); setLoading(false); return }
-    router.push('/games')
+    router.push(`/games/${game.id}/at-bats`)
     router.refresh()
   }
 
