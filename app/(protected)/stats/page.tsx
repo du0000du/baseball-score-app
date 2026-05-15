@@ -6,7 +6,7 @@ import { calcBattingStats, calcPitchingStats, fmtAvg, fmtDec, fmtERA, formatIP }
 import { RESULT_TYPE_LABELS, DIRECTION_LABELS, FIELDING_POSITIONS } from '@/lib/supabase/types'
 import type { AtBat, Direction, Game, ResultType, PitchingStat } from '@/lib/supabase/types'
 import DirectionChart from '@/app/(protected)/_components/DirectionChart'
-import DirectionListView from '@/app/(protected)/_components/DirectionListView'
+import SprayChart from '@/app/(protected)/_components/SprayChart'
 import { ThemeContext } from '@/app/(protected)/_components/ThemeProvider'
 import StatTooltip from '@/app/(protected)/_components/StatTooltip'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
@@ -79,9 +79,9 @@ const TAB_LIST: { key: Tab; label: string }[] = [
   { key: 'per-game',  label: '試合別' },
   { key: 'log',       label: '打席ログ' },
   { key: 'pitching',  label: '投手成績' },
-  { key: 'direction', label: '打球方向' },
-  { key: 'direction2', label: '打球一覧' },
-  { key: 'analytics', label: '分析' },
+  { key: 'direction',  label: '打球方向' },
+  { key: 'direction2', label: 'スプレー' },
+  { key: 'analytics',  label: '分析' },
 ]
 
 export default function StatsPage() {
@@ -135,9 +135,9 @@ export default function StatsPage() {
     'per-game':  '試合別成績',
     'log':       '打席ログ',
     'pitching':  '投手成績',
-    'direction': '打球方向',
-    'direction2': '打球一覧',
-    'analytics': '分析',
+    'direction':  '打球方向',
+    'direction2': 'スプレーチャート',
+    'analytics':  '分析',
   }
   useEffect(() => {
     document.title = `${TAB_TITLES[tab]} | 草野球記録`
@@ -756,14 +756,14 @@ export default function StatsPage() {
             )
           )}
 
-          {/* タブ5-2: 打球一覧（direction2） */}
+          {/* タブ5-2: スプレーチャート（direction2） */}
           {tab === 'direction2' && (
             games.length === 0 ? (
-              <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-12 text-center text-sub2">
+              <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-12 text-center text-sub2 text-sm">
                 試合データがありません
               </div>
             ) : (
-              <DirectionListView games={games} />
+              <SprayChart games={games} />
             )
           )}
 
