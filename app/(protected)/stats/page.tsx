@@ -106,6 +106,9 @@ export default function StatsPage() {
   const touchStartY = useRef<number | null>(null)
   // M7-3: タブ切り替え時のスクロール位置保存
   const scrollPositions = useRef<Record<string, number>>({})
+  // P-10: タブ自動スクロール用 ref
+  const tabScrollRef = useRef<HTMLDivElement>(null)
+  const tabButtonRefs = useRef<Partial<Record<Tab, HTMLButtonElement | null>>>({})
 
   // P-2: シーズンごとのクライアントキャッシュ（タブ切り替え時のチラつき防止）
   const cacheRef = useRef<Map<number | 'all', { games: GameWithAtBats[]; pitchingStats: PitchingStat[] }>>(new Map())
@@ -218,6 +221,18 @@ export default function StatsPage() {
     })
   }
 
+  // P-10: タブ切り替え時にアクティブタブを中央にスクロール
+  useEffect(() => {
+    const btn = tabButtonRefs.current[tab]
+    const container = tabScrollRef.current
+    if (!btn || !container) return
+    const containerRect = container.getBoundingClientRect()
+    const btnRect = btn.getBoundingClientRect()
+    const scrollLeft = container.scrollLeft + (btnRect.left - containerRect.left)
+      - containerRect.width / 2 + btnRect.width / 2
+    container.scrollTo({ left: scrollLeft, behavior: 'smooth' })
+  }, [tab])
+
   const allAtBats = games.flatMap((g) => g.at_bats)
   const stats = calcBattingStats(allAtBats)
   const pStats = calcPitchingStats(pitchingStats)
@@ -246,21 +261,36 @@ export default function StatsPage() {
       {/* R-6: 二重タブ実装（PC=hidden lg:block / スマホ=fixed bottom-0）を撤廃し、
             sticky top-0 z-30 の 1 つのタブに統合。R-1 グローバルナビ(z-40) と非干渉、
             ページ内タブはサブナビとして上部 sticky にする方針（標準パターン）。 */}
+      {/* P-10: タブナビゲーション（自動スクロール＋グラデーションマスク） */}
       <div className="sticky top-0 z-30 bg-lv2 border-b border-s2 -mx-4 px-4">
-        <div className="flex overflow-x-auto max-w-5xl mx-auto">
-          {TAB_LIST.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => handleTabChange(key)}
-              className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px outline-none transition-colors duration-150 ${
-                tab === key
-                  ? 'text-theme border-theme'
-                  : 'text-sub2 hover:text-main border-transparent'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="relative max-w-5xl mx-auto">
+          {/* 左フェード（先に戻れることを示す） */}
+          <div
+            className="absolute left-0 top-0 bottom-0 w-8 pointer-events-none z-10"
+            style={{ background: 'linear-gradient(to right, var(--bg_lv2) 0%, transparent 100%)' }}
+          />
+          {/* 右フェード（続きがあることを示す） */}
+          <div
+            className="absolute right-0 top-0 bottom-0 w-8 pointer-events-none z-10"
+            style={{ background: 'linear-gradient(to left, var(--bg_lv2) 0%, transparent 100%)' }}
+          />
+          {/* P-10: tabScrollRef をタブコンテナに付与 */}
+          <div ref={tabScrollRef} className="flex overflow-x-auto scrollbar-none">
+            {TAB_LIST.map(({ key, label }) => (
+              <button
+                key={key}
+                ref={el => { tabButtonRefs.current[key] = el }}
+                onClick={() => handleTabChange(key)}
+                className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px outline-none transition-colors duration-150 ${
+                  tab === key
+                    ? 'text-theme border-theme'
+                    : 'text-sub2 hover:text-main border-transparent'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
