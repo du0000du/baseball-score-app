@@ -60,14 +60,18 @@ const f = (n: number) => n.toFixed(1)
 
 // ────────────────────────────────────────────────
 // 方向 → 角度（垂直=0°, 右が正, 左が負）
+// P-6: left/right を 6° 内側にシフトしてフェアゾーン（±42°）内に収容
+//   left=-36°: 扇形展開 ±6° → 最大 -42°（ファウルライン内ぎりぎり）
+//   right=+36°: 対称
+//   third_base=-33°: 扇形で -39°（フェアゾーン内）
 // ────────────────────────────────────────────────
 const DIRECTION_ANGLE_DEG: Record<string, number> = {
-  left:         -42,
+  left:         -36,  // P-6: -42→-36（フェアゾーン内に収容）
   left_center:  -21,
   center:         0,
   right_center:  21,
-  right:         42,
-  third_base:   -37,
+  right:          36,  // P-6: +42→+36（フェアゾーン内に収容）
+  third_base:   -33,  // P-6: -37→-33（扇形展開後も -39° で収容）
   shortstop:    -20,
   pitcher:        2,
   second_base:    9,
@@ -133,11 +137,13 @@ function calcLineOffset(indexInGroup: number, groupSize: number): number {
 }
 
 // P-2: offsetDeg 対応の終点計算（ライン用）
+// P-6: フェアゾーン（±42°）クランプ — 扇形展開後も必ずフェアゾーン内に収まる安全ネット
 function calcEndpoint(dir: string, rt: ResultType, offsetDeg = 0): { x: number; y: number } | null {
   const angleDeg = DIRECTION_ANGLE_DEG[dir]
   const dist     = RESULT_DISTANCE_PX[rt]
   if (angleDeg === undefined || !dist) return null
-  const rad = ((angleDeg + offsetDeg) * Math.PI) / 180
+  const clamped = Math.max(-42, Math.min(42, angleDeg + offsetDeg))
+  const rad = (clamped * Math.PI) / 180
   return { x: HX + dist * Math.sin(rad), y: HY - dist * Math.cos(rad) }
 }
 
