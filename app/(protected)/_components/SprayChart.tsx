@@ -115,6 +115,18 @@ type ResultFilter = 'all' | 'long_hit' | 'single' | 'out'
 
 const INFIELD_DIRS = new Set(['pitcher', 'catcher', 'first_base', 'second_base', 'third_base', 'shortstop'])
 
+// ────────────────────────────────────────────────
+// P-7: 方向 + 結果から飛距離を決定
+//   内野安打（hit + 内野方向）は groundout 相当の短い距離で描画し
+//   外野安打との視覚的区別を行う（DB変更なし）
+// ────────────────────────────────────────────────
+const INFIELD_HIT_DISTANCE_PX = 95  // 内野安打の表示距離（内野手付近）
+
+function getDistance(dir: string, rt: ResultType): number | undefined {
+  if (rt === 'hit' && INFIELD_DIRS.has(dir)) return INFIELD_HIT_DISTANCE_PX
+  return RESULT_DISTANCE_PX[rt]
+}
+
 function matchesFilter(rt: ResultType, filt: ResultFilter): boolean {
   if (filt === 'all')      return true
   if (filt === 'long_hit') return ['double', 'triple', 'hr'].includes(rt)
@@ -138,9 +150,10 @@ function calcLineOffset(indexInGroup: number, groupSize: number): number {
 
 // P-2: offsetDeg 対応の終点計算（ライン用）
 // P-6: フェアゾーン（±42°）クランプ — 扇形展開後も必ずフェアゾーン内に収まる安全ネット
+// P-7: getDistance() により内野安打は短い距離で描画
 function calcEndpoint(dir: string, rt: ResultType, offsetDeg = 0): { x: number; y: number } | null {
   const angleDeg = DIRECTION_ANGLE_DEG[dir]
-  const dist     = RESULT_DISTANCE_PX[rt]
+  const dist     = getDistance(dir, rt)  // P-7: 内野安打対応
   if (angleDeg === undefined || !dist) return null
   const clamped = Math.max(-42, Math.min(42, angleDeg + offsetDeg))
   const rad = (clamped * Math.PI) / 180
@@ -150,6 +163,7 @@ function calcEndpoint(dir: string, rt: ResultType, offsetDeg = 0): { x: number; 
 // ────────────────────────────────────────────────
 // P-5: ドット専用終点計算（ファウルライン回避オフセット）
 // left/right のドットをフェアゾーン寄りに 6° ずらす
+// P-7: getDistance() により内野安打のドットは内野付近に配置
 // ────────────────────────────────────────────────
 const DOT_ANGLE_OFFSET: Partial<Record<string, number>> = {
   left:  6,   // -42° → -36°（フェアゾーン寄り）
@@ -158,7 +172,7 @@ const DOT_ANGLE_OFFSET: Partial<Record<string, number>> = {
 
 function calcDotEndpoint(dir: string, rt: ResultType): { x: number; y: number } | null {
   const angleDeg = DIRECTION_ANGLE_DEG[dir]
-  const dist     = RESULT_DISTANCE_PX[rt]
+  const dist     = getDistance(dir, rt)  // P-7: 内野安打対応
   if (angleDeg === undefined || !dist) return null
   const offset = DOT_ANGLE_OFFSET[dir] ?? 0
   const rad = ((angleDeg + offset) * Math.PI) / 180
@@ -391,20 +405,25 @@ export default function SprayChart({ games }: Props) {
           )}
         </svg>
 
-        {/* P-1: 5色凡例（左下オーバーレイ） */}
+        {/* P-1: 5色凡例（左下オーバーレイ）/ P-7: 単打に外野/内野注記 */}
         <div className="absolute left-2 bottom-2 bg-lv1/85 rounded-lg px-2 py-1.5 space-y-1">
           {([
-            { label: '本塁打', color: SPRAY_COLORS.hr     },
-            { label: '三塁打', color: SPRAY_COLORS.triple },
-            { label: '二塁打', color: SPRAY_COLORS.double },
-            { label: '単打',   color: SPRAY_COLORS.single },
-            { label: '凡打',   color: SPRAY_COLORS.out    },
-          ] as const).map(({ label, color }) => (
+            { label: '本塁打', subLabel: null,              color: SPRAY_COLORS.hr     },
+            { label: '三塁打', subLabel: null,              color: SPRAY_COLORS.triple },
+            { label: '二塁打', subLabel: null,              color: SPRAY_COLORS.double },
+            { label: '単打',   subLabel: '長=外野/短=内野', color: SPRAY_COLORS.single },
+            { label: '凡打',   subLabel: null,              color: SPRAY_COLORS.out    },
+          ] as { label: string; subLabel: string | null; color: string }[]).map(({ label, subLabel, color }) => (
             <div key={label} className="flex items-center gap-1.5">
-              <svg width="16" height="4" aria-hidden="true">
+              <svg width="16" height="4" aria-hidden="true" className="shrink-0">
                 <line x1="0" y1="2" x2="16" y2="2" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
               </svg>
-              <span className="text-[10px] text-sub2">{label}</span>
+              <div>
+                <span className="text-[10px] text-sub2 leading-none">{label}</span>
+                {subLabel && (
+                  <span className="text-[8px] text-sub2/60 block leading-none mt-0.5">{subLabel}</span>
+                )}
+              </div>
             </div>
           ))}
         </div>
