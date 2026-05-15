@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { FIELDING_POSITIONS, type AtBat, type FieldingPosition, type GameWithAtBats, type PitchingStat } from '@/lib/supabase/types'
 import { formatIP } from '@/lib/stats'
 import GamesCalendar from './_components/GamesCalendar'
+import GamesTableView from './_components/GamesTableView'
 
 // M8-5 / R-4: pitching_stats を一括取得して投手サマリも算出
 interface GameWithPitching extends GameWithAtBats {
@@ -137,7 +138,7 @@ export default function GamesPage() {
   const [periodFilter, setPeriodFilter] = useState<string>(
     () => (typeof window !== 'undefined' ? sessionStorage.getItem('games_period') ?? 'all' : 'all')
   )
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'table'>('list')
   const supabaseRef = useRef(createClient())
   const supabase = supabaseRef.current
   const router = useRouter()
@@ -258,6 +259,14 @@ export default function GamesPage() {
                     : 'bg-lv2 border-s2 text-sub2 hover:text-main'
                 }`}
               >📅 月別</button>
+              <button
+                onClick={() => setViewMode('table')}
+                className={`text-xs px-2.5 py-1 rounded-lg border font-medium transition-colors ${
+                  viewMode === 'table'
+                    ? 'bg-theme text-white border-theme'
+                    : 'bg-lv2 border-s2 text-sub2 hover:text-main'
+                }`}
+              >📊 表</button>
             </div>
           )}
         </div>
@@ -364,7 +373,12 @@ export default function GamesPage() {
         <GamesCalendar games={games} />
       )}
 
-      {viewMode !== 'calendar' && (loading ? (
+      {/* S-1: 表ビュー */}
+      {!loading && viewMode === 'table' && (
+        <GamesTableView games={filteredGames as GameWithPitching[]} />
+      )}
+
+      {viewMode === 'list' && (loading ? (
         <div className={`min-h-[520px] ${card} divide-y divide-s2`}>
           {[1,2,3].map(i => <SkeletonRow key={i} />)}
         </div>
