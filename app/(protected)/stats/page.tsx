@@ -6,6 +6,7 @@ import { calcBattingStats, calcPitchingStats, fmtAvg, fmtDec, fmtERA, formatIP }
 import { RESULT_TYPE_LABELS, DIRECTION_LABELS, FIELDING_POSITIONS } from '@/lib/supabase/types'
 import type { AtBat, Direction, Game, ResultType, PitchingStat } from '@/lib/supabase/types'
 import DirectionChart from '@/app/(protected)/_components/DirectionChart'
+import DirectionListView from '@/app/(protected)/_components/DirectionListView'
 import { ThemeContext } from '@/app/(protected)/_components/ThemeProvider'
 import StatTooltip from '@/app/(protected)/_components/StatTooltip'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
@@ -14,7 +15,7 @@ interface GameWithAtBats extends Game {
   at_bats: AtBat[]
 }
 
-type Tab = 'season' | 'per-game' | 'log' | 'pitching' | 'direction' | 'analytics'
+type Tab = 'season' | 'per-game' | 'log' | 'pitching' | 'direction' | 'direction2' | 'analytics'
 
 function formatDate(dateStr: string) {
   const [, m, d] = dateStr.split('-')
@@ -79,6 +80,7 @@ const TAB_LIST: { key: Tab; label: string }[] = [
   { key: 'log',       label: '打席ログ' },
   { key: 'pitching',  label: '投手成績' },
   { key: 'direction', label: '打球方向' },
+  { key: 'direction2', label: '打球一覧' },
   { key: 'analytics', label: '分析' },
 ]
 
@@ -111,7 +113,7 @@ export default function StatsPage() {
   // sessionStorage からタブ・シーズンを復元（SSR対策: useEffect で実行）
   useEffect(() => {
     const saved = sessionStorage.getItem('baseball_stats_tab')
-    const validTabs: Tab[] = ['season', 'per-game', 'log', 'pitching', 'direction', 'analytics']
+    const validTabs: Tab[] = ['season', 'per-game', 'log', 'pitching', 'direction', 'direction2', 'analytics']
     if (saved && validTabs.includes(saved as Tab)) {
       setTab(saved as Tab)
     }
@@ -134,6 +136,7 @@ export default function StatsPage() {
     'log':       '打席ログ',
     'pitching':  '投手成績',
     'direction': '打球方向',
+    'direction2': '打球一覧',
     'analytics': '分析',
   }
   useEffect(() => {
@@ -176,7 +179,7 @@ export default function StatsPage() {
   }, [supabase, season])
 
   // M-1: スワイプでタブ遷移（縦スクロール競合防止）
-  const SWIPE_TABS: Tab[] = ['season', 'per-game', 'log', 'pitching', 'direction', 'analytics']
+  const SWIPE_TABS: Tab[] = ['season', 'per-game', 'log', 'pitching', 'direction', 'direction2', 'analytics']
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX
     touchStartY.current = e.touches[0].clientY
@@ -750,6 +753,17 @@ export default function StatsPage() {
               </div>
             ) : (
               <DirectionChart atBats={allAtBats} />
+            )
+          )}
+
+          {/* タブ5-2: 打球一覧（direction2） */}
+          {tab === 'direction2' && (
+            games.length === 0 ? (
+              <div className="bg-lv1 rounded-xl shadow-sm border border-s2 p-12 text-center text-sub2">
+                試合データがありません
+              </div>
+            ) : (
+              <DirectionListView games={games} />
             )
           )}
 
