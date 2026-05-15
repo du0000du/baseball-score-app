@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import type { AtBat, Game, ResultType } from '@/lib/supabase/types'
+import { useTheme } from '@/app/(protected)/_components/ThemeProvider'
 
 // ────────────────────────────────────────────────
 // 型定義
@@ -14,28 +15,28 @@ interface Props {
 }
 
 // ────────────────────────────────────────────────
-// P-1: SVGチャート専用セマンティックカラー定数（5色に拡張）
+// P-1 / P-9: SVGチャート専用セマンティックカラー定数
 // ※ SVG stroke/fill に Tailwind クラスが使えないため例外的に定義
-// ※ 変更する場合はここだけ修正すること
+// ※ P-9: 芝(#2D5A3D/#4a7c59)の上で識別できる明るい系統色に更新
 // ────────────────────────────────────────────────
 const SPRAY_COLORS = {
-  hr:      '#E53935', // 本塁打 - 赤
-  triple:  '#8E24AA', // 三塁打 - 紫
-  double:  '#F57C00', // 二塁打 - オレンジ
-  single:  '#1E88E5', // 単打   - 青
-  out:     '#757575', // 凡打・その他 - グレー
+  hr:     '#FF5252', // 本塁打 - 明るい赤     (旧: #E53935)
+  triple: '#CE93D8', // 三塁打 - 明るい紫     (旧: #8E24AA → 暗くて識別困難)
+  double: '#FFB74D', // 二塁打 - 明るいアンバー (旧: #F57C00)
+  single: '#64B5F6', // 単打   - 明るい水色   (旧: #1E88E5)
+  out:    '#9E9E9E', // 凡打   - 明るいグレー  (旧: #757575 → 暗くて識別困難)
 } as const
 
 // ────────────────────────────────────────────────
-// P-3: 方向別ゲージカラー（各方向を色で識別）
+// P-3 / P-9: 方向別ゲージカラー（SPRAY_COLORS と色味を統一）
 // ────────────────────────────────────────────────
 const GAUGE_COLORS: Record<string, string> = {
-  left:         '#1E88E5', // 左   - 青
-  left_center:  '#43A047', // 左中 - 緑
-  center:       '#FB8C00', // 中   - オレンジ
-  right_center: '#43A047', // 右中 - 緑
-  right:        '#1E88E5', // 右   - 青
-  infield:      '#757575', // 内野 - グレー
+  left:         '#64B5F6', // 明るい青
+  left_center:  '#66BB6A', // 明るい緑
+  center:       '#FFB74D', // 明るいアンバー
+  right_center: '#66BB6A',
+  right:        '#64B5F6',
+  infield:      '#9E9E9E', // 明るいグレー
 }
 
 // ────────────────────────────────────────────────
@@ -61,9 +62,6 @@ const f = (n: number) => n.toFixed(1)
 // ────────────────────────────────────────────────
 // 方向 → 角度（垂直=0°, 右が正, 左が負）
 // P-6: left/right を 6° 内側にシフトしてフェアゾーン（±42°）内に収容
-//   left=-36°: 扇形展開 ±6° → 最大 -42°（ファウルライン内ぎりぎり）
-//   right=+36°: 対称
-//   third_base=-33°: 扇形で -39°（フェアゾーン内）
 // ────────────────────────────────────────────────
 const DIRECTION_ANGLE_DEG: Record<string, number> = {
   left:         -36,  // P-6: -42→-36（フェアゾーン内に収容）
@@ -149,11 +147,11 @@ function calcLineOffset(indexInGroup: number, groupSize: number): number {
 }
 
 // P-2: offsetDeg 対応の終点計算（ライン用）
-// P-6: フェアゾーン（±42°）クランプ — 扇形展開後も必ずフェアゾーン内に収まる安全ネット
+// P-6: フェアゾーン（±42°）クランプ
 // P-7: getDistance() により内野安打は短い距離で描画
 function calcEndpoint(dir: string, rt: ResultType, offsetDeg = 0): { x: number; y: number } | null {
   const angleDeg = DIRECTION_ANGLE_DEG[dir]
-  const dist     = getDistance(dir, rt)  // P-7: 内野安打対応
+  const dist     = getDistance(dir, rt)
   if (angleDeg === undefined || !dist) return null
   const clamped = Math.max(-42, Math.min(42, angleDeg + offsetDeg))
   const rad = (clamped * Math.PI) / 180
@@ -162,17 +160,16 @@ function calcEndpoint(dir: string, rt: ResultType, offsetDeg = 0): { x: number; 
 
 // ────────────────────────────────────────────────
 // P-5: ドット専用終点計算（ファウルライン回避オフセット）
-// left/right のドットをフェアゾーン寄りに 6° ずらす
 // P-7: getDistance() により内野安打のドットは内野付近に配置
 // ────────────────────────────────────────────────
 const DOT_ANGLE_OFFSET: Partial<Record<string, number>> = {
-  left:  6,   // -42° → -36°（フェアゾーン寄り）
-  right: -6,  // +42° → +36°（フェアゾーン寄り）
+  left:  6,
+  right: -6,
 }
 
 function calcDotEndpoint(dir: string, rt: ResultType): { x: number; y: number } | null {
   const angleDeg = DIRECTION_ANGLE_DEG[dir]
-  const dist     = getDistance(dir, rt)  // P-7: 内野安打対応
+  const dist     = getDistance(dir, rt)
   if (angleDeg === undefined || !dist) return null
   const offset = DOT_ANGLE_OFFSET[dir] ?? 0
   const rad = ((angleDeg + offset) * Math.PI) / 180
@@ -207,6 +204,13 @@ const infieldDiamond = [
 export default function SprayChart({ games }: Props) {
   const [viewMode, setViewMode] = useState<ViewMode>('line')
   const [filter, setFilter]     = useState<ResultFilter>('all')
+
+  // P-9: テーマ連動フィールド色（lightテーマのみライトモード扱い）
+  const { theme } = useTheme()
+  const isDark = theme !== 'light'
+  const FIELD_GRASS = isDark ? '#2D5A3D' : '#4a7c59'
+  const FIELD_SOIL  = isDark ? '#7A6040' : '#c8a87a'
+  const FIELD_MOUND = isDark ? '#6B5535' : '#b8986a'
 
   const allAtBats = useMemo(() => games.flatMap(g => g.at_bats), [games])
 
@@ -268,7 +272,8 @@ export default function SprayChart({ games }: Props) {
     return counts
   }, [allAtBats])
 
-  const maxDirCount  = Math.max(...Object.values(dirCounts), 1)
+  // P-12: 動的 max（差を強調するため ×1.1）
+  const maxDirCount  = Math.max(...Object.values(dirCounts), 1) * 1.1
   const hasPlottable = plottableWithOffset.length > 0
   const hasAnyDir    = allAtBats.some(ab => ab.direction)
 
@@ -293,7 +298,7 @@ export default function SprayChart({ games }: Props) {
         ))}
       </div>
 
-      {/* 結果フィルター（長打ボタンは代表色=赤で表示） */}
+      {/* 結果フィルター */}
       <div className="flex gap-1.5 flex-wrap">
         {([
           { key: 'all'      as ResultFilter, label: 'すべて', color: null               },
@@ -323,6 +328,29 @@ export default function SprayChart({ games }: Props) {
         ))}
       </div>
 
+      {/* P-8: 凡例（チャート外・横並び・スクロール可）打球線と重ならない位置に配置 */}
+      <div className="flex gap-3 overflow-x-auto scrollbar-none pb-0.5">
+        {([
+          { label: '本塁打', subLabel: null,              color: SPRAY_COLORS.hr     },
+          { label: '三塁打', subLabel: null,              color: SPRAY_COLORS.triple },
+          { label: '二塁打', subLabel: null,              color: SPRAY_COLORS.double },
+          { label: '単打',   subLabel: '長=外野/短=内野', color: SPRAY_COLORS.single },
+          { label: '凡打',   subLabel: null,              color: SPRAY_COLORS.out    },
+        ] as { label: string; subLabel: string | null; color: string }[]).map(({ label, subLabel, color }) => (
+          <div key={label} className="flex items-center gap-1.5 shrink-0">
+            <svg width="16" height="4" aria-hidden="true" className="shrink-0">
+              <line x1="0" y1="2" x2="16" y2="2" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+            <div>
+              <span className="text-[11px] text-sub2 leading-none">{label}</span>
+              {subLabel && (
+                <span className="text-[9px] text-sub2/60 block leading-none mt-0.5">{subLabel}</span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* SVG スプレーチャート */}
       <div className="relative w-full" style={{ aspectRatio: '360 / 310' }}>
         <svg
@@ -331,13 +359,13 @@ export default function SprayChart({ games }: Props) {
           className="w-full h-full"
           aria-label="スプレーチャート"
         >
-          {/* フィールド背景 */}
-          <path d={fieldOutline} fill="#4a7c59" />
-          <path d={infieldDiamond} fill="#c8a87a" />
+          {/* P-9: テーマ連動フィールド色 */}
+          <path d={fieldOutline} fill={FIELD_GRASS} />
+          <path d={infieldDiamond} fill={FIELD_SOIL} />
           <line x1={HX} y1={HY} x2={f(LF.x)} y2={f(LF.y)} stroke="white" strokeWidth="1.5" strokeOpacity="0.7" />
           <line x1={HX} y1={HY} x2={f(RF.x)} y2={f(RF.y)} stroke="white" strokeWidth="1.5" strokeOpacity="0.7" />
           <path d={fenceArc} fill="none" stroke="white" strokeWidth="1.5" strokeOpacity="0.5" />
-          <circle cx={f(BASES.pitcher.x)} cy={f(BASES.pitcher.y)} r="10" fill="#b8986a" />
+          <circle cx={f(BASES.pitcher.x)} cy={f(BASES.pitcher.y)} r="10" fill={FIELD_MOUND} />
           {[BASES.first, BASES.second, BASES.third].map((b, i) => (
             <rect
               key={i}
@@ -352,44 +380,65 @@ export default function SprayChart({ games }: Props) {
             fill="white" fillOpacity="0.85"
           />
 
-          {/* 打球描画 */}
-          {plottableWithOffset.map(ab => {
+          {/* P-9b: 2パス描画（輪郭→本体）でフィールド上の視認性を向上 */}
+
+          {/* ラインモード パス1: 輪郭（暗色・太め） */}
+          {viewMode === 'line' && plottableWithOffset.map(ab => {
+            if (!ab.direction) return null
+            const ep = calcEndpoint(ab.direction, ab.result_type, ab.offsetDeg)
+            if (!ep) return null
+            return (
+              <line
+                key={`outline-${ab.id}`}
+                x1={HX} y1={HY}
+                x2={f(ep.x)} y2={f(ep.y)}
+                stroke="rgba(0,0,0,0.35)"
+                strokeWidth="5.5"
+                strokeOpacity="1"
+                strokeLinecap="round"
+              />
+            )
+          })}
+
+          {/* ラインモード パス2: 本体色 */}
+          {viewMode === 'line' && plottableWithOffset.map(ab => {
             if (!ab.direction) return null
             const color = getSprayColor(ab.result_type)
             if (!color) return null
+            const ep = calcEndpoint(ab.direction, ab.result_type, ab.offsetDeg)
+            if (!ep) return null
+            return (
+              <line
+                key={`line-${ab.id}`}
+                x1={HX} y1={HY}
+                x2={f(ep.x)} y2={f(ep.y)}
+                stroke={color}
+                strokeWidth="3.5"
+                strokeOpacity="0.85"
+                strokeLinecap="round"
+              />
+            )
+          })}
 
-            if (viewMode === 'line') {
-              // P-2: 扇形オフセット付き終点、太い線
-              const ep = calcEndpoint(ab.direction, ab.result_type, ab.offsetDeg)
-              if (!ep) return null
-              return (
-                <line
-                  key={ab.id}
-                  x1={HX} y1={HY}
-                  x2={f(ep.x)} y2={f(ep.y)}
-                  stroke={color}
-                  strokeWidth="3.5"
-                  strokeOpacity="0.65"
-                  strokeLinecap="round"
-                />
-              )
-            } else {
-              // P-4: 大きなドット・高コントラスト、P-5: ファウルライン回避オフセット
-              const ep = calcDotEndpoint(ab.direction, ab.result_type)
-              if (!ep) return null
-              return (
-                <circle
-                  key={ab.id}
-                  cx={f(ep.x)} cy={f(ep.y)}
-                  r="8"
-                  fill={color}
-                  fillOpacity="0.82"
-                  stroke="white"
-                  strokeWidth="1"
-                  strokeOpacity="0.6"
-                />
-              )
-            }
+          {/* ドットモード（P-4: 大きなドット・高コントラスト、P-5: ファウルライン回避） */}
+          {viewMode === 'dot' && plottableWithOffset.map(ab => {
+            if (!ab.direction) return null
+            const color = getSprayColor(ab.result_type)
+            if (!color) return null
+            const ep = calcDotEndpoint(ab.direction, ab.result_type)
+            if (!ep) return null
+            return (
+              <circle
+                key={ab.id}
+                cx={f(ep.x)} cy={f(ep.y)}
+                r="8"
+                fill={color}
+                fillOpacity="0.82"
+                stroke="white"
+                strokeWidth="1"
+                strokeOpacity="0.6"
+              />
+            )
           })}
 
           {/* データなしオーバーレイ */}
@@ -404,68 +453,57 @@ export default function SprayChart({ games }: Props) {
             </text>
           )}
         </svg>
-
-        {/* P-1: 5色凡例（左下オーバーレイ）/ P-7: 単打に外野/内野注記 */}
-        <div className="absolute left-2 bottom-2 bg-lv1/85 rounded-lg px-2 py-1.5 space-y-1">
-          {([
-            { label: '本塁打', subLabel: null,              color: SPRAY_COLORS.hr     },
-            { label: '三塁打', subLabel: null,              color: SPRAY_COLORS.triple },
-            { label: '二塁打', subLabel: null,              color: SPRAY_COLORS.double },
-            { label: '単打',   subLabel: '長=外野/短=内野', color: SPRAY_COLORS.single },
-            { label: '凡打',   subLabel: null,              color: SPRAY_COLORS.out    },
-          ] as { label: string; subLabel: string | null; color: string }[]).map(({ label, subLabel, color }) => (
-            <div key={label} className="flex items-center gap-1.5">
-              <svg width="16" height="4" aria-hidden="true" className="shrink-0">
-                <line x1="0" y1="2" x2="16" y2="2" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
-              </svg>
-              <div>
-                <span className="text-[10px] text-sub2 leading-none">{label}</span>
-                {subLabel && (
-                  <span className="text-[8px] text-sub2/60 block leading-none mt-0.5">{subLabel}</span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* P-8: 凡例はチャート外に移動済み（絶対配置オーバーレイなし） */}
       </div>
 
-      {/* P-1: サマリー（本・三・二・単 を個別表示） */}
-      <p className="text-xs text-sub2 text-center leading-relaxed">
-        計 <span className="font-semibold text-main">{summary.total}</span>打席
-        安打 <span className="font-semibold text-main">{summary.hits}</span>（
-        <span className="font-semibold" style={{ color: SPRAY_COLORS.hr }}>本{summary.hrs}</span>・
-        <span className="font-semibold" style={{ color: SPRAY_COLORS.triple }}>三{summary.triples}</span>・
-        <span className="font-semibold" style={{ color: SPRAY_COLORS.double }}>二{summary.doubles}</span>・
-        <span className="font-semibold" style={{ color: SPRAY_COLORS.single }}>単{summary.singles}</span>）
-        凡打 <span className="font-semibold text-main">{summary.outs}</span>
-        打率 <span className="font-semibold text-main">{summary.avgStr}</span>
-      </p>
+      {/* P-11: サマリー 3行階層化（打率を先頭に昇格） */}
+      <div className="space-y-0.5 px-1">
+        {/* 1行目: 最重要指標（打席数・打率） */}
+        <p className="text-sm text-sub2">
+          <span className="text-main font-semibold">{summary.total}</span>
+          <span className="text-sub2"> 打席　／　打率 </span>
+          <span className="text-main font-bold text-base">{summary.avgStr}</span>
+        </p>
+        {/* 2行目: 安打内訳（カテゴリ別色付き） */}
+        <p className="text-xs text-sub2">
+          安打 <span className="font-semibold text-main">{summary.hits}</span>（
+          <span className="font-semibold" style={{ color: SPRAY_COLORS.hr }}>本{summary.hrs}</span>・
+          <span className="font-semibold" style={{ color: SPRAY_COLORS.triple }}>三{summary.triples}</span>・
+          <span className="font-semibold" style={{ color: SPRAY_COLORS.double }}>二{summary.doubles}</span>・
+          <span className="font-semibold" style={{ color: SPRAY_COLORS.single }}>単{summary.singles}</span>）
+        </p>
+        {/* 3行目: 凡打 */}
+        <p className="text-xs text-sub2/70">
+          凡打 <span className="font-semibold">{summary.outs}</span>
+          <span className="ml-2 text-[10px]">（打数 {summary.abCount}）</span>
+        </p>
+      </div>
 
-      {/* P-3: 方向別ゲージバーグラフ（溝 + フィルバー + 目盛り） */}
+      {/* P-3 / P-12: 方向別ゲージバーグラフ（外野・内野を区切り線で分離） */}
       <div className="bg-lv2 rounded-xl p-3 space-y-2">
         <p className="text-[10px] text-sub2 font-medium">方向別打球数</p>
+
+        {/* 外野5方向 */}
         {([
           { key: 'left',         label: '左'   },
           { key: 'left_center',  label: '左中' },
           { key: 'center',       label: '中'   },
           { key: 'right_center', label: '右中' },
           { key: 'right',        label: '右'   },
-          { key: 'infield',      label: '内野' },
         ] as const).map(({ key, label }) => {
           const count = dirCounts[key] ?? 0
           const pct   = (count / maxDirCount) * 100
           const color = GAUGE_COLORS[key]
           return (
             <div key={key} className="flex items-center gap-2">
-              <span className="text-[10px] text-sub2 w-6 text-right shrink-0">{label}</span>
-              {/* ゲージトラック（溝） */}
-              <div className="relative flex-1 h-3.5 bg-lv1 rounded-full overflow-hidden border border-s2">
-                {/* フィルバー */}
+              {/* P-12: ラベル幅 w-6→w-8（「左中」「右中」を収容） */}
+              <span className="text-[10px] text-sub2 w-8 text-right shrink-0">{label}</span>
+              {/* P-12: バー高さ h-3.5→h-4 */}
+              <div className="relative flex-1 h-4 bg-lv1 rounded-full overflow-hidden border border-s2">
                 <div
                   className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
                   style={{ width: `${pct}%`, backgroundColor: color, opacity: 0.75 }}
                 />
-                {/* 目盛り線（25% / 50% / 75%） */}
                 {[25, 50, 75].map(tick => (
                   <div
                     key={tick}
@@ -474,10 +512,39 @@ export default function SprayChart({ games }: Props) {
                   />
                 ))}
               </div>
-              <span className="text-[10px] font-semibold text-main w-4 shrink-0 text-right">{count}</span>
+              {/* P-12: 数値幅 w-4→w-6、text-xs font-semibold */}
+              <span className="text-xs font-semibold text-main w-6 shrink-0 text-right">{count}</span>
             </div>
           )
         })}
+
+        {/* P-12: 外野・内野グループ区切り線 */}
+        <hr className="border-s2/50" />
+
+        {/* 内野（外野と性質が異なるため区切り線で分離） */}
+        {(() => {
+          const count = dirCounts['infield'] ?? 0
+          const pct   = (count / maxDirCount) * 100
+          return (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-sub2 w-8 text-right shrink-0">内野</span>
+              <div className="relative flex-1 h-4 bg-lv1 rounded-full overflow-hidden border border-s2">
+                <div
+                  className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
+                  style={{ width: `${pct}%`, backgroundColor: GAUGE_COLORS['infield'], opacity: 0.75 }}
+                />
+                {[25, 50, 75].map(tick => (
+                  <div
+                    key={tick}
+                    className="absolute inset-y-0 w-px bg-s2/60"
+                    style={{ left: `${tick}%` }}
+                  />
+                ))}
+              </div>
+              <span className="text-xs font-semibold text-main w-6 shrink-0 text-right">{count}</span>
+            </div>
+          )
+        })()}
       </div>
 
     </div>
