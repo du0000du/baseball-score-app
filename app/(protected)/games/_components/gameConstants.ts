@@ -14,9 +14,11 @@ export const RESULT_TAG: Record<AtBat['result_type'], TagStyle> = {
   // アウト系 → グレー（sub2 トークン）
   strikeout:      { label: '三振',    bg: 'bg-lv2',      text: 'text-sub2' },
   groundout:      { label: 'ゴロ',    bg: 'bg-lv2',      text: 'text-sub2' },
+  outfield_groundout: { label: '外ゴ', bg: 'bg-lv2',     text: 'text-sub2' },
   flyout:         { label: 'フライ',  bg: 'bg-lv2',      text: 'text-sub2' },
   infield_flyout: { label: '内飛',    bg: 'bg-lv2',      text: 'text-sub2' },
   liner_out:      { label: 'ライナー', bg: 'bg-lv2',     text: 'text-sub2' },
+  foul_flyout:    { label: '邪飛',    bg: 'bg-lv2',      text: 'text-sub2' },
   sac_bunt:       { label: '犠打',    bg: 'bg-lv2',      text: 'text-sub2' },
   sac_fly:        { label: '犠飛',    bg: 'bg-lv2',      text: 'text-sub2' },
   error:          { label: 'エラー',  bg: 'bg-lv2',      text: 'text-sub2' },

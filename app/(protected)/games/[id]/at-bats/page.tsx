@@ -52,8 +52,8 @@ const RESULT_GROUPS: { label: string; color: string; activeColor: string; cols: 
     label: 'アウト',
     color: 'bg-lv2 border-s2 text-main hover:bg-lv2',
     activeColor: 'bg-sub1 border-sub1 text-white',
-    cols: 'grid-cols-5',
-    items: ['strikeout', 'groundout', 'flyout', 'infield_flyout', 'liner_out'],
+    cols: 'grid-cols-4',
+    items: ['strikeout', 'groundout', 'outfield_groundout', 'flyout', 'infield_flyout', 'liner_out', 'foul_flyout'],
   },
   {
     label: '出塁',
@@ -73,7 +73,7 @@ const RESULT_GROUPS: { label: string; color: string; activeColor: string; cols: 
 
 const RESULT_SHORT: Record<ResultType, string> = {
   hit: '単打', double: '二塁打', triple: '三塁打', hr: '本塁打',
-  strikeout: '三振', groundout: '内野ゴロ', flyout: '外野フライ', infield_flyout: '内野フライ', liner_out: 'ライナー',
+  strikeout: '三振', groundout: '内野ゴロ', outfield_groundout: '外野ゴロ', flyout: '外野フライ', infield_flyout: '内野フライ', liner_out: 'ライナー', foul_flyout: 'ファールフライ',
   walk: '四球', hbp: '死球',
   sac_bunt: '犠打', sac_fly: '犠飛', error: 'エラー', fc: 'FC',
 }
@@ -104,6 +104,26 @@ const INFIELD_FLY_POSITIONS: { value: InfieldPosition; label: string }[] = [
   { value: 'first_base', label: 'ファーストフライ' },
   { value: 'pitcher', label: 'ピッチャーフライ' },
   { value: 'catcher', label: 'キャッチャーフライ' },
+]
+
+// 外野ゴロ打球方向（外野3ポジション）
+const OUTFIELD_GROUNDOUT_POSITIONS: { value: Direction; label: string }[] = [
+  { value: 'left',   label: 'レフトゴロ' },
+  { value: 'center', label: 'センターゴロ' },
+  { value: 'right',  label: 'ライトゴロ' },
+]
+
+// ファールフライ守備位置（全9ポジション）
+const FOUL_FLY_POSITIONS: { value: Direction; label: string }[] = [
+  { value: 'pitcher',     label: 'ピッチャー' },
+  { value: 'catcher',     label: 'キャッチャー' },
+  { value: 'first_base',  label: 'ファースト' },
+  { value: 'second_base', label: 'セカンド' },
+  { value: 'third_base',  label: 'サード' },
+  { value: 'shortstop',   label: 'ショート' },
+  { value: 'left',        label: 'レフト' },
+  { value: 'center',      label: 'センター' },
+  { value: 'right',       label: 'ライト' },
 ]
 
 // エラー守備位置（全9ポジション）
@@ -350,7 +370,9 @@ export default function AtBatsPage() {
                           SHOW_INFIELD_POSITION.includes(resultType) ||
                           resultType === 'error' ||
                           resultType === 'fc' ||
-                          resultType === 'liner_out'
+                          resultType === 'liner_out' ||
+                          resultType === 'outfield_groundout' ||
+                          resultType === 'foul_flyout'
     const directionValue = saveDirection ? direction : null
 
     if (editingAtBatId) {
@@ -468,10 +490,12 @@ export default function AtBatsPage() {
   const showErrorPosition = resultType === 'error'
   const showFCPosition = resultType === 'fc'
   const showLinerPosition = resultType ? SHOW_LINER_POSITION.includes(resultType) : false
+  const showOutfieldGroundoutPosition = resultType === 'outfield_groundout'
+  const showFoulFlyPosition = resultType === 'foul_flyout'
 
   // 現試合の累計成績（atBats state から計算）
   const gameAb = atBats.filter(a =>
-    ['hit','double','triple','hr','strikeout','groundout','flyout','infield_flyout','liner_out','sac_fly','error','fc'].includes(a.result_type)
+    ['hit','double','triple','hr','strikeout','groundout','outfield_groundout','flyout','infield_flyout','liner_out','foul_flyout','sac_fly','error','fc'].includes(a.result_type)
   ).length
   const gameHits = atBats.filter(a =>
     ['hit','double','triple','hr'].includes(a.result_type)
@@ -750,6 +774,32 @@ export default function AtBatsPage() {
           </div>
         )}
 
+        {/* 外野ゴロ打球方向 */}
+        {showOutfieldGroundoutPosition && (
+          <div>
+            <label className="block text-sm font-medium text-sub1 mb-2">
+              打球方向
+              <span className="text-sub2 font-normal ml-1">（任意）</span>
+            </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {OUTFIELD_GROUNDOUT_POSITIONS.map((pos) => (
+                <button
+                  key={pos.value}
+                  type="button"
+                  onClick={() => setDirection(direction === pos.value ? null : pos.value)}
+                  className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${
+                    direction === pos.value
+                      ? 'bg-sub1 border-sub1 text-white'
+                      : 'bg-lv2 border-s2 text-main hover:bg-lv2'
+                  }`}
+                >
+                  {pos.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* 内野フライ守備位置 */}
         {showInfieldPosition && resultType === 'infield_flyout' && (
           <div>
@@ -759,6 +809,32 @@ export default function AtBatsPage() {
             </label>
             <div className="grid grid-cols-3 gap-1.5">
               {INFIELD_FLY_POSITIONS.map((pos) => (
+                <button
+                  key={pos.value}
+                  type="button"
+                  onClick={() => setDirection(direction === pos.value ? null : pos.value)}
+                  className={`py-2.5 rounded-lg border text-sm font-medium transition-all ${
+                    direction === pos.value
+                      ? 'bg-sub1 border-sub1 text-white'
+                      : 'bg-lv2 border-s2 text-main hover:bg-lv2'
+                  }`}
+                >
+                  {pos.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ファールフライ守備位置（全9ポジション） */}
+        {showFoulFlyPosition && (
+          <div>
+            <label className="block text-sm font-medium text-sub1 mb-2">
+              守備位置
+              <span className="text-sub2 font-normal ml-1">（任意）</span>
+            </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {FOUL_FLY_POSITIONS.map((pos) => (
                 <button
                   key={pos.value}
                   type="button"
@@ -986,7 +1062,9 @@ export default function AtBatsPage() {
             {atBats.map((ab, index) => {
               const label = getAtBatLabel(ab.result_type as ResultType, ab.direction as Direction | null)
               const isPositionInLabel = ab.result_type === 'groundout' ||
+                                        ab.result_type === 'outfield_groundout' ||
                                         ab.result_type === 'infield_flyout' ||
+                                        ab.result_type === 'foul_flyout' ||
                                         ab.result_type === 'error' ||
                                         (ab.result_type === 'hit' && !!ab.direction) ||
                                         (ab.result_type === 'fc' && !!ab.direction)

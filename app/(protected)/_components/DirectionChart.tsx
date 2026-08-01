@@ -24,7 +24,7 @@ const OUTFIELD_KEYS = new Set<string>(['left', 'left_center', 'center', 'right_c
 const INFIELD_KEYS = new Set<string>(['pitcher', 'catcher', 'first_base', 'second_base', 'third_base', 'shortstop'])
 
 const HIT_TYPES = new Set(['hit', 'double', 'triple', 'hr'])
-const OUT_TYPES = new Set(['strikeout', 'groundout', 'flyout', 'infield_flyout', 'liner_out'])
+const OUT_TYPES = new Set(['strikeout', 'groundout', 'outfield_groundout', 'flyout', 'infield_flyout', 'liner_out', 'foul_flyout'])
 
 type Mode = 'all' | 'hit' | 'out'
 

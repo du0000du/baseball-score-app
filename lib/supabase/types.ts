@@ -1,6 +1,6 @@
 export type ResultType =
   | 'hit' | 'double' | 'triple' | 'hr'
-  | 'strikeout' | 'groundout' | 'flyout' | 'infield_flyout' | 'liner_out'
+  | 'strikeout' | 'groundout' | 'outfield_groundout' | 'flyout' | 'infield_flyout' | 'liner_out' | 'foul_flyout'
   | 'walk' | 'hbp' | 'sac_bunt' | 'sac_fly'
   | 'error' | 'fc'
 
@@ -171,9 +171,11 @@ export const RESULT_TYPE_LABELS: Record<ResultType, string> = {
   hr: '本塁打',
   strikeout: '三振',
   groundout: '内野ゴロ',
+  outfield_groundout: '外野ゴロ',
   flyout: '外野フライ',
   infield_flyout: '内野フライ',
   liner_out: 'ライナー',
+  foul_flyout: 'ファールフライ',
   walk: '四球',
   hbp: '死球',
   sac_bunt: '犠打',
@@ -259,9 +261,11 @@ export const RESULT_TYPE_SHORT: Record<ResultType, string> = {
   hr: '本塁',
   strikeout: '三振',
   groundout: '内ゴ',
+  outfield_groundout: '外ゴ',
   flyout: '外飛',
   infield_flyout: '内飛',
   liner_out: 'ライナ',
+  foul_flyout: '邪飛',
   walk: '四球',
   hbp: '死球',
   sac_bunt: '犠打',
@@ -291,6 +295,26 @@ export const ERROR_POSITION_LABELS: Partial<Record<Direction, string>> = {
   right:       'ライトエラー',
 }
 
+// 外野ゴロ時の打球方向ラベル（「〇ゴロ」形式）
+export const OUTFIELD_GROUNDOUT_LABELS: Partial<Record<Direction, string>> = {
+  left:   'レフトゴロ',
+  center: 'センターゴロ',
+  right:  'ライトゴロ',
+}
+
+// ファールフライ時の守備位置ラベル（「〇ファールフライ」形式・全9ポジション）
+export const FOUL_FLY_POSITION_LABELS: Partial<Record<Direction, string>> = {
+  pitcher:     'ピッチャーファールフライ',
+  catcher:     'キャッチャーファールフライ',
+  first_base:  'ファーストファールフライ',
+  second_base: 'セカンドファールフライ',
+  third_base:  'サードファールフライ',
+  shortstop:   'ショートファールフライ',
+  left:        'レフトファールフライ',
+  center:      'センターファールフライ',
+  right:       'ライトファールフライ',
+}
+
 // ライナーアウト守備位置ラベル
 export const LINER_OUT_LABELS: Partial<Record<Direction, string>> = {
   pitcher:     'ピッチャーライナー',
@@ -310,6 +334,12 @@ export function getAtBatLabel(resultType: ResultType, direction: Direction | nul
   }
   if (resultType === 'infield_flyout' && isInfieldPosition(direction)) {
     return INFIELD_FLY_POSITION_LABELS[direction]
+  }
+  if (resultType === 'outfield_groundout' && direction && OUTFIELD_GROUNDOUT_LABELS[direction]) {
+    return OUTFIELD_GROUNDOUT_LABELS[direction]!
+  }
+  if (resultType === 'foul_flyout' && direction && FOUL_FLY_POSITION_LABELS[direction]) {
+    return FOUL_FLY_POSITION_LABELS[direction]!
   }
   if (resultType === 'liner_out' && direction && LINER_OUT_LABELS[direction]) {
     return LINER_OUT_LABELS[direction]!

@@ -89,6 +89,7 @@ const RESULT_DISTANCE_PX: Partial<Record<ResultType, number>> = {
   liner_out:      170,
   sac_fly:        192,
   groundout:       95,
+  outfield_groundout: 150,
   sac_bunt:        52,
   infield_flyout:  80,
   error:          102,
