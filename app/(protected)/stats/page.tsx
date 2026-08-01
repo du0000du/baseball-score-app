@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState, useRef, useContext } from 'react'
+import { useEffect, useState, useRef, useContext, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { calcBattingStats, calcPitchingStats, fmtAvg, fmtDec, fmtERA, formatIP } from '@/lib/stats'
 import { RESULT_TYPE_LABELS, DIRECTION_LABELS, FIELDING_POSITIONS } from '@/lib/supabase/types'
-import type { AtBat, Direction, Game, ResultType, PitchingStat } from '@/lib/supabase/types'
+import type { AtBat, BattingStats, Direction, Game, ResultType, PitchingStat } from '@/lib/supabase/types'
 import DirectionChart from '@/app/(protected)/_components/DirectionChart'
 import SprayChart from '@/app/(protected)/_components/SprayChart'
 import { ThemeContext } from '@/app/(protected)/_components/ThemeProvider'
@@ -74,6 +74,58 @@ function StatRow({ left, right }: {
   )
 }
 
+// ────────────────────────────────────────────────
+// S-2: KPIカード用スパークライン（軸ラベルなしの極小推移線）
+//   単独で値を読ませるものではなく、「上り調子か下り調子か」の文脈だけを与える。
+// ────────────────────────────────────────────────
+function Sparkline({ values, colorVar = 'var(--theme)' }: { values: number[]; colorVar?: string }) {
+  if (values.length < 2) return <div className="h-[14px]" />
+  const w = 44
+  const h = 14
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const range = max - min || 1
+  const pts = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * w
+    const y = h - ((v - min) / range) * (h - 2) - 1
+    return `${x.toFixed(1)},${y.toFixed(1)}`
+  }).join(' ')
+  const last = values[values.length - 1]
+  const lastX = w
+  const lastY = h - ((last - min) / range) * (h - 2) - 1
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="overflow-visible" aria-hidden="true">
+      <polyline points={pts} fill="none" stroke={colorVar} strokeWidth="1.4" strokeOpacity="0.75"
+        strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={lastX} cy={lastY.toFixed(1)} r="1.8" fill={colorVar} />
+    </svg>
+  )
+}
+
+// S-2: 通算との差分表示（▲▼で形状も併用し、色のみに依存しない）
+function DiffBadge({ diff, digits = 3 }: { diff: number | null; digits?: number }) {
+  if (diff === null || !isFinite(diff)) return <div className="h-[13px]" />
+  const threshold = 0.005
+  const cls = diff >= threshold ? 'text-pos-t' : diff <= -threshold ? 'text-neg-t' : 'text-sub2'
+  const mark = diff >= threshold ? '▲' : diff <= -threshold ? '▼' : '→'
+  const abs = Math.abs(diff).toFixed(digits).replace(/^0/, '')
+  return (
+    <div className={`text-[10px] font-semibold leading-none ${cls}`}>
+      {mark}{abs}
+    </div>
+  )
+}
+
+type PeriodPreset = 'all' | 'last5' | 'last10' | 'month' | 'custom'
+
+const PERIOD_LABELS: Record<PeriodPreset, string> = {
+  all: '全期間',
+  last5: '直近5試合',
+  last10: '直近10試合',
+  month: '今月',
+  custom: '期間指定',
+}
+
 const TAB_LIST: { key: Tab; label: string }[] = [
   { key: 'season',    label: 'シーズン累計' },
   { key: 'per-game',  label: '試合別' },
@@ -90,9 +142,17 @@ export default function StatsPage() {
   const { theme } = useContext(ThemeContext)
   const currentYear = new Date().getFullYear()
   const [season, setSeason] = useState<number | 'all'>(currentYear)
-  const [games, setGames] = useState<GameWithAtBats[]>([])
-  const [pitchingStats, setPitchingStats] = useState<PitchingStat[]>([])
+  const [allGames, setAllGames] = useState<GameWithAtBats[]>([])
+  const [allPitchingStats, setAllPitchingStats] = useState<PitchingStat[]>([])
   const [loading, setLoading] = useState(true)
+  // S-3: 任意軸フィルタ（全タブ横断）
+  const [periodPreset, setPeriodPreset] = useState<PeriodPreset>('all')
+  const [customFrom, setCustomFrom] = useState('')
+  const [customTo, setCustomTo] = useState('')
+  const [opponentFilter, setOpponentFilter] = useState('')
+  const [filterOpen, setFilterOpen] = useState(false)
+  // S-2: 通算成績（KPIカードの比較基準）
+  const [careerStats, setCareerStats] = useState<BattingStats | null>(null)
   const [tab, setTab] = useState<Tab>('season')
   const [tabVisible, setTabVisible] = useState(true)
   const [copiedFlash, setCopiedFlash] = useState(false)
@@ -153,8 +213,8 @@ export default function StatsPage() {
       // P-2: キャッシュヒット時はネットワーク取得をスキップ
       const cached = cacheRef.current.get(season)
       if (cached) {
-        setGames(cached.games)
-        setPitchingStats(cached.pitchingStats)
+        setAllGames(cached.games)
+        setAllPitchingStats(cached.pitchingStats)
         setLoading(false)
         return
       }
@@ -173,13 +233,42 @@ export default function StatsPage() {
           ])
       const gamesData = (data ?? []) as GameWithAtBats[]
       const psData = (ps ?? []) as PitchingStat[]
-      setGames(gamesData)
-      setPitchingStats(psData)
+      setAllGames(gamesData)
+      setAllPitchingStats(psData)
       cacheRef.current.set(season, { games: gamesData, pitchingStats: psData })
       setLoading(false)
     }
     fetchData()
   }, [supabase, season])
+
+  // S-2: 通算打撃成績を1回だけ取得（KPIカードの比較基準として使う）
+  useEffect(() => {
+    const fetchCareer = async () => {
+      const { data } = await supabase.from('at_bats').select('*')
+      if (data) setCareerStats(calcBattingStats(data as AtBat[]))
+    }
+    fetchCareer()
+  }, [supabase])
+
+  // S-3: sessionStorage からフィルタ状態を復元
+  useEffect(() => {
+    const saved = sessionStorage.getItem('baseball_stats_filter')
+    if (!saved) return
+    try {
+      const f = JSON.parse(saved)
+      if (f.periodPreset) setPeriodPreset(f.periodPreset)
+      if (f.customFrom) setCustomFrom(f.customFrom)
+      if (f.customTo) setCustomTo(f.customTo)
+      if (f.opponentFilter) setOpponentFilter(f.opponentFilter)
+    } catch { /* 破損時は無視 */ }
+  }, [])
+
+  // S-3: フィルタ状態を保存
+  useEffect(() => {
+    sessionStorage.setItem('baseball_stats_filter', JSON.stringify({
+      periodPreset, customFrom, customTo, opponentFilter,
+    }))
+  }, [periodPreset, customFrom, customTo, opponentFilter])
 
   // M-1: スワイプでタブ遷移（縦スクロール競合防止）
   const SWIPE_TABS: Tab[] = ['season', 'per-game', 'log', 'pitching', 'direction', 'direction2', 'analytics']
@@ -203,6 +292,11 @@ export default function StatsPage() {
   const handleSeasonChange = (val: number | 'all') => {
     setSeason(val)
     sessionStorage.setItem('baseball_stats_season', String(val))
+    // S-3: シーズンを変えたら絞り込みは解除（前シーズンの対戦相手が残ると0件になるため）
+    setPeriodPreset('all')
+    setCustomFrom('')
+    setCustomTo('')
+    setOpponentFilter('')
   }
 
   const handleTabChange = (newTab: Tab) => {
@@ -233,9 +327,80 @@ export default function StatsPage() {
     container.scrollTo({ left: scrollLeft, behavior: 'smooth' })
   }, [tab])
 
+  // ────────────────────────────────────────────────
+  // S-3: 任意軸フィルタの適用
+  //   allGames（取得結果）→ games（表示対象）に絞り込む。
+  //   以降の全タブは games / pitchingStats のみを参照するため、
+  //   1箇所の絞り込みが全タブに横断で効く。
+  // ────────────────────────────────────────────────
+  const opponentOptions = useMemo(
+    () => [...new Set(allGames.map(g => g.opponent).filter(Boolean))].sort(),
+    [allGames]
+  )
+
+  const games = useMemo(() => {
+    // allGames は game_date の降順
+    let gs = allGames
+    if (opponentFilter) gs = gs.filter(g => g.opponent === opponentFilter)
+    if (periodPreset === 'month') {
+      const now = new Date()
+      const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+      gs = gs.filter(g => g.game_date.startsWith(ym))
+    } else if (periodPreset === 'custom') {
+      if (customFrom) gs = gs.filter(g => g.game_date >= customFrom)
+      if (customTo)   gs = gs.filter(g => g.game_date <= customTo)
+    } else if (periodPreset === 'last5' || periodPreset === 'last10') {
+      gs = gs.slice(0, periodPreset === 'last5' ? 5 : 10)
+    }
+    return gs
+  }, [allGames, opponentFilter, periodPreset, customFrom, customTo])
+
+  const pitchingStats = useMemo(() => {
+    if (games.length === allGames.length) return allPitchingStats
+    const ids = new Set(games.map(g => g.id))
+    return allPitchingStats.filter(ps => ids.has(ps.game_id))
+  }, [allPitchingStats, games, allGames])
+
+  const filterActive = periodPreset !== 'all' || opponentFilter !== ''
+  const activeFilterCount = (periodPreset !== 'all' ? 1 : 0) + (opponentFilter ? 1 : 0)
+  const resetFilters = () => {
+    setPeriodPreset('all')
+    setCustomFrom('')
+    setCustomTo('')
+    setOpponentFilter('')
+  }
+
   const allAtBats = games.flatMap((g) => g.at_bats)
   const stats = calcBattingStats(allAtBats)
   const pStats = calcPitchingStats(pitchingStats)
+
+  // ────────────────────────────────────────────────
+  // S-2: KPIカードの比較値とスパークライン
+  //   比較基準は通算成績。「打率.285」だけでは良否が判断できないため、
+  //   参照値を必ず添えるというダッシュボード設計の原則に従う。
+  // ────────────────────────────────────────────────
+  const sparkSeries = useMemo(() => {
+    // 古い順に累積成績を積み上げ、直近12点を返す
+    const chrono = [...games].sort((a, b) => a.game_date.localeCompare(b.game_date))
+    const avg: number[] = [], obp: number[] = [], slg: number[] = [], ops: number[] = []
+    let acc: AtBat[] = []
+    for (const g of chrono) {
+      if (g.at_bats.length === 0) continue
+      acc = acc.concat(g.at_bats)
+      const s = calcBattingStats(acc)
+      if (s.avg !== null) avg.push(s.avg)
+      if (s.obp !== null) obp.push(s.obp)
+      if (s.slg !== null) slg.push(s.slg)
+      if (s.ops !== null) ops.push(s.ops)
+    }
+    const tail = (arr: number[]) => arr.slice(-12)
+    return { avg: tail(avg), obp: tail(obp), slg: tail(slg), ops: tail(ops) }
+  }, [games])
+
+  // 通算のサンプルが極端に少ない場合は比較を出さない（誤解を招くため）
+  const careerBaselineReady = careerStats !== null && careerStats.pa >= 20
+  const diffOf = (cur: number | null, base: number | null): number | null =>
+    careerBaselineReady && cur !== null && base !== null ? cur - base : null
 
   const wins = games.filter((g) => g.result === 'win').length
   const losses = games.filter((g) => g.result === 'loss').length
@@ -256,6 +421,127 @@ export default function StatsPage() {
             <option key={y} value={y}>{y}年</option>
           ))}
         </select>
+      </div>
+
+      {/* S-3: 任意軸フィルタバー（全タブ横断） */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setFilterOpen(o => !o)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${
+              filterActive
+                ? 'bg-theme/10 border-theme/50 text-theme'
+                : 'bg-lv1 border-s2 text-sub1 hover:text-main'
+            }`}
+            aria-expanded={filterOpen}
+          >
+            <span>絞り込み</span>
+            {activeFilterCount > 0 && (
+              <span className="bg-theme text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
+            <span className="text-xs text-sub2">{filterOpen ? '▲' : '▼'}</span>
+          </button>
+
+          {filterActive && (
+            <>
+              <span className="text-xs text-sub1">
+                <span className="font-semibold text-main">{games.length}</span>
+                <span className="text-sub2"> / {allGames.length} 試合</span>
+              </span>
+              <span className="text-xs text-theme">
+                {periodPreset !== 'all' && (
+                  <span className="mr-1.5">
+                    {periodPreset === 'custom'
+                      ? `${customFrom || '最初'}〜${customTo || '最新'}`
+                      : PERIOD_LABELS[periodPreset]}
+                  </span>
+                )}
+                {opponentFilter && <span>vs {opponentFilter}</span>}
+              </span>
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-xs text-sub2 hover:text-neg-t underline underline-offset-2"
+              >
+                解除
+              </button>
+            </>
+          )}
+        </div>
+
+        {filterOpen && (
+          <div className="bg-lv1 border border-s2 rounded-xl p-4 space-y-3">
+            {/* 期間 */}
+            <div>
+              <p className="text-xs font-medium text-sub1 mb-1.5">期間</p>
+              <div className="flex gap-1.5 flex-wrap">
+                {(['all', 'last5', 'last10', 'month', 'custom'] as PeriodPreset[]).map(p => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPeriodPreset(p)}
+                    className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                      periodPreset === p
+                        ? 'bg-theme border-theme text-white font-medium'
+                        : 'bg-lv2 border-s2 text-sub1 hover:text-main'
+                    }`}
+                  >
+                    {PERIOD_LABELS[p]}
+                  </button>
+                ))}
+              </div>
+              {periodPreset === 'custom' && (
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="date"
+                    value={customFrom}
+                    onChange={e => setCustomFrom(e.target.value)}
+                    className="flex-1 min-w-0 border border-s2 rounded-lg px-2 py-1.5 text-sm bg-lv1 text-main focus:outline-none focus:ring-2 focus:ring-theme"
+                    aria-label="開始日"
+                  />
+                  <span className="text-sub2 text-sm shrink-0">〜</span>
+                  <input
+                    type="date"
+                    value={customTo}
+                    onChange={e => setCustomTo(e.target.value)}
+                    className="flex-1 min-w-0 border border-s2 rounded-lg px-2 py-1.5 text-sm bg-lv1 text-main focus:outline-none focus:ring-2 focus:ring-theme"
+                    aria-label="終了日"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* 対戦相手 */}
+            {opponentOptions.length > 1 && (
+              <div>
+                <p className="text-xs font-medium text-sub1 mb-1.5">対戦相手</p>
+                <select
+                  value={opponentFilter}
+                  onChange={e => setOpponentFilter(e.target.value)}
+                  className="w-full border border-s2 rounded-lg px-3 py-2 text-sm bg-lv1 text-main focus:outline-none focus:ring-2 focus:ring-theme"
+                >
+                  <option value="">すべての対戦相手</option>
+                  {opponentOptions.map(o => (
+                    <option key={o} value={o}>{o}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {filterActive && (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="w-full py-2 rounded-lg border border-s2 text-sm text-sub1 hover:bg-lv2 transition-colors"
+              >
+                絞り込みを解除
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* R-6: 二重タブ実装（PC=hidden lg:block / スマホ=fixed bottom-0）を撤廃し、
@@ -356,22 +642,35 @@ export default function StatsPage() {
                   <p className="text-sub2 text-center py-8">まだ打席記録がありません</p>
                 ) : (
                   <>
-                    {/* 主要指標ハイライト */}
+                    {/* 主要指標ハイライト（S-2: 通算比とスパークラインを併記） */}
                     <div className="grid grid-cols-4 divide-x divide-s2 border-b border-s2">
                       {[
-                        { label: '打率', value: fmtAvg(stats.avg), colorClass: avgColor(stats.avg) },
-                        { label: '出塁率', value: fmtAvg(stats.obp), colorClass: 'text-accent' },
-                        { label: '長打率', value: fmtAvg(stats.slg), colorClass: 'text-accent' },
-                        { label: 'OPS', value: fmtDec(stats.ops, 3).replace(/^0/, ''), colorClass: opsColor(stats.ops) },
-                      ].map(({ label, value, colorClass }) => (
-                        <div key={label} className="flex flex-col items-center py-4 px-2">
-                          <span className="text-xs text-sub2 mb-1">
+                        { label: '打率',   value: fmtAvg(stats.avg), colorClass: avgColor(stats.avg),
+                          diff: diffOf(stats.avg, careerStats?.avg ?? null), spark: sparkSeries.avg },
+                        { label: '出塁率', value: fmtAvg(stats.obp), colorClass: 'text-accent',
+                          diff: diffOf(stats.obp, careerStats?.obp ?? null), spark: sparkSeries.obp },
+                        { label: '長打率', value: fmtAvg(stats.slg), colorClass: 'text-accent',
+                          diff: diffOf(stats.slg, careerStats?.slg ?? null), spark: sparkSeries.slg },
+                        { label: 'OPS',    value: fmtDec(stats.ops, 3).replace(/^0/, ''), colorClass: opsColor(stats.ops),
+                          diff: diffOf(stats.ops, careerStats?.ops ?? null), spark: sparkSeries.ops },
+                      ].map(({ label, value, colorClass, diff, spark }) => (
+                        <div key={label} className="flex flex-col items-center py-3.5 px-1.5 gap-1">
+                          <span className="text-xs text-sub2">
                             <StatTooltip label={label} />
                           </span>
-                          <span className={`text-2xl font-bold ${colorClass}`}>{value}</span>
+                          <span className={`text-2xl font-bold leading-none ${colorClass}`}>{value}</span>
+                          <DiffBadge diff={diff} />
+                          <Sparkline values={spark} />
                         </div>
                       ))}
                     </div>
+                    {careerBaselineReady && (
+                      <div className="px-5 py-1.5 border-b border-s2 bg-lv2/50">
+                        <p className="text-[10px] text-sub2">
+                          ▲▼は通算成績（{careerStats!.pa}打席・打率{fmtAvg(careerStats!.avg)}）との差。折れ線は直近の推移。
+                        </p>
+                      </div>
+                    )}
                     {/* 詳細成績 2カラムリスト */}
                     <div className="divide-y divide-s2">
                       <StatRow left={{ label: '打席', value: stats.pa }}        right={{ label: '打数', value: stats.ab }} />

@@ -109,8 +109,45 @@ function getSprayColor(rt: ResultType): string | null {
   return null  // strikeout / walk / hbp → 描画しない
 }
 
-type ViewMode     = 'line' | 'dot'
+type ViewMode     = 'line' | 'dot' | 'sector'
 type ResultFilter = 'all' | 'long_hit' | 'single' | 'out'
+
+// ────────────────────────────────────────────────
+// S-1: 扇形集計モード（フェアゾーン ±42° を5分割）
+//   草野球規模（年間数十打席）では散布図から傾向を読むのが難しいため、
+//   方向をビニングして「打球数と打率」を数値で示す集計ビューを提供する。
+//   扇形は十分な面積があるためタップ対象にもできる（点は48px確保が困難）。
+// ────────────────────────────────────────────────
+const SECTOR_DEFS: { key: string; label: string; from: number; to: number }[] = [
+  { key: 'left',         label: 'レフト',   from: -42,   to: -25.2 },
+  { key: 'left_center',  label: '左中間',   from: -25.2, to: -8.4  },
+  { key: 'center',       label: 'センター', from: -8.4,  to: 8.4   },
+  { key: 'right_center', label: '右中間',   from: 8.4,   to: 25.2  },
+  { key: 'right',        label: 'ライト',   from: 25.2,  to: 42    },
+]
+
+const HIT_RESULTS = new Set<string>(['hit', 'double', 'triple', 'hr'])
+// 打数から除外する結果（犠打・犠飛。四死球/三振は方向を持たないため元々対象外）
+const NON_AB_RESULTS = new Set<string>(['sac_bunt', 'sac_fly'])
+
+function sectorKeyForAngle(angleDeg: number): string {
+  const clamped = Math.max(-42, Math.min(42, angleDeg))
+  for (const s of SECTOR_DEFS) {
+    if (clamped >= s.from && clamped <= s.to) return s.key
+  }
+  return 'center'
+}
+
+// 扇形パス（ホームベースからフェンスまで）
+function sectorPath(fromDeg: number, toDeg: number, radius: number): string {
+  const fr = (fromDeg * Math.PI) / 180
+  const tr = (toDeg * Math.PI) / 180
+  const x1 = HX + radius * Math.sin(fr)
+  const y1 = HY - radius * Math.cos(fr)
+  const x2 = HX + radius * Math.sin(tr)
+  const y2 = HY - radius * Math.cos(tr)
+  return `M ${HX} ${HY} L ${f(x1)} ${f(y1)} A ${radius} ${radius} 0 0 1 ${f(x2)} ${f(y2)} Z`
+}
 
 const INFIELD_DIRS = new Set(['pitcher', 'catcher', 'first_base', 'second_base', 'third_base', 'shortstop'])
 
@@ -205,6 +242,8 @@ const infieldDiamond = [
 export default function SprayChart({ games }: Props) {
   const [viewMode, setViewMode] = useState<ViewMode>('line')
   const [filter, setFilter]     = useState<ResultFilter>('all')
+  // S-1: 扇形集計モードで選択中のセクター（タップでドリルダウン）
+  const [selectedSector, setSelectedSector] = useState<string | null>(null)
 
   // P-9: テーマ連動フィールド色（lightテーマのみライトモード扱い）
   const { theme } = useTheme()
@@ -273,6 +312,35 @@ export default function SprayChart({ games }: Props) {
     return counts
   }, [allAtBats])
 
+  // S-1: 扇形セクター別集計（結果フィルタは適用せず、全打球を対象にして打率を正しく出す）
+  const sectorStats = useMemo(() => {
+    const base: Record<string, { count: number; hits: number; ab: number; hr: number; triple: number; double: number; single: number }> = {}
+    for (const s of SECTOR_DEFS) {
+      base[s.key] = { count: 0, hits: 0, ab: 0, hr: 0, triple: 0, double: 0, single: 0 }
+    }
+    for (const ab of allAtBats) {
+      if (!ab.direction) continue
+      const angle = DIRECTION_ANGLE_DEG[ab.direction]
+      if (angle === undefined) continue
+      if (getSprayColor(ab.result_type) === null) continue  // 三振・四死球など方向を持たない結果を除外
+      const key = sectorKeyForAngle(angle)
+      const cell = base[key]
+      cell.count++
+      if (!NON_AB_RESULTS.has(ab.result_type)) cell.ab++
+      if (HIT_RESULTS.has(ab.result_type)) {
+        cell.hits++
+        if (ab.result_type === 'hr') cell.hr++
+        else if (ab.result_type === 'triple') cell.triple++
+        else if (ab.result_type === 'double') cell.double++
+        else cell.single++
+      }
+    }
+    return base
+  }, [allAtBats])
+
+  const maxSectorCount = Math.max(...SECTOR_DEFS.map(s => sectorStats[s.key].count), 1)
+  const sectorTotal    = SECTOR_DEFS.reduce((sum, s) => sum + sectorStats[s.key].count, 0)
+
   // P-12: 動的 max（差を強調するため ×1.1）
   const maxDirCount  = Math.max(...Object.values(dirCounts), 1) * 1.1
   const hasPlottable = plottableWithOffset.length > 0
@@ -283,24 +351,29 @@ export default function SprayChart({ games }: Props) {
 
       {/* ビューモード切替 */}
       <div className="flex items-center gap-1 bg-lv2 rounded-lg p-1 w-fit">
-        {(['line', 'dot'] as ViewMode[]).map(mode => (
+        {(['line', 'dot', 'sector'] as ViewMode[]).map(mode => (
           <button
             key={mode}
             type="button"
-            onClick={() => setViewMode(mode)}
+            onClick={() => {
+              setViewMode(mode)
+              // 集計モードは全打球を対象にするため、結果フィルタを解除して整合させる
+              if (mode === 'sector') setFilter('all')
+              if (mode !== 'sector') setSelectedSector(null)
+            }}
             className={`px-3 py-1 text-sm rounded-md transition-colors ${
               viewMode === mode
                 ? 'bg-theme text-theme-t font-medium shadow-sm'
                 : 'text-sub2'
             }`}
           >
-            {mode === 'line' ? 'ライン' : 'ドット'}
+            {mode === 'line' ? 'ライン' : mode === 'dot' ? 'ドット' : '集計'}
           </button>
         ))}
       </div>
 
-      {/* 結果フィルター */}
-      <div className="flex gap-1.5 flex-wrap">
+      {/* 結果フィルター（集計モードでは打率を正しく出すため非表示） */}
+      <div className={`flex gap-1.5 flex-wrap ${viewMode === 'sector' ? 'hidden' : ''}`}>
         {([
           { key: 'all'      as ResultFilter, label: 'すべて', color: null               },
           { key: 'long_hit' as ResultFilter, label: '長打',   color: SPRAY_COLORS.hr    },
@@ -330,7 +403,7 @@ export default function SprayChart({ games }: Props) {
       </div>
 
       {/* P-8: 凡例（チャート外・横並び・スクロール可）打球線と重ならない位置に配置 */}
-      <div className="flex gap-3 overflow-x-auto scrollbar-none pb-0.5">
+      <div className={`flex gap-3 overflow-x-auto scrollbar-none pb-0.5 ${viewMode === 'sector' ? 'hidden' : ''}`}>
         {([
           { label: '本塁打', subLabel: null,              color: SPRAY_COLORS.hr     },
           { label: '三塁打', subLabel: null,              color: SPRAY_COLORS.triple },
@@ -442,13 +515,72 @@ export default function SprayChart({ games }: Props) {
             )
           })}
 
+          {/* S-1: 扇形集計モード — 打球数を濃淡で、打球数と打率を数値で表示 */}
+          {viewMode === 'sector' && hasAnyDir && SECTOR_DEFS.map(s => {
+            const st = sectorStats[s.key]
+            const isSelected = selectedSector === s.key
+            // 濃淡は打球数に比例（sequential: 濃い＝多い）
+            const ratio = maxSectorCount > 0 ? st.count / maxSectorCount : 0
+            const opacity = st.count === 0 ? 0.06 : 0.18 + ratio * 0.55
+            return (
+              <path
+                key={`sector-${s.key}`}
+                d={sectorPath(s.from, s.to, FENCE_R)}
+                fill="#FFC107"
+                fillOpacity={opacity}
+                stroke={isSelected ? '#FFFFFF' : 'rgba(255,255,255,0.45)'}
+                strokeWidth={isSelected ? 2.5 : 1}
+                style={{ cursor: 'pointer' }}
+                onClick={() => setSelectedSector(prev => prev === s.key ? null : s.key)}
+                aria-label={`${s.label}方向 ${st.count}打球`}
+              />
+            )
+          })}
+
+          {/* S-1: 扇形ラベル（打球数・打率） */}
+          {viewMode === 'sector' && hasAnyDir && SECTOR_DEFS.map(s => {
+            const st = sectorStats[s.key]
+            const midRad = (((s.from + s.to) / 2) * Math.PI) / 180
+            const lx = HX + FENCE_R * 0.66 * Math.sin(midRad)
+            const ly = HY - FENCE_R * 0.66 * Math.cos(midRad)
+            const avgStr = st.ab > 0 ? (st.hits / st.ab).toFixed(3).replace('0.', '.') : '---'
+            return (
+              <g key={`sector-label-${s.key}`} pointerEvents="none">
+                <text
+                  x={f(lx)} y={f(ly - 8)}
+                  textAnchor="middle" fontSize="17" fontWeight="700"
+                  fill="white" stroke="rgba(0,0,0,0.55)" strokeWidth="3"
+                  paintOrder="stroke"
+                >
+                  {st.count}
+                </text>
+                <text
+                  x={f(lx)} y={f(ly + 8)}
+                  textAnchor="middle" fontSize="11" fontWeight="600"
+                  fill="white" stroke="rgba(0,0,0,0.55)" strokeWidth="2.5"
+                  paintOrder="stroke"
+                >
+                  {avgStr}
+                </text>
+                <text
+                  x={f(lx)} y={f(ly + 21)}
+                  textAnchor="middle" fontSize="9"
+                  fill="white" fillOpacity="0.9" stroke="rgba(0,0,0,0.5)" strokeWidth="2"
+                  paintOrder="stroke"
+                >
+                  {s.label}
+                </text>
+              </g>
+            )
+          })}
+
           {/* データなしオーバーレイ */}
           {!hasAnyDir && (
             <text x="180" y="165" textAnchor="middle" fontSize="13" fill="white" fillOpacity="0.85">
               打球方向データがありません
             </text>
           )}
-          {hasAnyDir && !hasPlottable && (
+          {hasAnyDir && !hasPlottable && viewMode !== 'sector' && (
             <text x="180" y="165" textAnchor="middle" fontSize="13" fill="white" fillOpacity="0.85">
               該当する打席がありません
             </text>
@@ -456,6 +588,54 @@ export default function SprayChart({ games }: Props) {
         </svg>
         {/* P-8: 凡例はチャート外に移動済み（絶対配置オーバーレイなし） */}
       </div>
+
+      {/* S-1: 扇形集計モードの補足・ドリルダウン */}
+      {viewMode === 'sector' && (
+        <div className="px-1 space-y-1">
+          {(() => {
+            const sel = selectedSector ? SECTOR_DEFS.find(s => s.key === selectedSector) : null
+            if (!sel) {
+              // 未選択時は最も打球が多い方向を要約（引っ張り傾向の把握）
+              if (sectorTotal === 0) {
+                return <p className="text-xs text-sub2">方向を記録した打球がまだありません</p>
+              }
+              const top = [...SECTOR_DEFS].sort((a, b) => sectorStats[b.key].count - sectorStats[a.key].count)[0]
+              const pct = Math.round((sectorStats[top.key].count / sectorTotal) * 100)
+              return (
+                <p className="text-xs text-sub2">
+                  最多は <span className="text-main font-semibold">{top.label}</span> 方向（
+                  {sectorStats[top.key].count}打球・全体の{pct}%）
+                  <span className="text-sub2/70 ml-1">／ 扇形をタップで内訳</span>
+                </p>
+              )
+            }
+            const st = sectorStats[sel.key]
+            const avgStr = st.ab > 0 ? (st.hits / st.ab).toFixed(3).replace('0.', '.') : '---'
+            return (
+              <p className="text-xs text-sub2">
+                <span className="text-main font-semibold">{sel.label}</span> 方向：
+                <span className="text-main font-semibold"> {st.ab}打数{st.hits}安打 </span>
+                <span className="text-main font-bold">{avgStr}</span>
+                {st.hits > 0 && (
+                  <span className="text-sub2/80">
+                    （本{st.hr}・三{st.triple}・二{st.double}・単{st.single}）
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setSelectedSector(null)}
+                  className="ml-2 text-theme underline underline-offset-2"
+                >
+                  解除
+                </button>
+              </p>
+            )
+          })()}
+          <p className="text-[10px] text-sub2/60">
+            数値は上段が打球数、下段がその方向の打率です（集計モードでは結果フィルタを適用しません）
+          </p>
+        </div>
+      )}
 
       {/* P-11: サマリー 3行階層化（打率を先頭に昇格） */}
       <div className="space-y-0.5 px-1">
