@@ -214,10 +214,13 @@ export default function GamesPage() {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* R-2: 一括登録（ベボレコ移行・複数試合まとめて入力） */}
           <Link href="/games/bulk-new" className="btn bg-lv2 border border-s2 hover:bg-lv1 text-main px-4 py-2 rounded-lg text-sm font-medium transition-colors">
             📝 まとめて登録
+          </Link>
+          <Link href="/games/bulk-stats" className="btn bg-lv2 border border-s2 hover:bg-lv1 text-main px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            📋 成績をまとめて編集
           </Link>
           <Link href="/games/new" className="btn bg-theme hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium">
             ＋ 試合を登録

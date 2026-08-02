@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useContext, useMemo } from 'react'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { calcBattingStats, calcPitchingStats, fmtAvg, fmtDec, fmtERA, formatIP } from '@/lib/stats'
 import { RESULT_TYPE_LABELS, DIRECTION_LABELS, FIELDING_POSITIONS } from '@/lib/supabase/types'
@@ -427,7 +428,15 @@ export default function StatsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-accent">成績</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-accent">成績</h1>
+          <Link
+            href="/stats/yearly"
+            className="text-xs border border-s2 rounded-lg px-3 py-1.5 text-sub1 hover:bg-lv2 hover:text-main transition-colors whitespace-nowrap"
+          >
+            📅 年度別成績 →
+          </Link>
+        </div>
         <select
           value={season}
           onChange={(e) => handleSeasonChange(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}

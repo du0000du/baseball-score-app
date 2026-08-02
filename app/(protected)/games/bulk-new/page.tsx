@@ -425,6 +425,9 @@ export default function BulkNewPage() {
   const focusInput = () => requestAnimationFrame(() => inputRef.current?.focus())
 
   const handleCellMouseDown = useCallback((r: number, c: number, e: React.MouseEvent) => {
+    // 既定動作を止めないと Shift+クリック時に input からフォーカスが外れ、
+    // 以降の Ctrl+C / Delete などのキー操作を受け取れなくなる
+    e.preventDefault()
     if (editing) commit()
     if (e.shiftKey) {
       setHead({ r, c })
@@ -441,6 +444,7 @@ export default function BulkNewPage() {
   }, [dragging])
 
   const selectRow = useCallback((r: number, e: React.MouseEvent) => {
+    e.preventDefault()
     if (editing) commit()
     if (e.shiftKey) {
       setHead({ r, c: COLUMNS.length - 1 })
@@ -633,7 +637,7 @@ export default function BulkNewPage() {
               {COLUMNS.map((col, c) => (
                 <th
                   key={col.key}
-                  onMouseDown={() => selectColumn(c)}
+                  onMouseDown={e => { e.preventDefault(); selectColumn(c) }}
                   className={`bg-lv2 border-b border-r border-s2 text-xs font-medium px-2 py-1.5 whitespace-nowrap cursor-pointer hover:bg-s2 transition-colors ${col.widthClass} ${
                     sel.c1 <= c && c <= sel.c2 ? 'text-theme' : 'text-sub2'
                   }`}
