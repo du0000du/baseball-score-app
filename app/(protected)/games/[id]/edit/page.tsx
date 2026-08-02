@@ -1,5 +1,5 @@
 import { redirect, notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getCachedUser } from '@/lib/supabase/server'
 import EditGameForm from './_EditGameForm'
 
 interface Props {
@@ -7,10 +7,8 @@ interface Props {
 }
 
 export default async function EditGamePage({ params }: Props) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // PERF-8: layout でキャッシュ済みの user を再利用（往復ゼロ）
+  const [supabase, user] = await Promise.all([createClient(), getCachedUser()])
 
   if (!user) redirect('/login')
 

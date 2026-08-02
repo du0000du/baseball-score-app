@@ -16,9 +16,12 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
     }
     if (prevPathname.current !== pathname) {
       prevPathname.current = pathname
+      // PERF-4: 従来は 60ms の強制空白を挟んでいたが、
+      // 遷移そのものが待たされている状況では体感悪化にしかならないため撤廃。
+      // 次フレームで表示に戻し、フェードは transition だけで成立させる。
       setVisible(false)
-      const t = setTimeout(() => setVisible(true), 60)
-      return () => clearTimeout(t)
+      const raf = requestAnimationFrame(() => setVisible(true))
+      return () => cancelAnimationFrame(raf)
     }
   }, [pathname])
 
@@ -27,7 +30,7 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
       className="min-h-0"
       style={{
         opacity: visible ? 1 : 0,
-        transition: visible ? 'opacity 0.15s ease-out' : 'none',
+        transition: visible ? 'opacity 0.1s ease-out' : 'none',
       }}
     >
       {children}

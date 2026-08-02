@@ -50,18 +50,13 @@ export default function PitchingPage() {
 
   useEffect(() => {
     const load = async () => {
-      const { data: g } = await supabase
-        .from('games')
-        .select('*')
-        .eq('id', gameId)
-        .single()
+      // PERF-7: 依存関係がないので並列化（従来は2往復を逐次実行）
+      const [{ data: g }, { data: ps }] = await Promise.all([
+        supabase.from('games').select('*').eq('id', gameId).single(),
+        supabase.from('pitching_stats').select('*').eq('game_id', gameId).maybeSingle(),
+      ])
       if (g) setGame(g as Game)
 
-      const { data: ps } = await supabase
-        .from('pitching_stats')
-        .select('*')
-        .eq('game_id', gameId)
-        .maybeSingle()
       if (ps) {
         const p = ps as PitchingStat
         setInningsWhole(Math.floor(p.innings_pitched / 3))

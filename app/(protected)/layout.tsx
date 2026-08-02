@@ -1,14 +1,12 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { getCachedUser } from '@/lib/supabase/server'
 import Nav from './_components/Nav'
 import PageWrapper from './_components/PageWrapper'
 import OfflineBanner from './_components/OfflineBanner'
 
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // PERF-8: page 側と同じリクエスト内で getUser を共有（往復1回に集約）
+  const user = await getCachedUser()
 
   if (!user) {
     redirect('/login')

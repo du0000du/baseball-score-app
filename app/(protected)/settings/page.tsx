@@ -44,17 +44,17 @@ export default function SettingsPage() {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      const { data } = await supabase.from('users').select('*').eq('id', user.id).single()
+      // PERF-7: プロフィールとシーズン一覧は依存関係がないので並列化
+      const [{ data }, { data: gamesData }] = await Promise.all([
+        supabase.from('users').select('*').eq('id', user.id).single(),
+        supabase.from('games').select('season').eq('user_id', user.id),
+      ])
       if (data) {
         const profile = data as User
         setName(profile.name ?? '')
         setTeamName(profile.team_name ?? '')
         setPosition(profile.position ?? '')
       }
-      const { data: gamesData } = await supabase
-        .from('games')
-        .select('season')
-        .eq('user_id', user.id)
       if (gamesData) {
         const seasons = Array.from(new Set((gamesData as { season: number }[]).map(g => g.season)))
           .filter(Boolean)
