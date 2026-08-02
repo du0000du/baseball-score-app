@@ -150,12 +150,14 @@ const FC_POSITIONS: { value: InfieldPosition; label: string }[] = [
 ]
 
 // 内野安打守備位置（5ポジション）
+// 内野安打の打球方向（他の守備位置リストと同じ頻度順に並べる）
 const INFIELD_HIT_POSITIONS: { value: InfieldPosition; label: string }[] = [
+  { value: 'third_base',  label: 'サード内野安打' },
+  { value: 'shortstop',   label: 'ショート内野安打' },
+  { value: 'second_base', label: 'セカンド内野安打' },
+  { value: 'first_base',  label: 'ファースト内野安打' },
   { value: 'pitcher',     label: 'ピッチャー内野安打' },
   { value: 'catcher',     label: 'キャッチャー内野安打' },
-  { value: 'first_base',  label: 'ファースト内野安打' },
-  { value: 'second_base', label: 'セカンド内野安打' },
-  { value: 'shortstop',   label: 'ショート内野安打' },
 ]
 
 function formatDate(dateStr: string) {

@@ -251,6 +251,7 @@ export const INFIELD_HIT_POSITION_LABELS: Partial<Record<InfieldPosition, string
   catcher:     'キャッチャー内野安打',
   first_base:  'ファースト内野安打',
   second_base: 'セカンド内野安打',
+  third_base:  'サード内野安打',
   shortstop:   'ショート内野安打',
 }
 
