@@ -3,10 +3,11 @@ import { createClient, getCachedUser } from '@/lib/supabase/server'
 import EditGameForm from './_EditGameForm'
 
 interface Props {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function EditGamePage({ params }: Props) {
+  const { id } = await params
   // PERF-8: layout でキャッシュ済みの user を再利用（往復ゼロ）
   const [supabase, user] = await Promise.all([createClient(), getCachedUser()])
 
@@ -15,7 +16,7 @@ export default async function EditGamePage({ params }: Props) {
   const { data: game } = await supabase
     .from('games')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('user_id', user.id)
     .single()
 

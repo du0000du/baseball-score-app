@@ -83,7 +83,8 @@ function ScoreDisplay({ game }: { game: Game }) {
 
 interface GameWithAtBats extends Game { at_bats: AtBat[] }
 
-export default async function DashboardPage({ searchParams }: { searchParams: { year?: string } }) {
+export default async function DashboardPage(props: { searchParams: Promise<{ year?: string }> }) {
+  const searchParams = await props.searchParams
   // PERF-8: layout と同一リクエスト内なのでキャッシュ済みの user を再利用（往復ゼロ）
   const [supabase, user] = await Promise.all([createClient(), getCachedUser()])
   const currentYear = new Date().getFullYear()
